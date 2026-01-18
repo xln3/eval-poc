@@ -1,0 +1,83 @@
+# Benchmark Catalog - 基准测试路由注册表
+# 每个 benchmark 使用独立的虚拟环境
+#
+# Task 路径格式:
+#   - 简单任务: inspect_evals/<benchmark>
+#   - 指定 task: upstream/inspect_evals/src/inspect_evals/<path>@<task_name>
+
+benchmarks:
+  strong_reject:
+    source: upstream
+    module: inspect_evals/strong_reject
+    python: "3.10"
+    tasks:
+      - name: strong_reject
+        path: inspect_evals/strong_reject
+
+  xstest:
+    source: upstream
+    module: inspect_evals/xstest
+    python: "3.10"
+    tasks:
+      - name: xstest
+        path: inspect_evals/xstest
+
+  cyberseceval_2:
+    source: upstream
+    module: inspect_evals/cyberseceval_2
+    python: "3.10"
+    judge_model: zai-glm-4.7
+    tasks:
+      - name: cyse2_interpreter_abuse
+        path: upstream/inspect_evals/src/inspect_evals/cyberseceval_2/interpreter_abuse/task.py@cyse2_interpreter_abuse
+      - name: cyse2_prompt_injection
+        path: upstream/inspect_evals/src/inspect_evals/cyberseceval_2/prompt_injection/task.py@cyse2_prompt_injection
+      - name: cyse2_vulnerability_exploit
+        path: upstream/inspect_evals/src/inspect_evals/cyberseceval_2/vulnerability_exploit/task.py@cyse2_vulnerability_exploit
+
+  bbq:
+    source: upstream
+    module: inspect_evals/bbq
+    python: "3.10"
+    tasks:
+      - name: bbq
+        path: inspect_evals/bbq
+
+  cve_bench:
+    source: upstream
+    module: inspect_evals/cve_bench
+    python: "3.12"
+    extras: [cve_bench]
+    tasks:
+      - name: cve_bench
+        path: inspect_evals/cve_bench
+        # Docker 模式支持全部 40 个 CVE
+        task_args:
+          sandbox_type: docker
+
+  agentdojo:
+    source: upstream
+    module: inspect_evals/agentdojo
+    python: "3.10"
+    extras: [agentdojo]
+    tasks:
+      - name: agentdojo
+        path: inspect_evals/agentdojo
+
+  agentharm:
+    source: upstream
+    module: inspect_evals/agentharm
+    python: "3.10"
+    tasks:
+      - name: agentharm
+        path: inspect_evals/agentharm
+      - name: agentharm_benign
+        path: upstream/inspect_evals/src/inspect_evals/agentharm/agentharm.py@agentharm_benign
+
+  truthfulqa:
+    source: upstream
+    module: inspect_evals/truthfulqa
+    python: "3.10"
+    tasks:
+      - name: truthfulqa
+        path: inspect_evals/truthfulqa
