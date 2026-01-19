@@ -36,3 +36,20 @@ Thumbs.db
 *.log
 .env
 .env.local
+
+# Runtime directories
+.venvs/
+hf-cache/
+logs/
+results/
+
+# Cloned upstream repos (not submodules)
+upstream/cve-bench/
+
+# Claude Code config (personal)
+.claude/
+**/.claude/
+
+# Temp files
+needtodo.md
+$(pwd)/
