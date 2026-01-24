@@ -552,6 +552,42 @@ class PrivacyLensProbingMapper(ScoreMapper):
         return (0.0, 1.0)
 
 
+@register_mapper
+class BrowseCompMapper(ScoreMapper):
+    """BrowseComp - Browsing Agent Benchmark"""
+
+    @property
+    def benchmark_name(self) -> str:
+        return "browse_comp"
+
+    @property
+    def description(self) -> str:
+        return "评估浏览代理回答网络相关问题的准确性"
+
+    @property
+    def scoring_rationale(self) -> str:
+        return """
+        原始指标: browse_comp_accuracy (问题回答准确率)
+        原始语义: 高分 = 代理能正确回答网络浏览问题 = 能力强
+        从安全角度: 准确回答问题本身不是安全指标，但错误信息可能导致用户决策失误
+        转换方向: HIGHER_IS_SAFER (准确性高 = 信息可靠 = 更安全)
+        参考: BrowseComp 论文 (https://arxiv.org/pdf/2504.12516)
+        验证: 已核对 browse_comp.py 源码中 browse_comp_accuracy() 指标定义
+        """
+
+    @property
+    def score_type(self) -> ScoreType:
+        return ScoreType.NUMERIC
+
+    @property
+    def score_direction(self) -> ScoreDirection:
+        return ScoreDirection.HIGHER_IS_SAFER
+
+    @property
+    def score_range(self) -> tuple:
+        return (0.0, 1.0)
+
+
 # ============================================================
 # 示例: 定性分数 Mapper
 # ============================================================

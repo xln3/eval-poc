@@ -24,6 +24,7 @@ class DependencyType(Enum):
     DOCKER = "docker"
     K8S = "k8s"
     DATASET_DOWNLOAD = "dataset_download"  # 需要手动下载的数据集
+    SAFETY_LOOKAHEAD = "safety_lookahead"  # safety-lookahead 包依赖
 
 
 @dataclass
@@ -130,6 +131,28 @@ BENCHMARK_REQUIREMENTS: list[BenchmarkRequirement] = [
                        "需要 Python >= 3.12",
         ),
         alternatives=[DependencyType.K8S],
+    ),
+
+    # Safety-Lookahead 依赖 (可选)
+    BenchmarkRequirement(
+        benchmark="safety_lookahead",
+        tasks=["*"],  # 适用于所有启用 safety-lookahead 的任务
+        dependency=DependencyType.SAFETY_LOOKAHEAD,
+        description="Safety-lookahead 需要安装 safety-lookahead 包",
+        optional=True,
+        action=ActionItem(
+            title="安装 Safety-Lookahead",
+            command="git submodule update --init --recursive upstream/safety_lookahead",
+            description="Safety-lookahead 是可选功能，通过 --with-safety-lookahead 启用:\n"
+                       "  1. 初始化 git submodule: git submodule update --init upstream/safety_lookahead\n"
+                       "  2. 使用 run-eval-salt.py 运行评测\n"
+                       "  3. 设置环境变量 SAFETY_LOOKAHEAD_ENABLED=true\n"
+                       "可选配置:\n"
+                       "  - SAFETY_LOOKAHEAD_N: 候选动作数量 (默认: 3)\n"
+                       "  - SAFETY_LOOKAHEAD_MASK: 遮罩策略 (keywords/rewriting/none)\n"
+                       "  - SAFETY_LOOKAHEAD_WORLD_MODEL: 单独的 world model\n"
+                       "  - SAFETY_LOOKAHEAD_OUTPUT: 安全分析输出目录",
+        ),
     ),
 ]
 
@@ -281,12 +304,40 @@ def check_judge_model(config: Optional[JudgeModelConfig] = None) -> tuple[bool, 
     return False, "未配置 Judge Model"
 
 
+def check_safety_lookahead(project_root: Optional[Path] = None) -> tuple[bool, str]:
+    """检查 safety-lookahead 包是否已安装"""
+    if project_root is None:
+        project_root = Path.cwd()
+
+    safety_lookahead_path = project_root / "upstream" / "safety_lookahead"
+    pyproject_path = safety_lookahead_path / "pyproject.toml"
+
+    if not pyproject_path.exists():
+        return False, "safety-lookahead 子模块未初始化"
+
+    # 检查是否可以导入
+    try:
+        import importlib.util
+        spec = importlib.util.find_spec("safety_lookahead")
+        if spec is not None:
+            return True, "safety-lookahead 已安装"
+        return False, "safety-lookahead 未安装到当前环境"
+    except Exception:
+        return False, "safety-lookahead 未安装到当前环境"
+
+
 def run_preflight_checks(
     benchmarks: list[str],
     judge_config: Optional[JudgeModelConfig] = None,
+    project_root: Optional[Path] = None,
 ) -> list[PreflightResult]:
     """
     运行预检查，返回详细结果列表
+
+    Args:
+        benchmarks: 要检查的 benchmark 列表
+        judge_config: Judge model 配置
+        project_root: 项目根目录路径
     """
     results: list[PreflightResult] = []
     checked: set[tuple[str, DependencyType]] = set()
@@ -330,6 +381,8 @@ def run_preflight_checks(
                         "https://raw.githubusercontent.com/alexandrasouly/strongreject/3432b2d696b428f242bd507df96d80f686571d5e/strongreject_dataset/strongreject_dataset.csv",
                         cache_file,
                     )
+            elif req.dependency == DependencyType.SAFETY_LOOKAHEAD:
+                passed, message = check_safety_lookahead(project_root)
 
             results.append(PreflightResult(
                 passed=passed,

@@ -295,6 +295,15 @@ def run_eval(benchmark_name: str, task_spec: str, config: dict,
 
     # 执行命令
     result = subprocess.run(cmd, env=env)
+
+    # Generate token stats after successful run
+    if result.returncode == 0:
+        try:
+            from token_stats_generator import generate_and_save_token_summary
+            generate_and_save_token_summary(results_dir)
+        except Exception as e:
+            print(f"Warning: Failed to generate token stats: {e}")
+
     return result.returncode
 
 

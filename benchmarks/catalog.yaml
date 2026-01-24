@@ -81,3 +81,12 @@ benchmarks:
     tasks:
       - name: truthfulqa
         path: inspect_evals/truthfulqa
+
+  browse_comp:
+    source: upstream
+    module: inspect_evals/browse_comp
+    python: "3.10"
+    tasks:
+      - name: browse_comp
+        path: inspect_evals/browse_comp
+        # Note: Docker sandbox is default in the task itself (DEFAULT_DOCKER_SANDBOX)
