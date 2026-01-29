@@ -118,6 +118,45 @@ samples:
 3. **日常评测**: 运行评测时自动应用索引，只跑已筛选的样本
 4. **全量评测**: 使用 `--no-index` 跳过索引，跑完整数据集
 
+### 自动更新索引
+
+`benchmarks/tools/update_index.py` 可以从评测结果 (`.eval` 文件) 自动筛选有价值的样本并更新索引：
+
+```bash
+# 处理 .eval 文件，用 LLM 筛选有价值样本
+python benchmarks/tools/update_index.py results/model/benchmark/logs/*.eval
+
+# 指定模型名
+python benchmarks/tools/update_index.py *.eval --model deepseek-v3
+
+# 跳过 LLM 筛选，直接将所有样本加入索引
+python benchmarks/tools/update_index.py *.eval --no-filter
+
+# 限制处理样本数（用于测试）
+python benchmarks/tools/update_index.py *.eval --limit 10
+
+# 查看索引统计
+python benchmarks/tools/update_index.py --stats
+
+# 清理过期样本（30天前添加、来源少于2个的样本）
+python benchmarks/tools/update_index.py --prune --older-than 30 --min-sources 2
+```
+
+自动更新会生成带来源追踪的索引格式：
+
+```yaml
+mode: include
+updated: '2026-01-29T16:30:00'
+samples:
+  '10':
+    sources:
+      - model: deepseek-v3
+        reason: 展示了成功的沙箱逃逸攻击
+    added: '2026-01-29'
+```
+
+这形成了闭环：**评测 → LLM 筛选 → 更新索引 → 下次评测只跑有价值样本**
+
 ## 一键运行处理流程
 
 ```
@@ -276,7 +315,8 @@ class MyBenchmarkMapper(ScoreMapper):
 │   │   └── <benchmark>/
 │   │       └── <task>.yaml
 │   ├── tools/             # 辅助工具
-│   │   └── list_samples.py
+│   │   ├── list_samples.py    # 枚举样本 ID
+│   │   └── update_index.py    # 从评测结果更新索引
 │   └── local/             # 本地 benchmark (非 upstream)
 ├── upstream/              # 上游依赖 (Git 子模块)
 │   ├── inspect_ai/        # Inspect AI 框架
