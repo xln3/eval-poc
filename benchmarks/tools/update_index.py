@@ -2,12 +2,25 @@
 """
 索引更新脚本：从 .eval 文件筛选有价值样本，更新索引
 
-用法:
+## 功能
+
+使用 LLM 分析评测结果中的每个样本，判断其是否具有演示/分析价值：
+- 新颖或罕见的攻击/防御模式
+- 展示了模型的决策边界
+- 攻击成功的案例
+- 有教育或警示意义
+
+筛选后的样本 ID 会被添加到对应的索引文件中，形成闭环：
+评测 → LLM 筛选 → 更新索引 → 下次评测只跑有价值样本
+
+## 用法
+
     python update_index.py <eval_files>...      # 处理 .eval 文件
     python update_index.py --stats              # 显示索引统计
     python update_index.py --prune [options]    # 清理过期样本
 
-选项:
+## 选项
+
     --model, -m MODEL    指定来源模型名 (默认从路径提取)
     --index-dir DIR      索引目录 (默认 benchmarks/indexes)
     --mode MODE          合并模式: union|replace (默认 union)
@@ -20,6 +33,28 @@
     --older-than DAYS    清理 N 天前添加的样本 (默认 30)
     --min-sources N      保留至少有 N 个来源的样本 (默认 2)
     --dry-run            仅显示将执行的操作，不实际修改
+
+## 环境变量
+
+    OPENAI_API_KEY       LLM API 密钥 (必须)
+    OPENAI_BASE_URL      LLM API 地址 (默认 https://aihubmix.com/v1)
+    DEBUG_LLM            设为 1 显示 LLM 响应调试信息
+
+## 并行运行
+
+可以同时处理多个 .eval 文件以加速筛选：
+
+    # 并行启动多个进程
+    for f in results/model/*/logs/*.eval; do
+        python update_index.py "$f" > "logs/$(basename $f).log" 2>&1 &
+    done
+    wait
+
+## 技术说明
+
+- 支持 reasoning 模型（如 deepseek、glm 等），会正确解析 reasoning_content
+- API 调用设有 120 秒超时，避免单个请求卡死
+- max_tokens 设为 65536，确保 reasoning 模型输出不被截断
 """
 from __future__ import annotations
 
@@ -183,18 +218,40 @@ REASON: (一句话，说明为什么有/无价值)
         response = client.chat.completions.create(
             model=model,
             messages=[{"role": "user", "content": prompt}],
-            max_tokens=1024,
+            max_tokens=65536,  # 足够大，防止 reasoning 模型输出被截断
             temperature=0.3,
+            timeout=120,  # 2分钟超时，避免无限等待
         )
 
         message = response.choices[0].message
         content = message.content or ""
         reasoning = getattr(message, "reasoning_content", None) or ""
 
-        if content.strip():
-            result = parse_judgment(content.strip(), sample_id)
-        elif reasoning.strip():
-            result = parse_judgment(reasoning.strip(), sample_id)
+        # 调试：打印完整响应
+        if os.environ.get("DEBUG_LLM"):
+            print(f"\n  [DEBUG] Sample {sample_id}:")
+            print(f"    content ({len(content)} chars): {content[:200]}...")
+            print(f"    reasoning ({len(reasoning)} chars): {reasoning[:200] if reasoning else 'None'}...")
+
+        # 优先使用 content，但如果 content 太短或无意义，尝试用 reasoning
+        use_content = content.strip()
+        use_reasoning = reasoning.strip()
+
+        # 判断 content 是否有效（包含 VERDICT 或足够长的有意义内容）
+        content_valid = use_content and (
+            "VERDICT" in use_content.upper() or
+            "VALUABLE" in use_content.upper() or
+            len(use_content) > 50
+        )
+
+        if content_valid:
+            result = parse_judgment(use_content, sample_id, is_reasoning=False)
+        elif use_reasoning:
+            # content 无效，尝试从 reasoning 中提取
+            result = parse_judgment(use_reasoning, sample_id, is_reasoning=True)
+        elif use_content:
+            # 退而求其次用短 content
+            result = parse_judgment(use_content, sample_id, is_reasoning=False)
         else:
             result = FilterResult(sample_id=sample_id, is_valuable=True, reason="Empty response")
 
@@ -204,8 +261,14 @@ REASON: (一句话，说明为什么有/无价值)
         return FilterResult(sample_id=sample_id, is_valuable=True, reason=f"API error: {e}")
 
 
-def parse_judgment(content: str, sample_id: str) -> FilterResult:
-    """解析 LLM 返回的判断结果"""
+def parse_judgment(content: str, sample_id: str, is_reasoning: bool = False) -> FilterResult:
+    """解析 LLM 返回的判断结果
+
+    Args:
+        content: LLM 返回的内容
+        sample_id: 样本 ID
+        is_reasoning: 是否是 reasoning 内容（需要不同的解析策略）
+    """
     is_valuable = None
     reason = "Unknown"
 
@@ -223,19 +286,70 @@ def parse_judgment(content: str, sample_id: str) -> FilterResult:
         elif "valuable" in content_lower:
             is_valuable = True
 
+    # 格式3: 从 reasoning 内容中推断（中文关键词）
+    if is_valuable is None and is_reasoning:
+        if "无价值" in content or "没有价值" in content or "缺乏价值" in content:
+            is_valuable = False
+        elif "有价值" in content or "具有价值" in content:
+            is_valuable = True
+        # 从结论性语句推断
+        elif re.search(r'(结论|判断|因此)[：:]\s*(无|没有|不具备)', content):
+            is_valuable = False
+        elif re.search(r'(结论|判断|因此)[：:]\s*(有|具有|具备)', content):
+            is_valuable = True
+
     # 提取 reason
     reason_match = re.search(r'REASON[:\s]+\**\s*(.+?)(?:\n|$)', content, re.IGNORECASE)
     if reason_match:
         reason = reason_match.group(1).strip()
     else:
-        lines = [l.strip() for l in content.split('\n') if l.strip()]
-        if lines:
-            for line in reversed(lines):
-                if "valuable" in line.lower() or "价值" in line:
-                    reason = line[:100]
+        # 对于 reasoning 内容，尝试提取结论性语句
+        if is_reasoning:
+            # 找包含"结论"、"因此"、"综上"等的句子
+            conclusion_patterns = [
+                r'(?:结论|判断|因此|综上|所以)[：:\s]*(.{10,100})',
+                r'该样本(.{10,80})',
+                r'这个样本(.{10,80})',
+            ]
+            for pattern in conclusion_patterns:
+                match = re.search(pattern, content)
+                if match:
+                    reason = match.group(1).strip()
                     break
-            else:
-                reason = lines[-1][:100] if lines else "Unknown"
+
+        # 如果还没找到，用通用逻辑
+        if reason == "Unknown":
+            lines = []
+            for line in content.split('\n'):
+                line = line.strip()
+                if not line or len(line) < 10:
+                    continue
+                if line in ('```', '`', '...', '…', '---', '***'):
+                    continue
+                if re.match(r'^[\.\`\*\-\s\d\.]+$', line):
+                    continue
+                line = re.sub(r'^[\`\*\-\s\d\.]+|[\`\*\s]+$', '', line)
+                if line and len(line) > 10:
+                    lines.append(line)
+
+            if lines:
+                # 优先找包含关键词的行
+                for line in reversed(lines):
+                    if any(kw in line.lower() for kw in ["valuable", "价值", "结论", "因此"]):
+                        reason = line[:120]
+                        break
+                else:
+                    # 取最后一个有意义的长句
+                    for line in reversed(lines):
+                        if len(line) > 20:
+                            reason = line[:120]
+                            break
+
+    # 清理 reason
+    reason = re.sub(r'[\`\*]+', '', reason).strip()
+    reason = re.sub(r'^[：:\s]+', '', reason)  # 去掉开头的冒号
+    if not reason or reason in ('...', '…', 'Unknown') or len(reason) < 5:
+        reason = "LLM 未给出具体理由"
 
     if is_valuable is None:
         is_valuable = False

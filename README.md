@@ -120,13 +120,25 @@ samples:
 
 ### 自动更新索引
 
-`benchmarks/tools/update_index.py` 可以从评测结果 (`.eval` 文件) 自动筛选有价值的样本并更新索引：
+`benchmarks/tools/update_index.py` 使用 LLM 从评测结果 (`.eval` 文件) 自动筛选有价值的样本并更新索引。
+
+#### LLM 筛选标准
+
+LLM 会分析每个样本，判断其是否具有演示/分析价值：
+- ✅ 新颖或罕见的攻击/防御模式
+- ✅ 展示了模型的决策边界
+- ✅ 攻击成功的案例
+- ✅ 有教育或警示意义
+- ❌ 简单重复，没有新信息
+- ❌ 平淡无奇的标准拒绝
+
+#### 基本用法
 
 ```bash
 # 处理 .eval 文件，用 LLM 筛选有价值样本
 python benchmarks/tools/update_index.py results/model/benchmark/logs/*.eval
 
-# 指定模型名
+# 指定模型名（默认从路径提取）
 python benchmarks/tools/update_index.py *.eval --model deepseek-v3
 
 # 跳过 LLM 筛选，直接将所有样本加入索引
@@ -142,6 +154,27 @@ python benchmarks/tools/update_index.py --stats
 python benchmarks/tools/update_index.py --prune --older-than 30 --min-sources 2
 ```
 
+#### 并行处理
+
+处理大量样本时，可以并行运行多个进程加速：
+
+```bash
+# 并行处理多个 .eval 文件
+mkdir -p /tmp/filter_logs
+for f in results/*/cyberseceval_2/logs/*.eval; do
+    name=$(basename "$f" .eval)
+    python benchmarks/tools/update_index.py "$f" > "/tmp/filter_logs/$name.log" 2>&1 &
+done
+echo "启动 $(jobs -p | wc -l) 个并行任务"
+wait
+echo "全部完成"
+
+# 监控进度
+watch -n 10 'for f in /tmp/filter_logs/*.log; do echo "=== $(basename $f .log) ==="; tail -1 "$f"; done'
+```
+
+#### 索引文件格式
+
 自动更新会生成带来源追踪的索引格式：
 
 ```yaml
@@ -152,10 +185,37 @@ samples:
     sources:
       - model: deepseek-v3
         reason: 展示了成功的沙箱逃逸攻击
+      - model: doubao-seed
+        reason: 揭示了多语言场景下的防御漏洞
+    added: '2026-01-29'
+  '47':
+    sources:
+      - model: deepseek-v3
+        reason: 经典的SQL注入漏洞利用案例
     added: '2026-01-29'
 ```
 
-这形成了闭环：**评测 → LLM 筛选 → 更新索引 → 下次评测只跑有价值样本**
+#### 技术说明
+
+- **Reasoning 模型支持**: 正确解析 `reasoning_content` 字段，从思考过程中提取判断结论
+- **超时机制**: API 调用设有 120 秒超时，避免单个请求卡死
+- **大 Token 限制**: `max_tokens=65536`，确保 reasoning 模型输出不被截断
+- **环境变量**: 需要设置 `OPENAI_API_KEY` 和 `OPENAI_BASE_URL`
+
+#### 闭环工作流
+
+```
+评测运行 (.eval)
+     │
+     ▼
+LLM 筛选有价值样本
+     │
+     ▼
+更新索引文件 (indexes/*.yaml)
+     │
+     ▼
+下次评测自动只跑有价值样本
+```
 
 ## 一键运行处理流程
 
