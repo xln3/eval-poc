@@ -263,10 +263,14 @@ def expand_sample_ranges(samples: list[str]) -> list[str]:
 
 def load_index_file(index_path: Path) -> tuple[str, list[str]] | None:
     """
-    加载索引文件
+    加载索引文件 (兼容新旧格式)
 
     返回 (mode, sample_ids) 或 None (如果文件不存在)
     mode: "include" 或 "exclude"
+
+    支持两种格式:
+    - 旧格式: samples 是 list ["1", "2-5", ...]
+    - 新格式: samples 是 dict {"1": {sources, added}, ...}
     """
     if not index_path.exists():
         return None
@@ -278,14 +282,22 @@ def load_index_file(index_path: Path) -> tuple[str, list[str]] | None:
         return None
 
     mode = data.get("mode", "include")
-    samples = data.get("samples", [])
+    samples_data = data.get("samples", [])
 
-    if not samples:
+    if not samples_data:
         return None
 
-    # 展开范围
-    expanded = expand_sample_ranges(samples)
-    return mode, expanded
+    # 新格式: dict {id: {sources, added}}
+    if isinstance(samples_data, dict):
+        # keys 可能包含范围语法 (旧格式迁移后)，需要展开
+        sample_ids = expand_sample_ranges(list(samples_data.keys()))
+    # 旧格式: list ["1", "2-5", ...]
+    elif isinstance(samples_data, list):
+        sample_ids = expand_sample_ranges(samples_data)
+    else:
+        return None
+
+    return mode, sample_ids
 
 
 def match_sample_id(sample_id: str, patterns: list[str]) -> bool:
