@@ -56,6 +56,67 @@ cp .env.example .env
 | `--dry-run` | 仅打印命令，不实际执行 |
 | `--limit N` | 限制每个 task 的样本数量 |
 | `--judge-model` | 覆盖默认的 judge 模型 |
+| `--no-index` | 禁用索引，跑全量样本 |
+| `--index-file PATH` | 指定索引文件路径 |
+| `--generate-index` | 生成初始索引文件（不运行评测） |
+| `--list-samples` | 列出所有样本 ID（不运行评测） |
+
+## 样本索引
+
+样本索引机制用于在评测前过滤样本，只运行有代表性的 case，避免每次评测完再筛选低质量 case。
+
+### 索引文件
+
+索引文件位于 `benchmarks/indexes/<benchmark>/<task>.yaml`，运行评测时会自动应用（如果存在）。
+
+```yaml
+# cyberseceval_2:cyse2_interpreter_abuse 样本索引
+# 生成时间: 2026-01-29
+# 总样本数: 500, 已选: 120
+
+mode: include  # include=只跑列出的, exclude=跳过列出的
+
+samples:
+  - "1"
+  - "2"
+  - "5-20"      # 范围语法
+  # - "47"      # 注释=跳过：输入格式错误
+  # - "123"     # 注释=跳过：目标歧义
+```
+
+### 使用示例
+
+```bash
+# 自动应用索引（如果存在）
+./run-eval.py cyberseceval_2:cyse2_interpreter_abuse --model xxx
+
+# 跳过索引，跑全量样本
+./run-eval.py cyberseceval_2:cyse2_interpreter_abuse --model xxx --no-index
+
+# 生成初始索引文件（包含所有样本 ID）
+./run-eval.py cyberseceval_2:cyse2_interpreter_abuse --generate-index
+
+# 列出所有样本 ID
+./run-eval.py cyberseceval_2:cyse2_interpreter_abuse --list-samples
+
+# 使用指定的索引文件
+./run-eval.py cyberseceval_2:cyse2_interpreter_abuse --model xxx --index-file my-index.yaml
+```
+
+### 索引文件语法
+
+| 语法 | 说明 | 示例 |
+|------|------|------|
+| 单个 ID | 指定单个样本 | `"42"` |
+| 范围 | 连续 ID 范围 | `"1-10"` 展开为 1,2,...,10 |
+| 注释 | 使用 YAML 注释跳过 | `# - "47"` |
+
+### 工作流程
+
+1. **初次使用**: 运行 `--generate-index` 生成包含全部样本的索引文件
+2. **筛选样本**: 编辑索引文件，注释掉不需要的样本（如低质量、重复、格式错误的 case）
+3. **日常评测**: 运行评测时自动应用索引，只跑已筛选的样本
+4. **全量评测**: 使用 `--no-index` 跳过索引，跑完整数据集
 
 ## 一键运行处理流程
 
@@ -211,6 +272,11 @@ class MyBenchmarkMapper(ScoreMapper):
 ├── benchmarks/
 │   ├── catalog.yaml       # Benchmark 路由配置
 │   ├── preflight.py       # 预检查模块
+│   ├── indexes/           # 样本索引文件
+│   │   └── <benchmark>/
+│   │       └── <task>.yaml
+│   ├── tools/             # 辅助工具
+│   │   └── list_samples.py
 │   └── local/             # 本地 benchmark (非 upstream)
 ├── upstream/              # 上游依赖 (Git 子模块)
 │   ├── inspect_ai/        # Inspect AI 框架

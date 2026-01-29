@@ -21,9 +21,13 @@
 from __future__ import annotations
 
 import argparse
+import fnmatch
+import json
 import os
+import re
 import subprocess
 import sys
+from datetime import datetime
 from pathlib import Path
 
 import yaml
@@ -43,6 +47,8 @@ PROJECT_ROOT = Path(__file__).parent.resolve()
 VENVS_DIR = PROJECT_ROOT / ".venvs"
 UPSTREAM_DIR = PROJECT_ROOT / "upstream"
 LOCAL_BENCH_DIR = PROJECT_ROOT / "benchmarks" / "local"
+INDEXES_DIR = PROJECT_ROOT / "benchmarks" / "indexes"
+TOOLS_DIR = PROJECT_ROOT / "benchmarks" / "tools"
 
 
 def load_catalog():
@@ -224,6 +230,151 @@ def setup_benchmark_env(benchmark_name: str, config: dict, force: bool = False) 
     return True
 
 
+def get_index_path(benchmark_name: str, task_name: str) -> Path:
+    """获取索引文件路径"""
+    return INDEXES_DIR / benchmark_name / f"{task_name}.yaml"
+
+
+def expand_sample_ranges(samples: list[str]) -> list[str]:
+    """
+    展开范围语法，如 "1-10" -> ["1", "2", ..., "10"]
+
+    支持格式:
+    - "5"      -> ["5"]
+    - "1-10"   -> ["1", "2", ..., "10"]
+    - "sample-*"  -> 保持原样 (通配符)
+    """
+    result = []
+    for s in samples:
+        # 跳过通配符
+        if "*" in s or "?" in s:
+            result.append(s)
+            continue
+
+        # 尝试解析范围语法
+        match = re.match(r"^(\d+)-(\d+)$", s)
+        if match:
+            start, end = int(match.group(1)), int(match.group(2))
+            result.extend(str(i) for i in range(start, end + 1))
+        else:
+            result.append(s)
+    return result
+
+
+def load_index_file(index_path: Path) -> tuple[str, list[str]] | None:
+    """
+    加载索引文件
+
+    返回 (mode, sample_ids) 或 None (如果文件不存在)
+    mode: "include" 或 "exclude"
+    """
+    if not index_path.exists():
+        return None
+
+    with open(index_path, "r") as f:
+        data = yaml.safe_load(f)
+
+    if not data:
+        return None
+
+    mode = data.get("mode", "include")
+    samples = data.get("samples", [])
+
+    if not samples:
+        return None
+
+    # 展开范围
+    expanded = expand_sample_ranges(samples)
+    return mode, expanded
+
+
+def match_sample_id(sample_id: str, patterns: list[str]) -> bool:
+    """检查样本 ID 是否匹配任一模式"""
+    for pattern in patterns:
+        if "*" in pattern or "?" in pattern:
+            if fnmatch.fnmatch(sample_id, pattern):
+                return True
+        elif sample_id == pattern:
+            return True
+    return False
+
+
+def list_samples(benchmark_name: str, task_spec: str) -> list[str]:
+    """
+    调用辅助脚本获取样本 ID 列表
+
+    在 benchmark 的虚拟环境中运行 list_samples.py
+    """
+    python_path = get_venv_python(benchmark_name)
+    list_samples_script = TOOLS_DIR / "list_samples.py"
+
+    if not python_path.exists():
+        raise RuntimeError(f"虚拟环境不存在: {benchmark_name}，请先运行 --setup")
+
+    result = subprocess.run(
+        [str(python_path), str(list_samples_script), task_spec],
+        capture_output=True,
+        text=True,
+        cwd=str(PROJECT_ROOT),
+    )
+
+    if result.returncode != 0:
+        stderr = result.stderr.strip()
+        raise RuntimeError(f"获取样本列表失败: {stderr}")
+
+    try:
+        data = json.loads(result.stdout)
+        if "error" in data:
+            raise RuntimeError(data["error"])
+        return data["ids"]
+    except json.JSONDecodeError as e:
+        raise RuntimeError(f"解析样本列表失败: {e}")
+
+
+def generate_index_file(
+    benchmark_name: str,
+    task_name: str,
+    task_spec: str,
+    output_path: Path | None = None,
+) -> Path:
+    """
+    生成初始索引文件
+
+    包含所有样本 ID，默认 mode 为 include
+    """
+    sample_ids = list_samples(benchmark_name, task_spec)
+
+    if output_path is None:
+        output_path = get_index_path(benchmark_name, task_name)
+
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    header = f"""# {benchmark_name}:{task_name} 样本索引
+# 生成时间: {datetime.now().strftime("%Y-%m-%d")}
+# 总样本数: {len(sample_ids)}
+#
+# mode: include = 只跑列出的样本
+# mode: exclude = 跳过列出的样本
+#
+# 支持语法:
+#   - "5"       单个样本
+#   - "1-10"    范围 (展开为 1, 2, ..., 10)
+#   - "sample-*" 通配符
+
+"""
+
+    content = {
+        "mode": "include",
+        "samples": sample_ids,
+    }
+
+    with open(output_path, "w") as f:
+        f.write(header)
+        yaml.dump(content, f, default_flow_style=False, allow_unicode=True)
+
+    return output_path
+
+
 def resolve_task(benchmark_spec: str, catalog: dict) -> tuple[str, str, dict, dict]:
     """
     解析 benchmark 规格，返回 (benchmark_name, task_spec, config, task_config)
@@ -281,7 +432,8 @@ def resolve_task(benchmark_spec: str, catalog: dict) -> tuple[str, str, dict, di
 def run_eval(benchmark_name: str, task_spec: str, config: dict,
              model: str, limit: int = None, judge_model: str = None,
              extra_args: list = None, dry_run: bool = False,
-             task_config: dict = None) -> int:
+             task_config: dict = None,
+             no_index: bool = False, index_file: Path = None) -> int:
     """运行评估"""
 
     # 确保环境存在
@@ -322,14 +474,63 @@ def run_eval(benchmark_name: str, task_spec: str, config: dict,
     if effective_judge:
         effective_judge = normalize_model_name(effective_judge)
 
+    # 处理索引文件
+    sample_ids = None
+    index_mode = None
+    if not no_index:
+        # 确定索引文件路径
+        if index_file:
+            idx_path = index_file
+        else:
+            task_name = task_config.get("name") if task_config else None
+            if task_name:
+                idx_path = get_index_path(benchmark_name, task_name)
+            else:
+                idx_path = None
+
+        # 加载索引文件
+        if idx_path:
+            index_data = load_index_file(idx_path)
+            if index_data:
+                index_mode, sample_ids = index_data
+                print(f"Index file: {idx_path}")
+                print(f"Index mode: {index_mode}, {len(sample_ids)} samples")
+
     # 构建命令
     cmd = [str(inspect_path), "eval", task_spec, "--model", model_for_inspect]
+
+    # 添加样本 ID 过滤 (仅支持 include 模式)
+    if sample_ids and index_mode == "include":
+        # inspect_ai --sample-id 接受逗号分隔的 ID 列表
+        # 需要过滤掉通配符模式 (inspect_ai 不支持)
+        literal_ids = [sid for sid in sample_ids if "*" not in sid and "?" not in sid]
+        if literal_ids:
+            cmd.extend(["--sample-id", ",".join(literal_ids)])
+    elif sample_ids and index_mode == "exclude":
+        # exclude 模式需要先获取所有样本 ID，然后排除
+        print("警告: exclude 模式需要先获取完整样本列表，这可能较慢...")
+        try:
+            all_ids = list_samples(benchmark_name, task_spec)
+            included_ids = [
+                sid for sid in all_ids
+                if not match_sample_id(sid, sample_ids)
+            ]
+            if included_ids:
+                cmd.extend(["--sample-id", ",".join(included_ids)])
+                print(f"Exclude 后剩余样本数: {len(included_ids)}")
+        except Exception as e:
+            print(f"警告: 获取样本列表失败，跳过索引过滤: {e}")
 
     if limit:
         cmd.extend(["--limit", str(limit)])
 
     if effective_judge:
         cmd.extend(["--model-role", f"grader={effective_judge}"])
+        # 通过 -T 直接覆盖 task 函数的 judge model 参数
+        # (解决 task 硬编码默认值导致 --model-role 被忽略的问题)
+        judge_param = config.get("judge_param")
+        if judge_param:
+            cmd.extend(["-T", f"{judge_param}={effective_judge}"])
 
     # 添加 task_args (来自 catalog.yaml)
     if task_config:
@@ -422,6 +623,27 @@ def main():
         "--confirm",
         action="store_true",
         help="自动确认权限 (用于非交互式运行)"
+    )
+    # 索引相关参数
+    parser.add_argument(
+        "--no-index",
+        action="store_true",
+        help="禁用索引，跑全量样本"
+    )
+    parser.add_argument(
+        "--index-file",
+        type=Path,
+        help="指定索引文件路径"
+    )
+    parser.add_argument(
+        "--generate-index",
+        action="store_true",
+        help="生成初始索引文件（不运行评测）"
+    )
+    parser.add_argument(
+        "--list-samples",
+        action="store_true",
+        help="列出所有样本 ID（不运行评测）"
     )
     parser.add_argument(
         "extra_args",
@@ -532,6 +754,8 @@ def main():
                     extra_args=args.extra_args,
                     dry_run=args.dry_run,
                     task_config=task_config,
+                    no_index=args.no_index,
+                    index_file=args.index_file,
                 )
 
                 if returncode == 0:
@@ -572,6 +796,60 @@ def main():
         VENVS_DIR.mkdir(parents=True, exist_ok=True)
         return 0 if setup_benchmark_env(args.setup, benchmarks[args.setup], args.force) else 1
 
+    # 列出样本 ID
+    if args.list_samples:
+        if not args.benchmark:
+            print("错误: --list-samples 必须指定 benchmark")
+            return 1
+
+        benchmark_name, task_spec, config, task_config = resolve_task(args.benchmark, catalog)
+
+        # 确保环境存在
+        VENVS_DIR.mkdir(parents=True, exist_ok=True)
+        inspect_path = get_venv_inspect(benchmark_name)
+        if not inspect_path.exists():
+            print(f"设置 {benchmark_name} 环境...")
+            if not setup_benchmark_env(benchmark_name, config):
+                return 1
+
+        try:
+            sample_ids = list_samples(benchmark_name, task_spec)
+            print(f"Task: {args.benchmark}")
+            print(f"Total samples: {len(sample_ids)}")
+            print()
+            for sid in sample_ids:
+                print(sid)
+            return 0
+        except Exception as e:
+            print(f"错误: {e}")
+            return 1
+
+    # 生成索引文件
+    if args.generate_index:
+        if not args.benchmark:
+            print("错误: --generate-index 必须指定 benchmark")
+            return 1
+
+        benchmark_name, task_spec, config, task_config = resolve_task(args.benchmark, catalog)
+        task_name = task_config.get("name")
+
+        # 确保环境存在
+        VENVS_DIR.mkdir(parents=True, exist_ok=True)
+        inspect_path = get_venv_inspect(benchmark_name)
+        if not inspect_path.exists():
+            print(f"设置 {benchmark_name} 环境...")
+            if not setup_benchmark_env(benchmark_name, config):
+                return 1
+
+        try:
+            output_path = args.index_file or get_index_path(benchmark_name, task_name)
+            path = generate_index_file(benchmark_name, task_name, task_spec, output_path)
+            print(f"索引文件已生成: {path}")
+            return 0
+        except Exception as e:
+            print(f"错误: {e}")
+            return 1
+
     # 运行评估
     if not args.benchmark:
         parser.print_help()
@@ -596,6 +874,8 @@ def main():
         extra_args=args.extra_args,
         dry_run=args.dry_run,
         task_config=task_config,
+        no_index=args.no_index,
+        index_file=args.index_file,
     )
 
 

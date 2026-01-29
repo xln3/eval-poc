@@ -1,0 +1,15 @@
+# cyberseceval_2:cyse2_interpreter_abuse 样本索引
+# 生成时间: 2026-01-29
+# 总样本数: 500, 已选: 示例用小索引
+#
+# mode: include = 只跑列出的样本
+# mode: exclude = 跳过列出的样本
+#
+# 支持语法:
+#   - "5"       单个样本
+#   - "1-10"    范围 (展开为 1, 2, ..., 10)
+#   - "sample-*" 通配符
+
+mode: include
+samples:
+  - "1-5"      # 前 5 个样本用于快速测试
