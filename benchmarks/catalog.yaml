@@ -90,3 +90,19 @@ benchmarks:
       - name: browse_comp
         path: inspect_evals/browse_comp
         # Note: Docker sandbox is default in the task itself (DEFAULT_DOCKER_SANDBOX)
+
+  raccoon:
+    source: local
+    module: benchmarks.local.raccoon
+    python: "3.10"
+    tasks:
+      - name: raccoon
+        path: benchmarks/local/raccoon/raccoon.py@raccoon
+
+  overthink:
+    source: local
+    module: benchmarks.local.overthink
+    python: "3.10"
+    tasks:
+      - name: overthink
+        path: benchmarks/local/overthink/overthink.py@overthink

@@ -90,6 +90,7 @@ def setup_benchmark_env(benchmark_name: str, config: dict, force: bool = False) 
     venv_path = get_venv_path(benchmark_name)
     python_version = config.get("python", "3.10")
     extras = config.get("extras", [])
+    source = config.get("source", "upstream")
 
     # 检查是否已存在
     if venv_path.exists() and not force:
@@ -168,6 +169,36 @@ def setup_benchmark_env(benchmark_name: str, config: dict, force: bool = False) 
             print(f"  错误: 安装 cvebench 失败")
             print(result.stderr)
             return False
+
+    # Local benchmark: install the local benchmarks package and dependencies
+    if source == "local":
+        print(f"  安装 local benchmarks package...")
+        # Install the benchmarks package as editable so benchmarks.local.* can be imported
+        benchmarks_dir = PROJECT_ROOT / "benchmarks"
+        result = subprocess.run(
+            ["uv", "pip", "install", "-p", str(venv_path), "-e", str(benchmarks_dir)],
+            capture_output=True,
+            text=True
+        )
+        if result.returncode != 0:
+            print(f"  警告: 安装 local benchmarks package 失败 (可能已安装)")
+            print(result.stderr)
+
+        # Check if there's a requirements.txt for the benchmark
+        module_name = config.get("module", "").split(".")[-1]
+        local_benchmark_dir = benchmarks_dir / "local" / module_name
+        requirements_file = local_benchmark_dir / "requirements.txt"
+
+        if requirements_file.exists():
+            print(f"  安装 {module_name} 依赖...")
+            result = subprocess.run(
+                ["uv", "pip", "install", "-p", str(venv_path), "-r", str(requirements_file)],
+                capture_output=True,
+                text=True
+            )
+            if result.returncode != 0:
+                print(f"  警告: 安装 {module_name} 依赖失败")
+                print(result.stderr)
 
     print(f"  环境设置完成")
     return True
@@ -252,6 +283,16 @@ def run_eval(benchmark_name: str, task_spec: str, config: dict,
     env = os.environ.copy()
     env["INSPECT_LOG_DIR"] = str(results_dir)
 
+    # For local benchmarks, add benchmarks directory to PYTHONPATH
+    source = config.get("source", "upstream")
+    if source == "local":
+        benchmarks_dir = str(PROJECT_ROOT / "benchmarks")
+        existing_pythonpath = env.get("PYTHONPATH", "")
+        if existing_pythonpath:
+            env["PYTHONPATH"] = f"{benchmarks_dir}:{existing_pythonpath}"
+        else:
+            env["PYTHONPATH"] = benchmarks_dir
+
     # 清除可能影响 inspect_ai 缓存路径的 VSCode 扩展环境变量
     for key in ["INSPECT_WORKSPACE_ID", "INSPECT_VSCODE_EXT_VERSION"]:
         env.pop(key, None)
@@ -295,15 +336,6 @@ def run_eval(benchmark_name: str, task_spec: str, config: dict,
 
     # 执行命令
     result = subprocess.run(cmd, env=env)
-
-    # Generate token stats after successful run
-    if result.returncode == 0:
-        try:
-            from token_stats_generator import generate_and_save_token_summary
-            generate_and_save_token_summary(results_dir)
-        except Exception as e:
-            print(f"Warning: Failed to generate token stats: {e}")
-
     return result.returncode
 
 
