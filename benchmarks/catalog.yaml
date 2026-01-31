@@ -6,81 +6,89 @@
 #   - 指定 task: upstream/inspect_evals/src/inspect_evals/<path>@<task_name>
 
 benchmarks:
-  strong_reject:
-    source: upstream
-    module: inspect_evals/strong_reject
-    python: "3.10"
-    tasks:
-      - name: strong_reject
-        path: inspect_evals/strong_reject
+  # strong_reject:
+  #   source: upstream
+  #   module: inspect_evals/strong_reject
+  #   python: "3.10"
+  #   tasks:
+  #     - name: strong_reject
+  #       path: inspect_evals/strong_reject
 
-  xstest:
-    source: upstream
-    module: inspect_evals/xstest
-    python: "3.10"
-    tasks:
-      - name: xstest
-        path: inspect_evals/xstest
+  # xstest:
+  #   source: upstream
+  #   module: inspect_evals/xstest
+  #   python: "3.10"
+  #   tasks:
+  #     - name: xstest
+  #       path: inspect_evals/xstest
 
   cyberseceval_2:
     source: upstream
     module: inspect_evals/cyberseceval_2
     python: "3.10"
     judge_model: zai-glm-4.7
+    judge_param: judge_llm
     tasks:
       - name: cyse2_interpreter_abuse
         path: upstream/inspect_evals/src/inspect_evals/cyberseceval_2/interpreter_abuse/task.py@cyse2_interpreter_abuse
+        task_args:
+          epochs: 1
       - name: cyse2_prompt_injection
         path: upstream/inspect_evals/src/inspect_evals/cyberseceval_2/prompt_injection/task.py@cyse2_prompt_injection
-      - name: cyse2_vulnerability_exploit
-        path: upstream/inspect_evals/src/inspect_evals/cyberseceval_2/vulnerability_exploit/task.py@cyse2_vulnerability_exploit
-
-  bbq:
-    source: upstream
-    module: inspect_evals/bbq
-    python: "3.10"
-    tasks:
-      - name: bbq
-        path: inspect_evals/bbq
-
-  cve_bench:
-    source: upstream
-    module: inspect_evals/cve_bench
-    python: "3.12"
-    extras: [cve_bench]
-    tasks:
-      - name: cve_bench
-        path: inspect_evals/cve_bench
-        # Docker 模式支持全部 40 个 CVE
         task_args:
-          sandbox_type: docker
+          epochs: 1
+      # - name: cyse2_vulnerability_exploit
+      #   path: upstream/inspect_evals/src/inspect_evals/cyberseceval_2/vulnerability_exploit/task.py@cyse2_vulnerability_exploit
+      #   task_args:
+      #     epochs: 1
+      #     num_test_case: 10
 
-  agentdojo:
-    source: upstream
-    module: inspect_evals/agentdojo
-    python: "3.10"
-    extras: [agentdojo]
-    tasks:
-      - name: agentdojo
-        path: inspect_evals/agentdojo
+  # bbq:
+  #   source: upstream
+  #   module: inspect_evals/bbq
+  #   python: "3.10"
+  #   tasks:
+  #     - name: bbq
+  #       path: inspect_evals/bbq
 
-  agentharm:
-    source: upstream
-    module: inspect_evals/agentharm
-    python: "3.10"
-    tasks:
-      - name: agentharm
-        path: inspect_evals/agentharm
-      - name: agentharm_benign
-        path: upstream/inspect_evals/src/inspect_evals/agentharm/agentharm.py@agentharm_benign
+  # cve_bench:
+  #   source: upstream
+  #   module: inspect_evals/cve_bench
+  #   python: "3.12"
+  #   extras: [cve_bench]
+  #   tasks:
+  #     - name: cve_bench
+  #       path: inspect_evals/cve_bench
+  #       # Docker 模式支持全部 40 个 CVE
+  #       task_args:
+  #         sandbox_type: docker
 
-  truthfulqa:
-    source: upstream
-    module: inspect_evals/truthfulqa
-    python: "3.10"
-    tasks:
-      - name: truthfulqa
-        path: inspect_evals/truthfulqa
+  # agentdojo:
+  #   source: upstream
+  #   module: inspect_evals/agentdojo
+  #   python: "3.10"
+  #   extras: [agentdojo]
+  #   tasks:
+  #     - name: agentdojo
+  #       path: inspect_evals/agentdojo
+
+  # agentharm:
+  #   source: upstream
+  #   module: inspect_evals/agentharm
+  #   python: "3.10"
+  #   tasks:
+  #     - name: agentharm
+  #       path: inspect_evals/agentharm
+  #     - name: agentharm_benign
+  #       path: upstream/inspect_evals/src/inspect_evals/agentharm/agentharm.py@agentharm_benign
+
+  # truthfulqa:
+  #   source: upstream
+  #   module: inspect_evals/truthfulqa
+  #   python: "3.10"
+  #   tasks:
+  #     - name: truthfulqa
+  #       path: inspect_evals/truthfulqa
 
   browse_comp:
     source: upstream
@@ -106,15 +114,17 @@ benchmarks:
     tasks:
       - name: overthink
         path: benchmarks/local/overthink/overthink.py@overthink
-  privacylens:
-    source: local
-    module: benchmarks/local/pending_bench/privacylens
-    python: "3.10"
-    judge_model: zai-glm-4.7
-    tasks:
-      - name: privacylens_probing
-        path: benchmarks/local/pending_bench/privacylens/src/privacylens/task.py@privacylens_probing
-        task_args:
-          level: seed
-      - name: privacylens_action
-        path: benchmarks/local/pending_bench/privacylens/src/privacylens/task.py@privacylens_action
+
+  # privacylens:
+  #   source: local
+  #   module: benchmarks/local/pending_bench/privacylens
+  #   python: "3.10"
+  #   judge_model: zai-glm-4.7
+  #   judge_param: judge_model
+  #   tasks:
+  #     - name: privacylens_probing
+  #       path: benchmarks/local/pending_bench/privacylens/src/privacylens/task.py@privacylens_probing
+  #       task_args:
+  #         level: seed
+  #     - name: privacylens_action
+  #       path: benchmarks/local/pending_bench/privacylens/src/privacylens/task.py@privacylens_action
