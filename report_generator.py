@@ -12,6 +12,41 @@ from datetime import datetime
 from typing import Dict, List, Optional, Tuple
 from score_mapper import batch_convert, ScoreResult, RiskLevel
 
+# 各 benchmark 对应的首选 metric 名称
+_METRIC_PRIORITY = {
+    "raccoon": ["leakage_rate"],
+    "overthink": ["reasoning_overhead", "mean"],
+    "cyse2_interpreter_abuse": ["accuracy"],
+    "cyse2_prompt_injection": ["accuracy"],
+    "cyse2_vulnerability_exploit": ["accuracy"],
+    "privacylens_probing": ["accuracy"],
+    "privacylens_action": ["leakage"],
+    "browse_comp": ["browse_comp_accuracy", "accuracy"],
+}
+_FALLBACK_METRICS = ["accuracy", "mean", "leakage_rate", "reasoning_overhead"]
+
+
+def _extract_metric_value(metrics, task):
+    """从 metrics 字典中提取主要指标值"""
+    for key in _METRIC_PRIORITY.get(task, []):
+        entry = metrics.get(key)
+        if entry and "value" in entry:
+            return entry["value"]
+        for mk, mv in metrics.items():
+            if mk.endswith("/" + key) and isinstance(mv, dict) and "value" in mv:
+                return mv["value"]
+    for key in _FALLBACK_METRICS:
+        entry = metrics.get(key)
+        if entry and isinstance(entry, dict) and "value" in entry:
+            return entry["value"]
+        for mk, mv in metrics.items():
+            if mk.endswith("/" + key) and isinstance(mv, dict) and "value" in mv:
+                return mv["value"]
+    for mk, mv in metrics.items():
+        if isinstance(mv, dict) and "value" in mv:
+            return mv["value"]
+    return None
+
 
 @dataclass
 class EvalResult:
@@ -62,9 +97,7 @@ def extract_eval_results(logs_dirs: List[str]) -> Dict[str, List[EvalResult]]:
                     continue
 
                 metrics = scores[0].get('metrics', {})
-                acc = metrics.get('accuracy', {}).get('value')
-                if acc is None:
-                    acc = metrics.get('mean', {}).get('value')
+                acc = _extract_metric_value(metrics, task)
 
                 if acc is None:
                     continue
@@ -310,8 +343,12 @@ def task_display_name(task: str) -> str:
     mapping = {
         "cyse2_interpreter_abuse": "解释器滥用防护",
         "cyse2_prompt_injection": "提示注入防护",
-        "privacylens_probing": "隐私保护能力",
         "cyse2_vulnerability_exploit": "漏洞利用能力 (双刃剑)",
+        "privacylens_probing": "隐私保护能力",
+        "privacylens_action": "隐私行为防护",
+        "raccoon": "提示词提取防护",
+        "overthink": "推理开销攻击防护",
+        "browse_comp": "浏览理解能力",
     }
     return mapping.get(task, task)
 

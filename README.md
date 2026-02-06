@@ -60,6 +60,45 @@ cp .env.example .env
 | `--index-file PATH` | 指定索引文件路径 |
 | `--generate-index` | 生成初始索引文件（不运行评测） |
 | `--list-samples` | 列出所有样本 ID（不运行评测） |
+| `--api-base URL` | 模型/智能体的 API Base URL（覆盖 .env） |
+| `--api-key KEY` | 模型/智能体的 API Key（覆盖 .env） |
+
+## 评测自定义智能体
+
+平台支持评测暴露 OpenAI 兼容 API 的自定义智能体（带 system prompt、RAG、工具调用等）。
+
+### 快速开始
+
+以内置的 Mock 银行客服智能体为例：
+
+```bash
+# 1. 启动 mock 智能体
+cd examples/mock-bank-agent
+pip install -r requirements.txt
+export BACKING_MODEL_URL=https://api.openai.com/v1
+export BACKING_MODEL_NAME=gpt-4o-mini
+export BACKING_API_KEY=sk-xxx
+python server.py --port 9000
+
+# 2. CLI 直接评测
+./run-eval.py raccoon --model openai/mock-bank-agent \
+  --api-base http://localhost:9000/v1 --api-key test --limit 3
+```
+
+### 通过 Web 界面评测
+
+1. 打开 **模型与智能体** 页面 → 点击 **添加智能体**
+2. 填写：智能体名称、模型标识符（`openai/<agent-name>`）、智能体端点、API Key
+3. 进入 **新建评测** → 选择该智能体 → 选择 benchmark → 开始评测
+
+### 接入自己的智能体
+
+只要你的智能体暴露以下两个 OpenAI 兼容端点即可接入评测：
+
+- `POST /v1/chat/completions` — 聊天补全
+- `GET /v1/models` — 模型列表（inspect_ai 启动时调用）
+
+参考实现见 `examples/mock-bank-agent/`。
 
 ## 样本索引
 
@@ -284,6 +323,52 @@ LLM 筛选有价值样本
 - 环境变量设置命令
 - 依赖安装命令
 
+## Web 评测平台
+
+除了 CLI 工具外，项目还提供 Web 界面，方便非技术用户使用。
+
+### 启动
+
+```bash
+# 后端 (FastAPI)
+cd src/eval-core && uvicorn app.main:app --reload --port 8000
+
+# 前端 (Vite + React)
+cd src/frontend && npm install && npm run dev
+# 访问 http://localhost:5174
+```
+
+### 功能
+
+| 页面 | 路径 | 说明 |
+|------|------|------|
+| 控制面板 | `/` | 统计卡片、快捷操作、最近评测 |
+| 新建评测 | `/evaluations/new` | 三步向导：选模型 → 选任务 → 配置参数 |
+| 评测进度 | `/evaluations/:id` | 实时进度条，自动轮询刷新 |
+| 评测结果 | `/results` | 模型安全评分卡片列表 |
+| 结果详情 | `/results/:model` | 仪表盘 + 雷达图 + 分项分数 + 报告生成 |
+| 模型管理 | `/models` | 预置 + 自定义模型配置 |
+
+### 技术栈
+
+- **后端**: FastAPI + Python，异步子进程运行 `run-eval.py`
+- **前端**: React 18 + Vite 6 + Tailwind CSS v4 + recharts
+- **主题**: 暗色专业主题 (slate-900)
+- **代理**: Vite dev server 将 `/api` 代理到 `localhost:8000`
+
+### API 端点
+
+```
+GET  /api/benchmarks          # 评测任务列表
+GET  /api/models              # 模型列表
+POST /api/models              # 添加自定义模型
+POST /api/evaluations         # 启动评测
+GET  /api/evaluations/{id}    # 查看进度
+GET  /api/results             # 结果汇总
+GET  /api/results/{model}     # 模型详情
+POST /api/reports/generate    # 生成报告
+```
+
 ## 评分映射 (Score Mapper)
 
 `score_mapper.py` 提供统一的安全评分框架，将不同 benchmark 的原始分数映射到统一标准。
@@ -365,9 +450,25 @@ class MyBenchmarkMapper(ScoreMapper):
 ## 项目结构
 
 ```
-├── run-eval.py            # 统一测评入口
+├── run-eval.py            # 统一测评入口 (CLI)
 ├── score_mapper.py        # 评分映射框架
 ├── report_generator.py    # 报告生成器
+├── examples/
+│   └── mock-bank-agent/   # 示例：银行客服智能体 (OpenAI 兼容)
+├── src/
+│   ├── eval-core/         # FastAPI 后端 API
+│   │   ├── app/
+│   │   │   ├── main.py        # 入口
+│   │   │   ├── routers/       # API 路由
+│   │   │   └── services/      # 业务逻辑
+│   │   └── data/              # 运行时数据
+│   └── frontend/          # React 前端
+│       ├── src/
+│       │   ├── pages/         # 页面组件
+│       │   ├── components/    # UI 组件
+│       │   ├── api/           # API 客户端
+│       │   └── hooks/         # React Hooks
+│       └── vite.config.js     # Vite 配置 + API 代理
 ├── benchmarks/
 │   ├── catalog.yaml       # Benchmark 路由配置
 │   ├── preflight.py       # 预检查模块

@@ -44,6 +44,11 @@ logs/
 results/
 eval_to_demo/evaldumps/
 
+# Frontend
+node_modules/
+dist/
+*.local
+
 # Cloned upstream repos (not submodules)
 upstream/cve-bench/
 
@@ -51,10 +56,17 @@ upstream/cve-bench/
 .claude/
 **/.claude/
 
+# Backend runtime data
+src/eval-core/data/models.json
+reports/
+
 # Temp files
 needtodo.md
-$(pwd)/
+TASK.md
+image.png
 
 # Safety lookahead experiment files (kept locally but not tracked)
 run-eval-salt.py
 token_stats_*.py
+
+third_party/

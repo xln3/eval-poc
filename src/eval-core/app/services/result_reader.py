@@ -1,0 +1,169 @@
+"""读取 .eval 结果文件"""
+
+import os
+import json
+import subprocess
+from dataclasses import dataclass
+from typing import Dict, List, Optional
+from ..config import RESULTS_DIR
+
+
+@dataclass
+class EvalFileResult:
+    """单个 .eval 文件的结果"""
+    task: str
+    model: str
+    raw_accuracy: float
+    samples: int
+    timestamp: str
+    file_path: str
+
+
+def scan_results() -> Dict[str, List[EvalFileResult]]:
+    """扫描 results/ 目录，返回按模型分组的结果"""
+    results_by_model: Dict[str, List[EvalFileResult]] = {}
+
+    if not RESULTS_DIR.exists():
+        return results_by_model
+
+    # 遍历 results/<model>/<benchmark>/logs/*.eval
+    for model_dir in RESULTS_DIR.iterdir():
+        if not model_dir.is_dir():
+            continue
+
+        for bench_dir in model_dir.iterdir():
+            if not bench_dir.is_dir():
+                continue
+
+            logs_dir = bench_dir / "logs"
+            if not logs_dir.exists():
+                continue
+
+            for eval_file in logs_dir.glob("*.eval"):
+                result = _parse_eval_file(str(eval_file))
+                if result is None:
+                    continue
+
+                model = result.model
+                if model not in results_by_model:
+                    results_by_model[model] = []
+
+                # 去重: 保留样本数最多的
+                existing = next(
+                    (r for r in results_by_model[model] if r.task == result.task),
+                    None,
+                )
+                if existing:
+                    if result.samples > existing.samples:
+                        results_by_model[model].remove(existing)
+                        results_by_model[model].append(result)
+                else:
+                    results_by_model[model].append(result)
+
+    return results_by_model
+
+
+def get_model_results(model_name: str) -> List[EvalFileResult]:
+    """获取指定模型的所有结果"""
+    all_results = scan_results()
+    # 模糊匹配模型名
+    for model, results in all_results.items():
+        if model == model_name or model_name in model or model in model_name:
+            return results
+    return []
+
+
+# 各 benchmark 对应的首选 metric 名称
+# 按优先级排列，取第一个匹配的
+_METRIC_PRIORITY = {
+    "raccoon": ["leakage_rate"],
+    "overthink": ["reasoning_overhead", "mean"],
+    "cyse2_interpreter_abuse": ["accuracy"],
+    "cyse2_prompt_injection": ["accuracy"],
+    "cyse2_vulnerability_exploit": ["accuracy"],
+    "privacylens_probing": ["accuracy"],
+    "privacylens_action": ["leakage"],
+    "browse_comp": ["browse_comp_accuracy", "accuracy"],
+    "personalized_safety": ["normalized_avg_score"],
+    "personalized_safety_context_free": ["normalized_avg_score"],
+    "personalized_safety_context_rich": ["normalized_avg_score"],
+}
+
+# 通用 fallback 顺序
+_FALLBACK_METRICS = ["accuracy", "mean", "leakage_rate", "reasoning_overhead"]
+
+
+def _extract_metric_value(metrics: dict, task: str) -> Optional[float]:
+    """从 metrics 字典中提取主要指标值"""
+    # 1. 按 task 特定优先级查找
+    priority = _METRIC_PRIORITY.get(task, [])
+    for key in priority:
+        entry = metrics.get(key)
+        if entry and "value" in entry:
+            return entry["value"]
+        # 尝试带 namespace 前缀的 key (eval_benchmarks/xxx)
+        for mk, mv in metrics.items():
+            if mk.endswith("/" + key) and isinstance(mv, dict) and "value" in mv:
+                return mv["value"]
+
+    # 2. 通用 fallback
+    for key in _FALLBACK_METRICS:
+        entry = metrics.get(key)
+        if entry and isinstance(entry, dict) and "value" in entry:
+            return entry["value"]
+        for mk, mv in metrics.items():
+            if mk.endswith("/" + key) and isinstance(mv, dict) and "value" in mv:
+                return mv["value"]
+
+    # 3. 最后兜底：取第一个 metric 的 value
+    for mk, mv in metrics.items():
+        if isinstance(mv, dict) and "value" in mv:
+            return mv["value"]
+
+    return None
+
+
+def _parse_eval_file(path: str) -> Optional[EvalFileResult]:
+    """解析 .eval 文件（zip 格式，包含 header.json）"""
+    try:
+        proc = subprocess.run(
+            ["unzip", "-p", path, "header.json"],
+            capture_output=True,
+            text=True,
+        )
+        if proc.returncode != 0:
+            return None
+
+        data = json.loads(proc.stdout)
+        if data.get("status") != "success":
+            return None
+
+        model = data["eval"]["model"].split("/")[-1]
+        if "mockllm" in model.lower():
+            return None
+
+        task = data["eval"]["task"].split("/")[-1]
+        results = data.get("results", {})
+        scores = results.get("scores", [])
+
+        if not scores:
+            return None
+
+        metrics = scores[0].get("metrics", {})
+        acc = _extract_metric_value(metrics, task)
+        if acc is None:
+            return None
+
+        samples = results.get("completed_samples", 0)
+        timestamp = data["eval"].get("created", "")
+
+        return EvalFileResult(
+            task=task,
+            model=model,
+            raw_accuracy=acc,
+            samples=samples,
+            timestamp=timestamp,
+            file_path=os.path.basename(path),
+        )
+    except Exception:
+        return None

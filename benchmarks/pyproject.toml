@@ -12,9 +12,12 @@ dependencies = [
     "rouge-score",
 ]
 
+[project.entry-points.inspect_ai]
+eval_benchmarks = "eval_benchmarks._registry"
+
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["*"]
+include = ["eval_benchmarks*"]
 
 [tool.setuptools.package-data]
 "*" = ["*.yaml", "*.jsonl", "*.json"]

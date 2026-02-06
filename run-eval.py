@@ -46,7 +46,7 @@ from preflight import (
 PROJECT_ROOT = Path(__file__).parent.resolve()
 VENVS_DIR = PROJECT_ROOT / ".venvs"
 UPSTREAM_DIR = PROJECT_ROOT / "upstream"
-LOCAL_BENCH_DIR = PROJECT_ROOT / "benchmarks" / "local"
+LOCAL_BENCH_DIR = PROJECT_ROOT / "benchmarks" / "eval_benchmarks"
 INDEXES_DIR = PROJECT_ROOT / "benchmarks" / "indexes"
 TOOLS_DIR = PROJECT_ROOT / "benchmarks" / "tools"
 
@@ -132,42 +132,60 @@ def setup_benchmark_env(benchmark_name: str, config: dict, force: bool = False) 
         print(result.stderr)
         return False
 
-    # 根据 source 类型安装不同的包
-    if source == "local":
-        # Local benchmark: 安装本地模块
-        module_path = config.get("module", "")
-        local_pkg_path = PROJECT_ROOT / module_path
-        if local_pkg_path.exists():
-            print(f"  安装本地模块: {module_path}...")
-            result = subprocess.run(
-                ["uv", "pip", "install", "-p", str(venv_path), "-e", str(local_pkg_path)],
-                capture_output=True,
-                text=True
-            )
-            if result.returncode != 0:
-                print(f"  错误: 安装本地模块失败")
-                print(result.stderr)
-                return False
-        else:
-            print(f"  警告: 本地模块路径不存在: {local_pkg_path}")
-    else:
-        # Upstream benchmark: 安装 inspect_evals
-        install_spec = str(UPSTREAM_DIR / "inspect_evals")
-        if extras:
-            extras_str = ",".join(extras)
-            install_spec = f"{install_spec}[{extras_str}]"
+    # 检查 upstream/inspect_evals 子模块是否已初始化
+    inspect_evals_dir = UPSTREAM_DIR / "inspect_evals"
+    if not (inspect_evals_dir / "pyproject.toml").exists():
+        print(f"  错误: upstream/inspect_evals 未初始化。请运行:")
+        print(f"    git submodule update --init --recursive")
+        return False
 
-        extras_display = f"[{','.join(extras)}]" if extras else ""
-        print(f"  安装 inspect_evals{extras_display}...")
+    # 始终安装 inspect_evals（所有 benchmark 都需要）
+    install_spec = str(inspect_evals_dir)
+    if extras:
+        extras_str = ",".join(extras)
+        install_spec = f"{install_spec}[{extras_str}]"
+
+    extras_display = f"[{','.join(extras)}]" if extras else ""
+    print(f"  安装 inspect_evals{extras_display}...")
+    result = subprocess.run(
+        ["uv", "pip", "install", "-p", str(venv_path), "-e", install_spec],
+        capture_output=True,
+        text=True
+    )
+    if result.returncode != 0:
+        print(f"  错误: 安装 inspect_evals 失败")
+        print(result.stderr)
+        return False
+
+    # Local benchmark: 额外安装 eval_benchmarks 包
+    if source == "local":
+        print(f"  安装 eval_benchmarks package...")
+        benchmarks_dir = PROJECT_ROOT / "benchmarks"
         result = subprocess.run(
-            ["uv", "pip", "install", "-p", str(venv_path), "-e", install_spec],
+            ["uv", "pip", "install", "-p", str(venv_path), "-e", str(benchmarks_dir)],
             capture_output=True,
             text=True
         )
         if result.returncode != 0:
-            print(f"  错误: 安装 inspect_evals 失败")
+            print(f"  错误: 安装 eval_benchmarks package 失败")
             print(result.stderr)
             return False
+
+        # 安装 benchmark 特有依赖 (requirements.txt)
+        module_name = config.get("module", "").split("/")[-1]
+        local_benchmark_dir = LOCAL_BENCH_DIR / module_name
+        requirements_file = local_benchmark_dir / "requirements.txt"
+
+        if requirements_file.exists():
+            print(f"  安装 {module_name} 依赖...")
+            result = subprocess.run(
+                ["uv", "pip", "install", "-p", str(venv_path), "-r", str(requirements_file)],
+                capture_output=True,
+                text=True
+            )
+            if result.returncode != 0:
+                print(f"  警告: 安装 {module_name} 依赖失败")
+                print(result.stderr)
 
     # 安装 openai (必需)
     print(f"  安装 openai...")
@@ -195,36 +213,6 @@ def setup_benchmark_env(benchmark_name: str, config: dict, force: bool = False) 
             print(f"  错误: 安装 cvebench 失败")
             print(result.stderr)
             return False
-
-    # Local benchmark: install the local benchmarks package and dependencies
-    if source == "local":
-        print(f"  安装 local benchmarks package...")
-        # Install the benchmarks package as editable so benchmarks.local.* can be imported
-        benchmarks_dir = PROJECT_ROOT / "benchmarks"
-        result = subprocess.run(
-            ["uv", "pip", "install", "-p", str(venv_path), "-e", str(benchmarks_dir)],
-            capture_output=True,
-            text=True
-        )
-        if result.returncode != 0:
-            print(f"  警告: 安装 local benchmarks package 失败 (可能已安装)")
-            print(result.stderr)
-
-        # Check if there's a requirements.txt for the benchmark
-        module_name = config.get("module", "").split(".")[-1]
-        local_benchmark_dir = benchmarks_dir / "local" / module_name
-        requirements_file = local_benchmark_dir / "requirements.txt"
-
-        if requirements_file.exists():
-            print(f"  安装 {module_name} 依赖...")
-            result = subprocess.run(
-                ["uv", "pip", "install", "-p", str(venv_path), "-r", str(requirements_file)],
-                capture_output=True,
-                text=True
-            )
-            if result.returncode != 0:
-                print(f"  警告: 安装 {module_name} 依赖失败")
-                print(result.stderr)
 
     print(f"  环境设置完成")
     return True
@@ -445,7 +433,8 @@ def run_eval(benchmark_name: str, task_spec: str, config: dict,
              model: str, limit: int = None, judge_model: str = None,
              extra_args: list = None, dry_run: bool = False,
              task_config: dict = None,
-             no_index: bool = False, index_file: Path = None) -> int:
+             no_index: bool = False, index_file: Path = None,
+             api_base: str = None, api_key: str = None) -> int:
     """运行评估"""
 
     # 确保环境存在
@@ -466,16 +455,6 @@ def run_eval(benchmark_name: str, task_spec: str, config: dict,
     # 设置环境变量
     env = os.environ.copy()
     env["INSPECT_LOG_DIR"] = str(results_dir)
-
-    # For local benchmarks, add benchmarks directory to PYTHONPATH
-    source = config.get("source", "upstream")
-    if source == "local":
-        benchmarks_dir = str(PROJECT_ROOT / "benchmarks")
-        existing_pythonpath = env.get("PYTHONPATH", "")
-        if existing_pythonpath:
-            env["PYTHONPATH"] = f"{benchmarks_dir}:{existing_pythonpath}"
-        else:
-            env["PYTHONPATH"] = benchmarks_dir
 
     # 清除可能影响 inspect_ai 缓存路径的 VSCode 扩展环境变量
     for key in ["INSPECT_WORKSPACE_ID", "INSPECT_VSCODE_EXT_VERSION"]:
@@ -508,16 +487,31 @@ def run_eval(benchmark_name: str, task_spec: str, config: dict,
                 print(f"Index file: {idx_path}")
                 print(f"Index mode: {index_mode}, {len(sample_ids)} samples")
 
+    # 如果显式传了 api_key，覆盖子进程环境变量
+    if api_key:
+        env["OPENAI_API_KEY"] = api_key
+
     # 构建命令
     cmd = [str(inspect_path), "eval", task_spec, "--model", model_for_inspect]
 
+    # 显式传递 model base URL（优先级高于 .env 中的 OPENAI_BASE_URL）
+    if api_base:
+        cmd.extend(["--model-base-url", api_base])
+
     # 添加样本 ID 过滤 (仅支持 include 模式)
+    # 注意: inspect_ai 不允许同时指定 --sample-id 和 --limit
+    has_sample_ids = False
     if sample_ids and index_mode == "include":
         # inspect_ai --sample-id 接受逗号分隔的 ID 列表
         # 需要过滤掉通配符模式 (inspect_ai 不支持)
         literal_ids = [sid for sid in sample_ids if "*" not in sid and "?" not in sid]
         if literal_ids:
+            # 如果同时指定了 limit，截取前 N 个 sample_id 而非传 --limit
+            if limit and len(literal_ids) > limit:
+                literal_ids = literal_ids[:limit]
+                print(f"Index + limit: 从 {len(sample_ids)} 个样本中取前 {limit} 个")
             cmd.extend(["--sample-id", ",".join(literal_ids)])
+            has_sample_ids = True
     elif sample_ids and index_mode == "exclude":
         # exclude 模式需要先获取所有样本 ID，然后排除
         print("警告: exclude 模式需要先获取完整样本列表，这可能较慢...")
@@ -528,12 +522,16 @@ def run_eval(benchmark_name: str, task_spec: str, config: dict,
                 if not match_sample_id(sid, sample_ids)
             ]
             if included_ids:
+                if limit and len(included_ids) > limit:
+                    included_ids = included_ids[:limit]
+                    print(f"Exclude + limit: 取前 {limit} 个样本")
                 cmd.extend(["--sample-id", ",".join(included_ids)])
+                has_sample_ids = True
                 print(f"Exclude 后剩余样本数: {len(included_ids)}")
         except Exception as e:
             print(f"警告: 获取样本列表失败，跳过索引过滤: {e}")
 
-    if limit:
+    if limit and not has_sample_ids:
         cmd.extend(["--limit", str(limit)])
 
     if effective_judge:
@@ -658,6 +656,14 @@ def main():
         help="列出所有样本 ID（不运行评测）"
     )
     parser.add_argument(
+        "--api-base",
+        help="模型 API 的 Base URL（覆盖 .env 中的 OPENAI_BASE_URL）"
+    )
+    parser.add_argument(
+        "--api-key",
+        help="模型 API Key（覆盖 .env 中的 OPENAI_API_KEY）"
+    )
+    parser.add_argument(
         "extra_args",
         nargs="*",
         help="传递给 inspect eval 的额外参数"
@@ -768,6 +774,8 @@ def main():
                     task_config=task_config,
                     no_index=args.no_index,
                     index_file=args.index_file,
+                    api_base=args.api_base,
+                    api_key=args.api_key,
                 )
 
                 if returncode == 0:
@@ -888,6 +896,8 @@ def main():
         task_config=task_config,
         no_index=args.no_index,
         index_file=args.index_file,
+        api_base=args.api_base,
+        api_key=args.api_key,
     )
 
 

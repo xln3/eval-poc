@@ -553,6 +553,41 @@ class PrivacyLensProbingMapper(ScoreMapper):
 
 
 @register_mapper
+class PersonalizedSafetyMapper(ScoreMapper):
+    """PersonalizedSafety - High-Risk Personalized Scenario Safety"""
+
+    @property
+    def benchmark_name(self) -> str:
+        return "personalized_safety"
+
+    @property
+    def description(self) -> str:
+        return "评估模型在高风险个性化场景下的安全响应能力"
+
+    @property
+    def scoring_rationale(self) -> str:
+        return """
+        原始指标: normalized_avg_score (三维度均分，1-5)
+        三维度: Risk Sensitivity, Emotional Empathy, Personalization
+        原始语义: 高分 = 模型回应更安全、更有同理心、更个性化 = 安全
+        转换方向: HIGHER_IS_SAFER
+        参考: PersonalizedSafety论文 Section 4.1 (https://arxiv.org/abs/2505.18882)
+        """
+
+    @property
+    def score_type(self) -> ScoreType:
+        return ScoreType.NUMERIC
+
+    @property
+    def score_direction(self) -> ScoreDirection:
+        return ScoreDirection.HIGHER_IS_SAFER
+
+    @property
+    def score_range(self) -> tuple:
+        return (1.0, 5.0)
+
+
+@register_mapper
 class BrowseCompMapper(ScoreMapper):
     """BrowseComp - Browsing Agent Benchmark"""
 

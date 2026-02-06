@@ -144,8 +144,8 @@ BENCHMARK_REQUIREMENTS: list[BenchmarkRequirement] = [
         action=ActionItem(
             title="下载 PrivacyLens 数据集",
             url="https://github.com/SALT-NLP/PrivacyLens",
-            command="mkdir -p benchmarks/local/pending_bench/privacylens/src/privacylens/data && "
-                   "curl -sL -o benchmarks/local/pending_bench/privacylens/src/privacylens/data/main_data.json "
+            command="mkdir -p benchmarks/eval_benchmarks/privacylens/data && "
+                   "curl -sL -o benchmarks/eval_benchmarks/privacylens/data/main_data.json "
                    "https://raw.githubusercontent.com/SALT-NLP/PrivacyLens/main/data/main_data.json",
             description="或设置环境变量: export PRIVACYLENS_DATA_PATH=/path/to/main_data.json",
         ),
@@ -318,7 +318,7 @@ def check_privacylens_data() -> tuple[bool, str]:
     if data_path and Path(data_path).exists():
         return True, f"数据集已配置: {data_path}"
 
-    default_path = PROJECT_ROOT / "benchmarks" / "local" / "pending_bench" / "privacylens" / "src" / "privacylens" / "data" / "main_data.json"
+    default_path = PROJECT_ROOT / "benchmarks" / "eval_benchmarks" / "privacylens" / "data" / "main_data.json"
     if default_path.exists():
         return True, f"数据集已存在: {default_path}"
 
