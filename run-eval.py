@@ -434,7 +434,8 @@ def run_eval(benchmark_name: str, task_spec: str, config: dict,
              extra_args: list = None, dry_run: bool = False,
              task_config: dict = None,
              no_index: bool = False, index_file: Path = None,
-             api_base: str = None, api_key: str = None) -> int:
+             api_base: str = None, api_key: str = None,
+             providers: dict = None) -> int:
     """运行评估"""
 
     # 确保环境存在
@@ -464,6 +465,31 @@ def run_eval(benchmark_name: str, task_spec: str, config: dict,
     effective_judge = judge_model or config.get("judge_model")
     if effective_judge:
         effective_judge = normalize_model_name(effective_judge)
+
+    # 解析 model_providers
+    providers = providers or {}
+
+    # Judge provider -> 设置 JUDGE_BASE_URL / JUDGE_API_KEY 供 scorer 读取
+    judge_provider_name = config.get("judge_provider")
+    if judge_provider_name:
+        jp = providers.get(judge_provider_name, {})
+        if jp.get("base_url"):
+            env["JUDGE_BASE_URL"] = jp["base_url"]
+        jk_env = jp.get("api_key_env")
+        if jk_env:
+            jk_val = os.environ.get(jk_env, "")
+            if jk_val:
+                env["JUDGE_API_KEY"] = jk_val
+
+    # Main model provider（仅在 CLI 未显式指定 api_base 时生效）
+    model_provider_name = config.get("model_provider")
+    if model_provider_name and not api_base:
+        mp = providers.get(model_provider_name, {})
+        if mp.get("base_url"):
+            api_base = mp["base_url"]
+        mk_env = mp.get("api_key_env")
+        if mk_env and not api_key:
+            api_key = os.environ.get(mk_env)
 
     # 处理索引文件
     sample_ids = None
@@ -776,6 +802,7 @@ def main():
                     index_file=args.index_file,
                     api_base=args.api_base,
                     api_key=args.api_key,
+                    providers=catalog.get("model_providers", {}),
                 )
 
                 if returncode == 0:
@@ -898,6 +925,7 @@ def main():
         index_file=args.index_file,
         api_base=args.api_base,
         api_key=args.api_key,
+        providers=catalog.get("model_providers", {}),
     )
 
 

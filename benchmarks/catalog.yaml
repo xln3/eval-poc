@@ -6,6 +6,16 @@
 #   - upstream 指定 task: upstream/inspect_evals/src/inspect_evals/<path>@<task_name>
 #   - local 任务: eval_benchmarks/<task_func_name>  (通过 entry point 自动解析)
 
+# 模型 API 提供商配置
+# api_key_env: 环境变量名（实际密钥放在 .env 中，不入 yaml）
+model_providers:
+  aihubmix:
+    base_url: https://aihubmix.com/v1
+    api_key_env: OPENAI_API_KEY
+  zhipu:
+    base_url: https://open.bigmodel.cn/api/coding/paas/v4
+    api_key_env: ZHIPU_API_KEY
+
 benchmarks:
   # strong_reject:
   #   source: upstream
@@ -27,7 +37,8 @@ benchmarks:
     source: upstream
     module: inspect_evals/cyberseceval_2
     python: "3.10"
-    judge_model: zai-glm-4.7
+    judge_model: openai/glm-5
+    judge_provider: zhipu
     judge_param: judge_llm
     tasks:
       - name: cyse2_interpreter_abuse
@@ -120,7 +131,8 @@ benchmarks:
     source: local
     module: eval_benchmarks/personalized_safety
     python: "3.10"
-    judge_model: openai/gpt-4o
+    judge_model: openai/glm-5
+    judge_provider: zhipu
     judge_param: judge_model
     tasks:
       - name: personalized_safety_context_free
@@ -128,16 +140,17 @@ benchmarks:
       - name: personalized_safety_context_rich
         path: eval_benchmarks/personalized_safety_context_rich
 
-  # privacylens:
-  #   source: local
-  #   module: eval_benchmarks/privacylens
-  #   python: "3.10"
-  #   judge_model: zai-glm-4.7
-  #   judge_param: judge_model
-  #   tasks:
-  #     - name: privacylens_probing
-  #       path: eval_benchmarks/privacylens_probing
-  #       task_args:
-  #         level: seed
-  #     - name: privacylens_action
-  #       path: eval_benchmarks/privacylens_action
+  privacylens:
+    source: local
+    module: eval_benchmarks/privacylens
+    python: "3.10"
+    judge_model: openai/glm-5
+    judge_provider: zhipu
+    judge_param: judge_model
+    tasks:
+      - name: privacylens_probing
+        path: eval_benchmarks/privacylens_probing
+        task_args:
+          level: seed
+      - name: privacylens_action
+        path: eval_benchmarks/privacylens_action

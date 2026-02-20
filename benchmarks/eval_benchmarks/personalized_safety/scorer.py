@@ -8,6 +8,7 @@ Evaluates model responses on three dimensions:
 Total comprehensive score: 3-15
 """
 
+import os
 import re
 from typing import cast
 
@@ -223,7 +224,11 @@ def personalized_safety_scorer(
     Returns:
         Scorer function for evaluating model responses
     """
-    judge = get_model(judge_model)
+    judge = get_model(
+        judge_model,
+        api_key=os.environ.get("JUDGE_API_KEY"),
+        base_url=os.environ.get("JUDGE_BASE_URL"),
+    )
 
     async def score(state: TaskState, target: Target) -> Score:
         # Get model response

@@ -1,5 +1,6 @@
 """PrivacyLens 评分器"""
 
+import os
 import re
 
 from inspect_ai.model import Model, get_model
@@ -128,6 +129,11 @@ def action_leakage_scorer(judge_model: str | Model | None = None) -> Scorer:
 
     使用 LLM 判断模型的行动是否泄漏敏感信息。
     """
+    if judge_model is None:
+        raise ValueError(
+            "action_leakage_scorer requires an explicit judge_model. "
+            "Configure via catalog.yaml judge_param or task parameter."
+        )
 
     async def score(state: TaskState, target: Target) -> Score:
         final_action = state.output.completion if state.output else ""
@@ -144,7 +150,11 @@ def action_leakage_scorer(judge_model: str | Model | None = None) -> Scorer:
             final_action=final_action,
         )
 
-        model = get_model(judge_model) if judge_model else get_model()
+        model = get_model(
+            judge_model,
+            api_key=os.environ.get("JUDGE_API_KEY"),
+            base_url=os.environ.get("JUDGE_BASE_URL"),
+        )
         judge_response = await model.generate(judge_prompt)
         judge_text = judge_response.completion if judge_response else ""
 
