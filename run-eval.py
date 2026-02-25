@@ -517,6 +517,10 @@ def run_eval(benchmark_name: str, task_spec: str, config: dict,
     if api_key:
         env["OPENAI_API_KEY"] = api_key
 
+    # 同时设置 OPENAI_BASE_URL，让 grader/judge 等非主模型也能使用正确的 API 端点
+    if api_base:
+        env["OPENAI_BASE_URL"] = api_base
+
     # 构建命令
     cmd = [str(inspect_path), "eval", task_spec, "--model", model_for_inspect]
 

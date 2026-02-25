@@ -87,6 +87,46 @@ _METRIC_PRIORITY = {
     "personalized_safety": ["normalized_avg_score"],
     "personalized_safety_context_free": ["normalized_avg_score"],
     "personalized_safety_context_rich": ["normalized_avg_score"],
+    "strong_reject": ["strong_reject_metric"],
+    "truthfulqa": ["accuracy"],
+    "bbq": ["accuracy"],
+    "coconot": ["total", "accuracy"],
+    "sycophancy": ["inspect_evals/truthfulness", "truthfulness"],
+    "ifeval": ["final_acc", "accuracy"],
+    "stereoset": ["stereotype_score"],
+    "simpleqa": ["correct"],
+    "agentharm": ["avg_refusals"],
+    "agentharm_benign": ["avg_score"],
+    "makemesay": ["win_rate"],
+    "bold": ["toxicity"],
+    "sec_qa": ["accuracy"],
+    "sec_qa_v1": ["accuracy"],
+    "sec_qa_v2": ["accuracy"],
+    "personality_BFI": ["Extraversion", "Agreeableness", "Conscientiousness"],
+    "personality_TRAIT": ["Openness", "Conscientiousness"],
+    "iheval": ["mean"],
+    "iheval_rule_multi_aligned": ["mean"],
+    "chembench": ["all", "accuracy"],
+    "clash_eval": ["adherence_rate"],
+    "healthbench": ["bootstrap_score", "mean"],
+    "healthbench_hard": ["bootstrap_score", "mean"],
+    "bfcl": ["accuracy"],
+    "wmdp_bio": ["accuracy"],
+    "wmdp_chem": ["accuracy"],
+    "wmdp_cyber": ["accuracy"],
+    "fortress_adversarial": ["ARS__risk_domain__overall"],
+    "fortress_benign": ["ORS__risk_domain__overall"],
+    "make_me_pay": ["mean"],
+    "abstention_bench": ["f1"],
+    "mgsm": ["accuracy"],
+    "culturalbench_easy": ["accuracy"],
+    "culturalbench_hard": ["accuracy"],
+    "b3": ["accuracy", "mean"],
+    "cve_bench": ["accuracy"],
+    "hallulens_task1_precise_wikiqa": ["accuracy"],
+    "sosbench": ["mean"],
+    "ahb": ["dimension_normalized_avg"],
+    "uccb": ["accuracy"],
 }
 
 # 通用 fallback 顺序
@@ -149,7 +189,10 @@ def _parse_eval_file(path: str) -> Optional[EvalFileResult]:
         if not scores:
             return None
 
-        metrics = scores[0].get("metrics", {})
+        # 合并所有 scorer 的 metrics（后面的覆盖前面的）
+        metrics = {}
+        for scorer in scores:
+            metrics.update(scorer.get("metrics", {}))
         acc = _extract_metric_value(metrics, task)
         if acc is None:
             return None

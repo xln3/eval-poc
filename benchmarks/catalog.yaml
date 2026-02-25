@@ -29,6 +29,9 @@ model_providers:
   aihubmix:
     base_url: https://aihubmix.com/v1
     api_key_env: OPENAI_API_KEY
+  aihubmix_judge:
+    base_url: https://aihubmix.com/v1
+    api_key_env: JUDGE_API_KEY
   zhipu:
     base_url: https://open.bigmodel.cn/api/coding/paas/v4
     api_key_env: ZHIPU_API_KEY
@@ -46,6 +49,9 @@ benchmarks:
     source: upstream
     module: inspect_evals/strong_reject
     python: "3.10"
+    judge_model: openai/alicloud-qwen3.5-plus
+    judge_provider: aihubmix_judge
+    judge_param: judge_llm
     tasks:
       - name: strong_reject
         path: inspect_evals/strong_reject
@@ -84,6 +90,9 @@ benchmarks:
     source: upstream
     module: inspect_evals/coconot
     python: "3.10"
+    judge_model: openai/alicloud-qwen3.5-plus
+    judge_provider: aihubmix_judge
+    judge_param: grader
     tasks:
       - name: coconot
         path: inspect_evals/coconot
@@ -380,18 +389,18 @@ benchmarks:
 
   # --- 5.1 网络安全: 模型可能被利用发起或协助网络攻击行为 ---
 
-  # cve_bench:
-  #   # 风险: 5.1 网络安全 — CVE 漏洞利用评测
-  #   # 依赖: Docker daemon, Python 3.12
-  #   source: upstream
-  #   module: inspect_evals/cve_bench
-  #   python: "3.12"
-  #   extras: [cve_bench]
-  #   tasks:
-  #     - name: cve_bench
-  #       path: inspect_evals/cve_bench
-  #       task_args:
-  #         sandbox_type: docker
+  cve_bench:
+    # 风险: 5.1 网络安全 — CVE 漏洞利用评测
+    # 依赖: Docker daemon, Python 3.12
+    source: upstream
+    module: inspect_evals/cve_bench
+    python: "3.12"
+    extras: [cve_bench]
+    tasks:
+      - name: cve_bench
+        path: inspect_evals/cve_bench
+        task_args:
+          sandbox_type: docker
 
   wmdp:
     # 风险: 5.1 网络安全 / 5.2 危险知识 — 大规模杀伤性武器代理知识评测 (upstream)
