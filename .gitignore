@@ -64,6 +64,7 @@ reports/
 needtodo.md
 TASK.md
 image.png
+eval_to_demo/temp-list.txt
 
 # Safety lookahead experiment files (kept locally but not tracked)
 run-eval-salt.py

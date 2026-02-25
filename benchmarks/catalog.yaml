@@ -5,6 +5,23 @@
 #   - upstream 任务: inspect_evals/<benchmark>
 #   - upstream 指定 task: upstream/inspect_evals/src/inspect_evals/<path>@<task_name>
 #   - local 任务: eval_benchmarks/<task_func_name>  (通过 entry point 自动解析)
+#
+# 风险分类体系 (按 benchmarks_doc.csv):
+#   1. 模型安全性 (1.1 恶意使用 / 1.2 过度拒绝 / 1.3 直接提示词注入 / 1.4 指令优先级)
+#   2. 模型事实性 (2.1 幻觉 / 2.2 诚实)
+#   3. 合规：模型公平性 (3.1 歧视 / 3.2 刻板印象 / 3.3 中文价值观 / 3.4 文化理解)
+#   4. 合规：隐私泄露
+#   5. 前沿安全风险 (5.1 网络安全 / 5.2 危险知识)
+#   6. 工具调用 (6.1 间接提示词注入 / 6.2 恶意任务遵从)
+#   7. RAG/记忆安全 (7.1 RAG知识库投毒 / 7.2 知识冲突)
+#   8. 多模态安全 (8.1 多模态恶意输入 / 8.2 场景安全)
+#   9. 任务规划安全
+#   10. 多智能体安全
+#   11. 个性化安全
+#   12. 资源耗尽
+#   13. 业务场景安全
+#   14. 长期运行安全
+#   15. 高阶异常行为 (15.1 欺诈 / 15.2 高压崩溃)
 
 # 模型 API 提供商配置
 # api_key_env: 环境变量名（实际密钥放在 .env 中，不入 yaml）
@@ -17,15 +34,44 @@ model_providers:
     api_key_env: ZHIPU_API_KEY
 
 benchmarks:
-  # strong_reject:
-  #   source: upstream
-  #   module: inspect_evals/strong_reject
-  #   python: "3.10"
-  #   tasks:
-  #     - name: strong_reject
-  #       path: inspect_evals/strong_reject
+
+  # ============================================================
+  # 1. 模型安全性
+  # ============================================================
+
+  # --- 1.1 恶意使用: 模型可能被用户利用去执行有害或非法目的 ---
+
+  strong_reject:
+    # 风险: 1.1 恶意使用
+    source: upstream
+    module: inspect_evals/strong_reject
+    python: "3.10"
+    tasks:
+      - name: strong_reject
+        path: inspect_evals/strong_reject
+
+  makemesay:
+    # 风险: 1.1 恶意使用 — 操控模型说出目标短语
+    source: upstream
+    module: inspect_evals/makemesay
+    python: "3.10"
+    tasks:
+      - name: makemesay
+        path: inspect_evals/makemesay
+
+  make_me_pay:
+    # 风险: 1.1 恶意使用 / 10.1 多智能体安全 — 社会工程攻击模拟
+    source: upstream
+    module: inspect_evals/make_me_pay
+    python: "3.10"
+    tasks:
+      - name: make_me_pay
+        path: inspect_evals/make_me_pay
+
+  # --- 1.2 过度拒绝: 模型因安全限制过强而拒绝合理且安全的请求 ---
 
   # xstest:
+  #   # 风险: 1.2 过度拒绝 — 需要 HF_TOKEN 且有 gated dataset 权限
   #   source: upstream
   #   module: inspect_evals/xstest
   #   python: "3.10"
@@ -33,7 +79,19 @@ benchmarks:
   #     - name: xstest
   #       path: inspect_evals/xstest
 
+  coconot:
+    # 风险: 1.2 过度拒绝 — 不应合规场景下的拒绝检测
+    source: upstream
+    module: inspect_evals/coconot
+    python: "3.10"
+    tasks:
+      - name: coconot
+        path: inspect_evals/coconot
+
+  # --- 1.3 直接提示词注入: 模型可能被输入恶意提示词操控其行为或输出 ---
+
   cyberseceval_2:
+    # 风险: 1.3 直接提示词注入 / 5.1 网络安全
     source: upstream
     module: inspect_evals/cyberseceval_2
     python: "3.10"
@@ -55,92 +113,253 @@ benchmarks:
       #     epochs: 1
       #     num_test_case: 10
 
-  # bbq:
-  #   source: upstream
-  #   module: inspect_evals/bbq
-  #   python: "3.10"
-  #   tasks:
-  #     - name: bbq
-  #       path: inspect_evals/bbq
-
-  # cve_bench:
-  #   source: upstream
-  #   module: inspect_evals/cve_bench
-  #   python: "3.12"
-  #   extras: [cve_bench]
-  #   tasks:
-  #     - name: cve_bench
-  #       path: inspect_evals/cve_bench
-  #       # Docker 模式支持全部 40 个 CVE
-  #       task_args:
-  #         sandbox_type: docker
-
-  # agentdojo:
-  #   source: upstream
-  #   module: inspect_evals/agentdojo
-  #   python: "3.10"
-  #   extras: [agentdojo]
-  #   tasks:
-  #     - name: agentdojo
-  #       path: inspect_evals/agentdojo
-
-  # agentharm:
-  #   source: upstream
-  #   module: inspect_evals/agentharm
-  #   python: "3.10"
-  #   tasks:
-  #     - name: agentharm
-  #       path: inspect_evals/agentharm
-  #     - name: agentharm_benign
-  #       path: upstream/inspect_evals/src/inspect_evals/agentharm/agentharm.py@agentharm_benign
-
-  # truthfulqa:
-  #   source: upstream
-  #   module: inspect_evals/truthfulqa
-  #   python: "3.10"
-  #   tasks:
-  #     - name: truthfulqa
-  #       path: inspect_evals/truthfulqa
-
-  browse_comp:
+  b3:
+    # 风险: 1.3 直接提示词注入 / 6.1 间接提示词注入 — 综合性 agentic AI 安全评测
     source: upstream
-    module: inspect_evals/browse_comp
+    module: inspect_evals/b3
     python: "3.10"
+    extras: [b3]
     tasks:
-      - name: browse_comp
-        path: inspect_evals/browse_comp
-        # Note: Docker sandbox is default in the task itself (DEFAULT_DOCKER_SANDBOX)
+      - name: b3
+        path: inspect_evals/b3
 
-  raccoon:
-    source: local
-    module: eval_benchmarks/raccoon
+  fortress:
+    # 风险: 1.3 直接提示词注入 — 提示词注入防御评测
+    source: upstream
+    module: inspect_evals/fortress
     python: "3.10"
     tasks:
-      - name: raccoon
-        path: eval_benchmarks/raccoon
+      - name: fortress_adversarial
+        path: inspect_evals/fortress_adversarial
+      - name: fortress_benign
+        path: inspect_evals/fortress_benign
 
-  overthink:
-    source: local
-    module: eval_benchmarks/overthink
-    python: "3.10"
-    tasks:
-      - name: overthink
-        path: eval_benchmarks/overthink
+  # --- 1.4 指令优先级: 模型在面对多来源或冲突指令时可能错误判断主次 ---
 
-  personalized_safety:
+  iheval:
+    # 风险: 1.4 指令优先级 — 指令层级遵从评测
     source: local
-    module: eval_benchmarks/personalized_safety
+    module: eval_benchmarks/iheval
     python: "3.10"
-    judge_model: openai/glm-5
-    judge_provider: zhipu
-    judge_param: judge_model
     tasks:
-      - name: personalized_safety_context_free
-        path: eval_benchmarks/personalized_safety_context_free
-      - name: personalized_safety_context_rich
-        path: eval_benchmarks/personalized_safety_context_rich
+      # Rule Following - Multi-turn Aligned
+      - name: iheval_rule_multi_aligned
+        path: eval_benchmarks/iheval
+        task_args:
+          category: rule-following
+          task: multi-turn
+          setting: aligned
+      # Rule Following - Multi-turn Conflict
+      - name: iheval_rule_multi_conflict
+        path: eval_benchmarks/iheval
+        task_args:
+          category: rule-following
+          task: multi-turn
+          setting: conflict
+      # Rule Following - Single-turn Aligned
+      - name: iheval_rule_single_aligned
+        path: eval_benchmarks/iheval
+        task_args:
+          category: rule-following
+          task: single-turn
+          setting: aligned
+      # Task Execution - Extraction
+      - name: iheval_task_extraction
+        path: eval_benchmarks/iheval
+        task_args:
+          category: task-execution
+          task: extraction
+          setting: aligned
+      # Task Execution - Translation
+      - name: iheval_task_translation
+        path: eval_benchmarks/iheval
+        task_args:
+          category: task-execution
+          task: translation
+          setting: aligned
+      # Safety - Hijack
+      - name: iheval_safety_hijack
+        path: eval_benchmarks/iheval
+        task_args:
+          category: safety
+          task: hijack
+          setting: aligned
+      # Safety - System Prompt Extraction
+      - name: iheval_safety_extraction
+        path: eval_benchmarks/iheval
+        task_args:
+          category: safety
+          task: system-prompt-extract
+          setting: aligned
+      # Tool Use - Get Webpage
+      - name: iheval_tool_webpage
+        path: eval_benchmarks/iheval
+        task_args:
+          category: tool-use
+          task: get-webpage
+          setting: aligned
+
+  ifeval:
+    # 风险: 1.4 指令优先级 — 指令遵循能力评测
+    source: upstream
+    module: inspect_evals/ifeval
+    python: "3.10"
+    tasks:
+      - name: ifeval
+        path: inspect_evals/ifeval
+
+  # ============================================================
+  # 2. 模型事实性
+  # ============================================================
+
+  # --- 2.1 幻觉: 模型可能生成脱离事实的虚假内容 ---
+
+  hallulens:
+    # 风险: 2.1 幻觉 — 多维度幻觉检测
+    source: local
+    module: eval_benchmarks/hallulens
+    python: "3.10"
+    tasks:
+      - name: hallulens_task1_precise_wikiqa
+        path: eval_benchmarks/hallulens_task1_precise_wikiqa
+      - name: hallulens_task2_longwiki
+        path: eval_benchmarks/hallulens_task2_longwiki
+      - name: hallulens_task3_nonsense_mixed_entities
+        path: eval_benchmarks/hallulens_task3_nonsense_mixed_entities
+      - name: hallulens_task3_round_robin_nonsense_name
+        path: eval_benchmarks/hallulens_task3_round_robin_nonsense_name
+
+  simpleqa:
+    # 风险: 2.1 幻觉 — 简单事实问答准确性
+    source: upstream
+    module: inspect_evals/simpleqa
+    python: "3.10"
+    tasks:
+      - name: simpleqa
+        path: inspect_evals/simpleqa
+
+  sciknoweval:
+    # 风险: 2.1 幻觉 — 科学知识准确性评测
+    source: upstream
+    module: inspect_evals/sciknoweval
+    python: "3.10"
+    tasks:
+      - name: sciknoweval
+        path: inspect_evals/sciknoweval
+
+  # --- 2.2 诚实: 模型可能隐瞒信息、回答不准确或不完全坦率 ---
+
+  mask:
+    # 风险: 2.2 诚实 — 区分模型诚实性与准确性
+    source: upstream
+    module: inspect_evals/mask
+    python: "3.10"
+    tasks:
+      - name: mask
+        path: inspect_evals/mask
+
+  abstention_bench:
+    # 风险: 2.2 诚实 — 模型在不确定时应拒绝回答
+    source: upstream
+    module: inspect_evals/abstention_bench
+    python: "3.10"
+    tasks:
+      - name: abstention_bench
+        path: inspect_evals/abstention_bench
+
+  # ============================================================
+  # 3. 合规：模型公平性
+  # ============================================================
+
+  # --- 3.1 歧视: 模型的输出可能对某些群体产生不公平待遇 ---
+
+  bbq:
+    # 风险: 3.1 歧视 — 偏见行为问答
+    source: upstream
+    module: inspect_evals/bbq
+    python: "3.10"
+    tasks:
+      - name: bbq
+        path: inspect_evals/bbq
+
+  bold:
+    # 风险: 3.1 歧视 / 3.2 刻板印象 — 开放式文本生成中的偏见检测
+    source: upstream
+    module: inspect_evals/bold
+    python: "3.10"
+    tasks:
+      - name: bold
+        path: inspect_evals/bold
+
+  ahb:
+    # 风险: 3.1 歧视 — AI 伤害评测 (Anthropic Harm Benchmark)
+    source: upstream
+    module: inspect_evals/ahb
+    python: "3.10"
+    tasks:
+      - name: ahb
+        path: inspect_evals/ahb
+
+  # --- 3.2 刻板印象: 模型可能强化对群体的偏见化刻板标签 ---
+
+  stereoset:
+    # 风险: 3.2 刻板印象 — 刻板印象关联评测
+    source: upstream
+    module: inspect_evals/stereoset
+    python: "3.10"
+    tasks:
+      - name: stereoset
+        path: inspect_evals/stereoset
+
+  # --- 3.3 中文价值观: 模型对本地文化价值观理解不足或输出偏差 ---
+
+  # cvalues:
+  #   # 风险: 3.3 中文价值观 — 中文安全与价值观对齐
+  #   # [新复现] 待实现 — 原始仓库: https://github.com/X-PLUG/CValues
+  #   source: local
+  #   module: eval_benchmarks/cvalues
+  #   python: "3.10"
+  #   tasks:
+  #     - name: cvalues
+  #       path: eval_benchmarks/cvalues
+
+  # --- 3.4 文化理解: 模型可能误解不同文化背景的信息或语境 ---
+
+  culturalbench:
+    # 风险: 3.4 文化理解 — 跨文化知识评测
+    source: local
+    module: eval_benchmarks/culturalbench
+    python: "3.10"
+    tasks:
+      - name: culturalbench_easy
+        path: eval_benchmarks/culturalbench_easy
+      - name: culturalbench_hard
+        path: eval_benchmarks/culturalbench_hard
+
+  uccb:
+    # 风险: 3.4 文化理解 — 跨文化交际偏见评测
+    source: upstream
+    module: inspect_evals/uccb
+    python: "3.10"
+    tasks:
+      - name: uccb
+        path: inspect_evals/uccb
+
+  mgsm:
+    # 风险: 3.4 文化理解 — 多语言数学推理
+    source: upstream
+    module: inspect_evals/mgsm
+    python: "3.10"
+    tasks:
+      - name: mgsm
+        path: inspect_evals/mgsm
+
+  # ============================================================
+  # 4. 合规：隐私泄露
+  # ============================================================
 
   privacylens:
+    # 风险: 4.1 隐私泄露 — 隐私规范评测
     source: local
     module: eval_benchmarks/privacylens
     python: "3.10"
@@ -154,3 +373,612 @@ benchmarks:
           level: seed
       - name: privacylens_action
         path: eval_benchmarks/privacylens_action
+
+  # ============================================================
+  # 5. 前沿安全风险
+  # ============================================================
+
+  # --- 5.1 网络安全: 模型可能被利用发起或协助网络攻击行为 ---
+
+  # cve_bench:
+  #   # 风险: 5.1 网络安全 — CVE 漏洞利用评测
+  #   # 依赖: Docker daemon, Python 3.12
+  #   source: upstream
+  #   module: inspect_evals/cve_bench
+  #   python: "3.12"
+  #   extras: [cve_bench]
+  #   tasks:
+  #     - name: cve_bench
+  #       path: inspect_evals/cve_bench
+  #       task_args:
+  #         sandbox_type: docker
+
+  wmdp:
+    # 风险: 5.1 网络安全 / 5.2 危险知识 — 大规模杀伤性武器代理知识评测 (upstream)
+    source: upstream
+    module: inspect_evals/wmdp
+    python: "3.10"
+    tasks:
+      - name: wmdp_bio
+        path: inspect_evals/wmdp_bio
+      - name: wmdp_chem
+        path: inspect_evals/wmdp_chem
+      - name: wmdp_cyber
+        path: inspect_evals/wmdp_cyber
+
+  wmdp_local:
+    # 风险: 5.1 网络安全 / 5.2 危险知识 — WMDP 本地复现版 (cyber + bio)
+    source: local
+    module: eval_benchmarks/wmdp
+    python: "3.10"
+    tasks:
+      - name: wmdp_cyber
+        path: eval_benchmarks/wmdp_cyber
+      - name: wmdp_bio
+        path: eval_benchmarks/wmdp_bio
+
+  # cybench:
+  #   # 风险: 5.1 网络安全 — CTF 风格网络安全挑战
+  #   # 依赖: Docker
+  #   source: upstream
+  #   module: inspect_evals/cybench
+  #   python: "3.10"
+  #   tasks:
+  #     - name: cybench
+  #       path: inspect_evals/cybench
+
+  sevenllm:
+    # 风险: 5.1 网络安全 — 网络安全知识与推理评测
+    source: upstream
+    module: inspect_evals/sevenllm
+    python: "3.10"
+    tasks:
+      - name: sevenllm_mcq_zh
+        path: inspect_evals/sevenllm_mcq_zh
+      - name: sevenllm_mcq_en
+        path: inspect_evals/sevenllm_mcq_en
+      - name: sevenllm_qa_zh
+        path: inspect_evals/sevenllm_qa_zh
+      - name: sevenllm_qa_en
+        path: inspect_evals/sevenllm_qa_en
+
+  sec_qa:
+    # 风险: 5.1 网络安全 — 安全知识问答
+    source: upstream
+    module: inspect_evals/sec_qa
+    python: "3.10"
+    tasks:
+      - name: sec_qa_v1
+        path: inspect_evals/sec_qa_v1
+      - name: sec_qa_v2
+        path: inspect_evals/sec_qa_v2
+
+  # threecb:
+  #   # 风险: 5.1 网络安全 — 3CB 网络安全行为评测
+  #   # 依赖: Docker
+  #   source: upstream
+  #   module: inspect_evals/threecb
+  #   python: "3.10"
+  #   tasks:
+  #     - name: threecb
+  #       path: inspect_evals/threecb
+
+  # --- 5.2 危险知识: 模型可能提供可用于危害安全的专业敏感信息 ---
+
+  sosbench:
+    # 风险: 5.2 危险知识 — 科学安全评测
+    source: upstream
+    module: inspect_evals/sosbench
+    python: "3.10"
+    tasks:
+      - name: sosbench
+        path: inspect_evals/sosbench
+
+  lab_bench:
+    # 风险: 5.2 危险知识 — 实验室基准评测 (多子任务)
+    source: upstream
+    module: inspect_evals/lab_bench
+    python: "3.10"
+    tasks:
+      - name: lab_bench_litqa
+        path: inspect_evals/lab_bench_litqa
+      - name: lab_bench_suppqa
+        path: inspect_evals/lab_bench_suppqa
+      - name: lab_bench_figqa
+        path: inspect_evals/lab_bench_figqa
+      - name: lab_bench_tableqa
+        path: inspect_evals/lab_bench_tableqa
+      - name: lab_bench_dbqa
+        path: inspect_evals/lab_bench_dbqa
+      - name: lab_bench_protocolqa
+        path: inspect_evals/lab_bench_protocolqa
+      - name: lab_bench_seqqa
+        path: inspect_evals/lab_bench_seqqa
+      - name: lab_bench_cloning_scenarios
+        path: inspect_evals/lab_bench_cloning_scenarios
+
+  chembench:
+    # 风险: 5.2 危险知识 — 化学知识评测
+    source: upstream
+    module: inspect_evals/chembench
+    python: "3.10"
+    tasks:
+      - name: chembench
+        path: inspect_evals/chembench
+
+  healthbench:
+    # 风险: 5.2 危险知识 / 13.2 聊天机器人 — 医疗健康知识评测
+    source: upstream
+    module: inspect_evals/healthbench
+    python: "3.10"
+    tasks:
+      - name: healthbench
+        path: inspect_evals/healthbench
+      - name: healthbench_hard
+        path: inspect_evals/healthbench_hard
+      - name: healthbench_consensus
+        path: inspect_evals/healthbench_consensus
+
+  # ============================================================
+  # 6. 工具调用
+  # ============================================================
+
+  # --- 6.1 间接提示词注入: 外部工具结果或中间信息可能被恶意构造以操控模型 ---
+
+  # agentdojo:
+  #   # 风险: 6.1 间接提示词注入 — 智能体安全测试
+  #   # 依赖: Kubernetes
+  #   source: upstream
+  #   module: inspect_evals/agentdojo
+  #   python: "3.10"
+  #   extras: [agentdojo]
+  #   tasks:
+  #     - name: agentdojo
+  #       path: inspect_evals/agentdojo
+
+  bfcl:
+    # 风险: 6.1 间接提示词注入 — 函数调用准确性评测 (Berkeley Function Calling Leaderboard)
+    source: upstream
+    module: inspect_evals/bfcl
+    python: "3.10"
+    tasks:
+      - name: bfcl
+        path: inspect_evals/bfcl
+
+  # --- 6.2 恶意任务遵从: 智能体在长链调用中可能不恰当地执行潜在危险任务 ---
+
+  agentharm:
+    # 风险: 6.2 恶意任务遵从 — 智能体有害行为评测
+    source: upstream
+    module: inspect_evals/agentharm
+    python: "3.10"
+    tasks:
+      - name: agentharm
+        path: inspect_evals/agentharm
+      - name: agentharm_benign
+        path: upstream/inspect_evals/src/inspect_evals/agentharm/agentharm.py@agentharm_benign
+
+  # open_agent_safety:
+  #   # 风险: 6.2 恶意任务遵从 — 开放式智能体安全评测
+  #   # [新复现] 待实现 — 原始仓库: https://github.com/SALT-NLP/OpenAgentSafety
+  #   source: local
+  #   module: eval_benchmarks/open_agent_safety
+  #   python: "3.10"
+  #   tasks:
+  #     - name: open_agent_safety
+  #       path: eval_benchmarks/open_agent_safety
+
+  # ============================================================
+  # 7. RAG/记忆安全
+  # ============================================================
+
+  # saferag:
+  #   # 风险: 7.1 RAG知识库投毒 — 检索增强生成安全评测
+  #   # 依赖: Milvus 向量数据库服务 (localhost:19530)
+  #   source: local
+  #   module: eval_benchmarks/saferag
+  #   python: "3.10"
+  #   tasks:
+  #     - name: saferag_sn
+  #       path: eval_benchmarks/saferag_sn
+  #       task_args:
+  #         retriever_name: base
+  #     - name: saferag_icc
+  #       path: eval_benchmarks/saferag_icc
+  #       task_args:
+  #         retriever_name: base
+  #     - name: saferag_sa
+  #       path: eval_benchmarks/saferag_sa
+  #       task_args:
+  #         retriever_name: base
+  #     - name: saferag_wdos
+  #       path: eval_benchmarks/saferag_wdos
+  #       task_args:
+  #         retriever_name: base
+
+  clash_eval:
+    # 风险: 7.2 知识冲突 — 模型面对矛盾信息的推断评测
+    source: local
+    module: eval_benchmarks/clash_eval
+    python: "3.10"
+    tasks:
+      - name: clash_eval
+        path: eval_benchmarks/clash_eval
+
+  # ============================================================
+  # 8. 多模态安全
+  # ============================================================
+
+  # --- 8.1 多模态恶意输入: 图像、音频等可能携带隐蔽攻击指令操控模型 ---
+
+  mm_safety_bench:
+    # 风险: 8.1 多模态恶意输入 — 多模态安全评测
+    source: local
+    module: eval_benchmarks/mm_safety_bench
+    python: "3.10"
+    judge_model: openai/glm-5
+    judge_provider: zhipu
+    judge_param: judge_model
+    tasks:
+      - name: mm_safety_bench_illegal_activity
+        path: eval_benchmarks/mm_safety_bench_illegal_activity
+        task_args:
+          scenario: "01-Illegal_Activitiy"
+
+  cyberseceval_3:
+    # 风险: 8.1 多模态恶意输入 — 视觉提示词注入评测
+    source: upstream
+    module: inspect_evals/cyberseceval_3
+    python: "3.10"
+    tasks:
+      - name: cyse3_visual_prompt_injection
+        path: upstream/inspect_evals/src/inspect_evals/cyberseceval_3/visual_prompt_injection/task.py@cyse3_visual_prompt_injection
+
+  raccoon:
+    # 风险: 8.1 多模态恶意输入 / 13.1 车载语音助手 — 提示词提取攻击
+    source: local
+    module: eval_benchmarks/raccoon
+    python: "3.10"
+    tasks:
+      - name: raccoon
+        path: eval_benchmarks/raccoon
+
+  # --- 8.2 场景安全: 模型可能误解多模态场景导致不安全决策 ---
+
+  mssbench:
+    # 风险: 8.2 场景安全 — 多模态情境安全评测
+    source: local
+    module: eval_benchmarks/mssbench
+    python: "3.10"
+    judge_model: openai/glm-5
+    judge_provider: zhipu
+    judge_param: judge_model
+    tasks:
+      - name: mssbench_chat_if
+        path: eval_benchmarks/mssbench_chat
+        task_args:
+          setting: if
+      - name: mssbench_chat_qc
+        path: eval_benchmarks/mssbench_chat
+        task_args:
+          setting: qc
+      - name: mssbench_chat_ic
+        path: eval_benchmarks/mssbench_chat
+        task_args:
+          setting: ic
+      - name: mssbench_chat_ic_cap
+        path: eval_benchmarks/mssbench_chat
+        task_args:
+          setting: ic_cap
+      - name: mssbench_embodied_if
+        path: eval_benchmarks/mssbench_embodied
+        task_args:
+          setting: if
+      - name: mssbench_embodied_qc
+        path: eval_benchmarks/mssbench_embodied
+        task_args:
+          setting: qc
+      - name: mssbench_embodied_ic
+        path: eval_benchmarks/mssbench_embodied
+        task_args:
+          setting: ic
+      - name: mssbench_embodied_ic_cap
+        path: eval_benchmarks/mssbench_embodied
+        task_args:
+          setting: ic_cap
+
+  # osworld:
+  #   # 风险: 8.2 场景安全 / 9.1 任务规划安全 — 操作系统交互评测
+  #   # 依赖: Docker / 容器环境
+  #   source: upstream
+  #   module: inspect_evals/osworld
+  #   python: "3.10"
+  #   tasks:
+  #     - name: osworld
+  #       path: inspect_evals/osworld
+
+  mathvista:
+    # 风险: 8.2 场景安全 — 数学视觉推理
+    source: upstream
+    module: inspect_evals/mathvista
+    python: "3.10"
+    tasks:
+      - name: mathvista
+        path: inspect_evals/mathvista
+
+  mmmu:
+    # 风险: 8.2 场景安全 — 大规模多学科多模态理解
+    source: upstream
+    module: inspect_evals/mmmu
+    python: "3.10"
+    tasks:
+      - name: mmmu_multiple_choice
+        path: inspect_evals/mmmu_multiple_choice
+      - name: mmmu_open
+        path: inspect_evals/mmmu_open
+
+  mmiu:
+    # 风险: 8.2 场景安全 — 多模态多图像理解
+    source: upstream
+    module: inspect_evals/mmiu
+    python: "3.10"
+    tasks:
+      - name: mmiu
+        path: inspect_evals/mmiu
+
+  docvqa:
+    # 风险: 8.2 场景安全 — 文档视觉问答
+    source: upstream
+    module: inspect_evals/docvqa
+    python: "3.10"
+    tasks:
+      - name: docvqa
+        path: inspect_evals/docvqa
+
+  # ============================================================
+  # 9. 任务规划安全
+  # ============================================================
+
+  safeagentbench:
+    # 风险: 9.1 任务规划安全 — 复杂任务规划安全评测
+    source: local
+    module: eval_benchmarks/safeagentbench
+    python: "3.10"
+    judge_model: openai/glm-5
+    judge_provider: zhipu
+    judge_param: judge_model
+    tasks:
+      - name: safeagentbench
+        path: eval_benchmarks/safeagentbench
+      # safeagentbench_react 和 safeagentbench_visual 需要 Docker，暂不启用
+      # - name: safeagentbench_react
+      #   path: eval_benchmarks/safeagentbench_react
+      # - name: safeagentbench_visual
+      #   path: eval_benchmarks/safeagentbench_visual
+
+  gaia:
+    # 风险: 9.1 任务规划安全 — 通用 AI 助手评测
+    source: upstream
+    module: inspect_evals/gaia
+    python: "3.10"
+    tasks:
+      - name: gaia
+        path: inspect_evals/gaia
+
+  mind2web:
+    # 风险: 9.1 任务规划安全 — 网页交互任务规划
+    source: upstream
+    module: inspect_evals/mind2web
+    python: "3.10"
+    tasks:
+      - name: mind2web
+        path: inspect_evals/mind2web
+
+  mind2web_sc:
+    # 风险: 9.1 任务规划安全 — 网页交互任务规划 (safety-constrained)
+    source: upstream
+    module: inspect_evals/mind2web_sc
+    python: "3.10"
+    tasks:
+      - name: mind2web_sc
+        path: inspect_evals/mind2web_sc
+
+  assistant_bench:
+    # 风险: 9.1 任务规划安全 — AI 助手任务完成评测
+    source: upstream
+    module: inspect_evals/assistant_bench
+    python: "3.10"
+    tasks:
+      - name: assistant_bench
+        path: inspect_evals/assistant_bench
+
+  # ============================================================
+  # 10. 多智能体安全
+  # ============================================================
+
+  # psysafe:
+  #   # 风险: 10.1 多智能体安全 — 多智能体心理安全评测
+  #   # [新复现] 待实现 — 原始仓库: https://github.com/AI4Finance-Foundation/PsySafe
+  #   source: local
+  #   module: eval_benchmarks/psysafe
+  #   python: "3.10"
+  #   tasks:
+  #     - name: psysafe
+  #       path: eval_benchmarks/psysafe
+
+  # (make_me_pay 也属于此类，已在 1.1 中列出)
+
+  # ============================================================
+  # 11. 个性化安全
+  # ============================================================
+
+  personalized_safety:
+    # 风险: 11.1 个性化安全 — 高风险个性化场景安全评测
+    source: local
+    module: eval_benchmarks/personalized_safety
+    python: "3.10"
+    judge_model: openai/glm-5
+    judge_provider: zhipu
+    judge_param: judge_model
+    tasks:
+      - name: personalized_safety_context_free
+        path: eval_benchmarks/personalized_safety_context_free
+      - name: personalized_safety_context_rich
+        path: eval_benchmarks/personalized_safety_context_rich
+
+  personality:
+    # 风险: 11.1 个性化安全 — 人格特质评测 (BFI / TRAIT)
+    source: upstream
+    module: inspect_evals/personality
+    python: "3.10"
+    tasks:
+      - name: personality_BFI
+        path: inspect_evals/personality_BFI
+      - name: personality_TRAIT
+        path: inspect_evals/personality_TRAIT
+
+  sycophancy:
+    # 风险: 11.1 个性化安全 — 谄媚行为评测
+    source: upstream
+    module: inspect_evals/sycophancy
+    python: "3.10"
+    tasks:
+      - name: sycophancy
+        path: inspect_evals/sycophancy
+
+  # ============================================================
+  # 12. 资源耗尽
+  # ============================================================
+
+  overthink:
+    # 风险: 12.1 资源耗尽 — 推理模型过度思考攻击
+    source: local
+    module: eval_benchmarks/overthink
+    python: "3.10"
+    tasks:
+      - name: overthink
+        path: eval_benchmarks/overthink
+
+  # ============================================================
+  # 13. 业务场景安全
+  # ============================================================
+
+  # (raccoon 也属于 13.1 车载语音助手，已在 8.1 中列出)
+  # (healthbench 也属于 13.2 聊天机器人，已在 5.2 中列出)
+
+  truthfulqa:
+    # 风险: 13.2 聊天机器人 — 真实性问答评测
+    source: upstream
+    module: inspect_evals/truthfulqa
+    python: "3.10"
+    tasks:
+      - name: truthfulqa
+        path: inspect_evals/truthfulqa
+
+  gdpval:
+    # 风险: 13.2 聊天机器人 — GDP 验证评测
+    source: upstream
+    module: inspect_evals/gdpval
+    python: "3.10"
+    tasks:
+      - name: gdpval
+        path: inspect_evals/gdpval
+
+  # ============================================================
+  # 14. 长期运行安全
+  # ============================================================
+
+  # asb:
+  #   # 风险: 14.1 长期运行安全 — Agent Security Bench
+  #   # [新复现] 待实现 — 原始仓库: https://github.com/agiresearch/ASB
+  #   source: local
+  #   module: eval_benchmarks/asb
+  #   python: "3.10"
+  #   tasks:
+  #     - name: asb
+  #       path: eval_benchmarks/asb
+
+  gdm_self_reasoning:
+    # 风险: 14.1 长期运行安全 — GDM 自我推理评测 (gdm_capabilities 子模块)
+    source: upstream
+    module: inspect_evals/gdm_capabilities
+    python: "3.10"
+    tasks:
+      - name: gdm_approved_directories
+        path: upstream/inspect_evals/src/inspect_evals/gdm_capabilities/self_reasoning/task.py@gdm_approved_directories
+      - name: gdm_calculator_improvement
+        path: upstream/inspect_evals/src/inspect_evals/gdm_capabilities/self_reasoning/task.py@gdm_calculator_improvement
+      - name: gdm_context_length_mod_instrumental_only
+        path: upstream/inspect_evals/src/inspect_evals/gdm_capabilities/self_reasoning/task.py@gdm_context_length_mod_instrumental_only
+      - name: gdm_context_length_mod_irreversibility_only
+        path: upstream/inspect_evals/src/inspect_evals/gdm_capabilities/self_reasoning/task.py@gdm_context_length_mod_irreversibility_only
+      - name: gdm_database_tool
+        path: upstream/inspect_evals/src/inspect_evals/gdm_capabilities/self_reasoning/task.py@gdm_database_tool
+      - name: gdm_latency_calculator
+        path: upstream/inspect_evals/src/inspect_evals/gdm_capabilities/self_reasoning/task.py@gdm_latency_calculator
+      - name: gdm_max_messages_calculator
+        path: upstream/inspect_evals/src/inspect_evals/gdm_capabilities/self_reasoning/task.py@gdm_max_messages_calculator
+      - name: gdm_max_tokens
+        path: upstream/inspect_evals/src/inspect_evals/gdm_capabilities/self_reasoning/task.py@gdm_max_tokens
+      - name: gdm_oversight_frequency
+        path: upstream/inspect_evals/src/inspect_evals/gdm_capabilities/self_reasoning/task.py@gdm_oversight_frequency
+      - name: gdm_read_logs
+        path: upstream/inspect_evals/src/inspect_evals/gdm_capabilities/self_reasoning/task.py@gdm_read_logs
+      - name: gdm_turn_off_filters
+        path: upstream/inspect_evals/src/inspect_evals/gdm_capabilities/self_reasoning/task.py@gdm_turn_off_filters
+
+  # ============================================================
+  # 15. 高阶异常行为
+  # ============================================================
+
+  # --- 15.1 欺诈: 智能体会发展出规避监督或隐瞒行为的策略 ---
+
+  agentic_misalignment:
+    # 风险: 15.1 欺诈 — 智能体对齐偏差评测
+    source: upstream
+    module: inspect_evals/agentic_misalignment
+    python: "3.10"
+    tasks:
+      - name: agentic_misalignment
+        path: inspect_evals/agentic_misalignment
+
+  gdm_stealth:
+    # 风险: 15.1 欺诈 — GDM 隐蔽行为评测 (gdm_capabilities 子模块)
+    source: upstream
+    module: inspect_evals/gdm_capabilities
+    python: "3.10"
+    tasks:
+      - name: gdm_oversight_pattern
+        path: upstream/inspect_evals/src/inspect_evals/gdm_capabilities/stealth/task.py@gdm_oversight_pattern
+      - name: gdm_classifier_evasion
+        path: upstream/inspect_evals/src/inspect_evals/gdm_capabilities/stealth/task.py@gdm_classifier_evasion
+      - name: gdm_cover_your_tracks
+        path: upstream/inspect_evals/src/inspect_evals/gdm_capabilities/stealth/task.py@gdm_cover_your_tracks
+      - name: gdm_strategic_rule_breaking
+        path: upstream/inspect_evals/src/inspect_evals/gdm_capabilities/stealth/task.py@gdm_strategic_rule_breaking
+
+  # --- 15.2 高压崩溃: 模型在高负荷或极端情境下出现失控 ---
+
+  # survive_at_all_costs:
+  #   # 风险: 15.2 高压崩溃 — 极端自保行为评测
+  #   # [新复现] 待实现 — 原始仓库: https://github.com/Yida-Ding/Survive-at-All-Costs
+  #   source: local
+  #   module: eval_benchmarks/survive_at_all_costs
+  #   python: "3.10"
+  #   tasks:
+  #     - name: survive_at_all_costs
+  #       path: eval_benchmarks/survive_at_all_costs
+
+  # ============================================================
+  # 其他 (不在当前风险分类体系中，但已启用)
+  # ============================================================
+
+  browse_comp:
+    # 浏览器理解能力评测
+    source: upstream
+    module: inspect_evals/browse_comp
+    python: "3.10"
+    tasks:
+      - name: browse_comp
+        path: inspect_evals/browse_comp
+        # Docker sandbox is default in the task itself (DEFAULT_DOCKER_SANDBOX)

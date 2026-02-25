@@ -21,14 +21,9 @@ from inspect_ai import Task, task
 from inspect_ai.model import ChatMessageSystem, GenerateConfig
 from inspect_ai.solver import Generate, Solver, TaskState, solver
 
-try:
-    from .dataset import DEFAULT_SYSTEM_PROMPT, load_raccoon_dataset
-    from .scorer import DEFAULT_SUCCESS_THRESHOLD, raccoon_scorer
-    from .templates import OPENAI_DEFAULT_TEMPLATE
-except ImportError:
-    from dataset import DEFAULT_SYSTEM_PROMPT, load_raccoon_dataset
-    from scorer import DEFAULT_SUCCESS_THRESHOLD, raccoon_scorer
-    from templates import OPENAI_DEFAULT_TEMPLATE
+from .dataset import DEFAULT_SYSTEM_PROMPT, load_raccoon_dataset
+from .scorer import DEFAULT_SUCCESS_THRESHOLD, raccoon_scorer
+from .templates import OPENAI_DEFAULT_TEMPLATE
 
 if TYPE_CHECKING:
     pass

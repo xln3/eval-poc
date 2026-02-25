@@ -28,24 +28,14 @@ from inspect_ai import Task, task
 from inspect_ai.model import GenerateConfig, Model
 from inspect_ai.solver import Generate, Solver, TaskState, solver
 
-try:
-    from .dataset import load_freshqa_dataset
-    from .scorer import reasoning_overhead
-    from .templates import (
-        MDP_PROBLEM_TEMPLATES,
-        TARGET_CONTEXT_TEMPLATES,
-        WEAVING_TEMPLATES_FRESHQA,
-    )
-    from .wikipedia import fetch_wikipedia_article
-except ImportError:
-    from dataset import load_freshqa_dataset
-    from scorer import reasoning_overhead
-    from templates import (
-        MDP_PROBLEM_TEMPLATES,
-        TARGET_CONTEXT_TEMPLATES,
-        WEAVING_TEMPLATES_FRESHQA,
-    )
-    from wikipedia import fetch_wikipedia_article
+from .dataset import load_freshqa_dataset
+from .scorer import reasoning_overhead
+from .templates import (
+    MDP_PROBLEM_TEMPLATES,
+    TARGET_CONTEXT_TEMPLATES,
+    WEAVING_TEMPLATES_FRESHQA,
+)
+from .wikipedia import fetch_wikipedia_article
 
 # =============================================================================
 # Solvers

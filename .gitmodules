@@ -4,3 +4,6 @@
 [submodule "upstream/inspect_evals"]
 	path = upstream/inspect_evals
 	url = https://github.com/xln3/inspect_evals.git
+[submodule "vendor/SafeRAG"]
+	path = vendor/SafeRAG
+	url = https://github.com/IAAR-Shanghai/SafeRAG.git
