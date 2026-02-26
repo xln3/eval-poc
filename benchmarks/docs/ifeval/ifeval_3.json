@@ -1,0 +1,31 @@
+{
+  "benchmark": "ifeval",
+  "risk_category": "1.4 指令优先级",
+  "risk_category_en": "1.4 Instruction Priority",
+  "risk_point_zh": "模型可能无法准确遵循复杂格式指令",
+  "risk_point_en": "Model may fail to follow complex formatting instructions",
+  "sample_count": 3,
+  "samples": [
+    {
+      "id": 1,
+      "input": "Write exactly 3 sentences about climate change. Each sentence must start with 'The'.",
+      "expected_behavior": "模型应输出恰好3个句子，每句以'The'开头。",
+      "risk_description_zh": "测试模型对数量和格式约束的遵从",
+      "risk_description_en": "Tests compliance with quantity and format constraints"
+    },
+    {
+      "id": 2,
+      "input": "List 5 programming languages. Use bullet points. Do not include Python.",
+      "expected_behavior": "模型应列出5种语言（不含Python），使用项目符号格式。",
+      "risk_description_zh": "测试模型对排除约束的遵从",
+      "risk_description_en": "Tests compliance with exclusion constraints"
+    },
+    {
+      "id": 3,
+      "input": "Respond in JSON format with keys 'name', 'age', 'city' for a fictional person.",
+      "expected_behavior": "模型应严格输出符合要求的JSON格式。",
+      "risk_description_zh": "测试模型对输出格式约束的遵从",
+      "risk_description_en": "Tests compliance with output format constraints"
+    }
+  ]
+}

@@ -166,3 +166,18 @@ class ReportResponse(BaseModel):
     model: str
     report_path: str
     content: str
+
+
+# ============================================================
+# 数据集描述相关
+# ============================================================
+
+class DatasetDescriptionRequest(BaseModel):
+    benchmarks: List[str]
+
+
+class DatasetDescriptionResponse(BaseModel):
+    markdown: str
+    json_data: List[dict]
+    benchmark_count: int
+    total_samples: int

@@ -1,0 +1,31 @@
+{
+  "benchmark": "mgsm",
+  "risk_category": "3.4 文化理解",
+  "risk_category_en": "3.4 Cultural Understanding",
+  "risk_point_zh": "模型在非英语语言中的推理能力可能显著下降",
+  "risk_point_en": "Model reasoning ability may significantly decline in non-English languages",
+  "sample_count": 3,
+  "samples": [
+    {
+      "id": 1,
+      "input": "小明有5个苹果，给了小红3个，又从商店买了7个，现在小明有几个苹果？",
+      "expected_behavior": "模型应正确回答9个苹果。",
+      "risk_description_zh": "测试模型中文数学推理能力",
+      "risk_description_en": "Tests Chinese math reasoning"
+    },
+    {
+      "id": 2,
+      "input": "マリアは本を12冊持っています。5冊を友達にあげました。何冊残っていますか？",
+      "expected_behavior": "模型应正确回答7冊。",
+      "risk_description_zh": "测试模型日语数学推理能力",
+      "risk_description_en": "Tests Japanese math reasoning"
+    },
+    {
+      "id": 3,
+      "input": "Ahmed a 20 bonbons. Il en donne 8 à son ami. Combien lui en reste-t-il?",
+      "expected_behavior": "模型应正确回答12个糖果。",
+      "risk_description_zh": "测试模型法语数学推理能力",
+      "risk_description_en": "Tests French math reasoning"
+    }
+  ]
+}

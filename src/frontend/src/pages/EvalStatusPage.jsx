@@ -1,6 +1,6 @@
-import { useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { CheckCircle2, XCircle } from 'lucide-react'
+import { CheckCircle2, XCircle, FileDown } from 'lucide-react'
 import Header from '../components/layout/Header'
 import Card, { CardBody } from '../components/common/Card'
 import Badge from '../components/common/Badge'
@@ -9,6 +9,7 @@ import Loading from '../components/common/Loading'
 import EvalProgress from '../components/evaluation/EvalProgress'
 import { usePolling } from '../hooks/usePolling'
 import { fetchEvaluation } from '../api/evaluations'
+import { generateDatasetDescription } from '../api/reports'
 
 export default function EvalStatusPage() {
   const { id } = useParams()
@@ -16,6 +17,38 @@ export default function EvalStatusPage() {
 
   const fetchFn = useCallback(() => fetchEvaluation(id), [id])
   const { data: job, loading, error } = usePolling(fetchFn, 3000)
+  const [generatingDataset, setGeneratingDataset] = useState(false)
+
+  const handleGenerateDatasetDescription = async () => {
+    if (!job?.benchmarks?.length) return
+    setGeneratingDataset(true)
+    try {
+      const result = await generateDatasetDescription(job.benchmarks)
+
+      // Download markdown
+      const mdBlob = new Blob([result.markdown], { type: 'text/markdown' })
+      const mdUrl = URL.createObjectURL(mdBlob)
+      const mdLink = document.createElement('a')
+      mdLink.href = mdUrl
+      mdLink.download = `dataset_description_${Date.now()}.md`
+      mdLink.click()
+      URL.revokeObjectURL(mdUrl)
+
+      // Download JSON
+      const jsonBlob = new Blob([JSON.stringify(result.json_data, null, 2)], { type: 'application/json' })
+      const jsonUrl = URL.createObjectURL(jsonBlob)
+      const jsonLink = document.createElement('a')
+      jsonLink.href = jsonUrl
+      jsonLink.download = `mixed_dataset_${Date.now()}.json`
+      jsonLink.click()
+      URL.revokeObjectURL(jsonUrl)
+    } catch (err) {
+      console.error('Failed to generate dataset description:', err)
+      alert('生成测试数据集说明失败: ' + err.message)
+    } finally {
+      setGeneratingDataset(false)
+    }
+  }
 
   // Auto-navigate on completion
   useEffect(() => {
@@ -49,11 +82,23 @@ export default function EvalStatusPage() {
         title="评测进度"
         subtitle={`任务 ${id}`}
         actions={
-          job?.status === 'completed' && (
-            <Button onClick={() => navigate(`/results/${encodeURIComponent(job.model_id)}`)}>
-              查看结果
-            </Button>
-          )
+          <div className="flex items-center gap-3">
+            {(job?.status === 'running' || job?.status === 'completed') && (
+              <Button
+                variant="secondary"
+                onClick={handleGenerateDatasetDescription}
+                disabled={generatingDataset || !job?.benchmarks?.length}
+              >
+                <FileDown size={16} />
+                {generatingDataset ? '生成中...' : '生成测试数据集说明'}
+              </Button>
+            )}
+            {job?.status === 'completed' && (
+              <Button onClick={() => navigate(`/results/${encodeURIComponent(job.model_id)}`)}>
+                查看结果
+              </Button>
+            )}
+          </div>
         }
       />
       <div className="flex-1 overflow-y-auto custom-scroll p-6">

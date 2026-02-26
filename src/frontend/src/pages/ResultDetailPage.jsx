@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { Shield, FileText } from 'lucide-react'
+import { Shield, FileText, FileDown } from 'lucide-react'
 import Header from '../components/layout/Header'
 import Card, { CardBody } from '../components/common/Card'
 import Button from '../components/common/Button'
@@ -11,7 +11,7 @@ import RiskLevelBadge from '../components/results/RiskLevelBadge'
 import ScoreBar from '../components/results/ScoreBar'
 import { useToast } from '../hooks/useToast'
 import { fetchResultDetail } from '../api/results'
-import { generateReport } from '../api/reports'
+import { generateReport, generateDatasetDescription } from '../api/reports'
 import { TASK_META } from '../constants/benchmarkMeta'
 import { RISK_LEVELS, getRating, getStars } from '../constants/riskLevels'
 
@@ -22,6 +22,7 @@ export default function ResultDetailPage() {
   const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(true)
   const [generating, setGenerating] = useState(false)
+  const [generatingDataset, setGeneratingDataset] = useState(false)
 
   useEffect(() => {
     fetchResultDetail(model)
@@ -50,6 +51,39 @@ export default function ResultDetailPage() {
     }
   }
 
+  const handleGenerateDatasetDescription = async () => {
+    if (!result?.tasks?.length) return
+    setGeneratingDataset(true)
+    try {
+      const benchmarks = [...new Set(result.tasks.map(t => t.task.split(':')[0].split('/')[0]))]
+      const apiResult = await generateDatasetDescription(benchmarks)
+
+      // Download markdown
+      const mdBlob = new Blob([apiResult.markdown], { type: 'text/markdown' })
+      const mdUrl = URL.createObjectURL(mdBlob)
+      const mdLink = document.createElement('a')
+      mdLink.href = mdUrl
+      mdLink.download = `dataset_description_${model.replace(/\//g, '_')}_${Date.now()}.md`
+      mdLink.click()
+      URL.revokeObjectURL(mdUrl)
+
+      // Download JSON
+      const jsonBlob = new Blob([JSON.stringify(apiResult.json_data, null, 2)], { type: 'application/json' })
+      const jsonUrl = URL.createObjectURL(jsonBlob)
+      const jsonLink = document.createElement('a')
+      jsonLink.href = jsonUrl
+      jsonLink.download = `mixed_dataset_${Date.now()}.json`
+      jsonLink.click()
+      URL.revokeObjectURL(jsonUrl)
+
+      toast.success('数据集说明已生成')
+    } catch (e) {
+      toast.error('生成数据集说明失败: ' + e.message)
+    } finally {
+      setGeneratingDataset(false)
+    }
+  }
+
   if (loading) return <><Header title="结果详情" /><Loading /></>
   if (!result) return <><Header title="结果详情" /><EmptyState icon={<FileText size={48} />} title="未找到结果" description={`模型 ${model} 没有评测数据`} /></>
 
@@ -59,9 +93,19 @@ export default function ResultDetailPage() {
         title={result.model}
         subtitle="评测结果详情"
         actions={
-          <Button onClick={handleGenerateReport} disabled={generating}>
-            {generating ? '生成中...' : '生成报告'}
-          </Button>
+          <div className="flex items-center gap-3">
+            <Button
+              variant="secondary"
+              onClick={handleGenerateDatasetDescription}
+              disabled={generatingDataset || !result?.tasks?.length}
+            >
+              <FileDown size={16} />
+              {generatingDataset ? '生成中...' : '生成测试数据集说明'}
+            </Button>
+            <Button onClick={handleGenerateReport} disabled={generating}>
+              {generating ? '生成中...' : '生成报告'}
+            </Button>
+          </div>
         }
       />
       <div className="flex-1 overflow-y-auto custom-scroll p-6">

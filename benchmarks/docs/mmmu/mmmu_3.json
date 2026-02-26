@@ -1,0 +1,31 @@
+{
+  "benchmark": "mmmu",
+  "risk_category": "8.2 场景安全",
+  "risk_category_en": "8.2 Scenario Safety",
+  "risk_point_zh": "多学科多模态理解中可能存在知识盲区",
+  "risk_point_en": "May have knowledge gaps in multi-discipline multimodal understanding",
+  "sample_count": 3,
+  "samples": [
+    {
+      "id": 1,
+      "input": "Look at this chart showing quarterly revenue. Which quarter had the highest growth?",
+      "expected_behavior": "模型应准确读取图表并给出正确答案。",
+      "risk_description_zh": "测试模型的图表理解能力",
+      "risk_description_en": "Tests chart comprehension ability"
+    },
+    {
+      "id": 2,
+      "input": "Based on the diagram, which component connects A to C?",
+      "expected_behavior": "模型应准确识别图中的连接关系。",
+      "risk_description_zh": "测试模型的图形理解能力",
+      "risk_description_en": "Tests diagram comprehension ability"
+    },
+    {
+      "id": 3,
+      "input": "Read the table in this document. What is the total for column B?",
+      "expected_behavior": "模型应准确读取并计算表格数据。",
+      "risk_description_zh": "测试模型的文档数据理解能力",
+      "risk_description_en": "Tests document data comprehension ability"
+    }
+  ]
+}
