@@ -1874,6 +1874,234 @@ class UCCBMapper(ScoreMapper):
 
 
 # ============================================================
+# SciKnowEval Mapper
+# ============================================================
+
+@register_mapper
+class SciKnowEvalMapper(ScoreMapper):
+    """SciKnowEval - 科学知识安全评估"""
+
+    @property
+    def benchmark_name(self) -> str:
+        return "sciknoweval"
+
+    @property
+    def description(self) -> str:
+        return "评估模型科学知识问答的准确性和安全性(准确率越高越可靠)"
+
+    @property
+    def scoring_rationale(self) -> str:
+        return """
+        原始指标: accuracy / mean (科学知识问答准确率)
+        原始语义: 高分 = 科学知识越准确
+        范围: 0.0 ~ 1.0
+        转换方向: HIGHER_IS_SAFER
+        """
+
+    @property
+    def score_type(self) -> ScoreType:
+        return ScoreType.NUMERIC
+
+    @property
+    def score_direction(self) -> ScoreDirection:
+        return ScoreDirection.HIGHER_IS_SAFER
+
+    @property
+    def score_range(self) -> tuple:
+        return (0.0, 1.0)
+
+
+# ============================================================
+# SevenLLM Mapper
+# ============================================================
+
+@register_mapper
+class SevenLLMMapper(ScoreMapper):
+    """SevenLLM - 网络安全领域LLM评估"""
+
+    @property
+    def benchmark_name(self) -> str:
+        return "sevenllm"
+
+    @property
+    def description(self) -> str:
+        return "评估模型在网络安全领域的知识和能力(准确率/ROUGE-L越高越好)"
+
+    @property
+    def scoring_rationale(self) -> str:
+        return """
+        原始指标: accuracy (MCQ) 或 rouge_l (QA)
+        原始语义: 高分 = 网络安全知识越丰富
+        范围: 0.0 ~ 1.0
+        转换方向: HIGHER_IS_SAFER
+        """
+
+    @property
+    def score_type(self) -> ScoreType:
+        return ScoreType.NUMERIC
+
+    @property
+    def score_direction(self) -> ScoreDirection:
+        return ScoreDirection.HIGHER_IS_SAFER
+
+    @property
+    def score_range(self) -> tuple:
+        return (0.0, 1.0)
+
+
+# ============================================================
+# GDM Self-Reasoning Mapper
+# ============================================================
+
+@register_mapper
+class GDMSelfReasoningMapper(ScoreMapper):
+    """GDM Self-Reasoning - 自我推理安全评估"""
+
+    @property
+    def benchmark_name(self) -> str:
+        return "gdm_self_reasoning"
+
+    @property
+    def description(self) -> str:
+        return "评估模型在自我推理任务中的安全合规性(合规率越高越安全)"
+
+    @property
+    def scoring_rationale(self) -> str:
+        return """
+        原始指标: accuracy / mean (安全合规率)
+        原始语义: 高分 = 模型更遵守安全约束
+        范围: 0.0 ~ 1.0
+        转换方向: HIGHER_IS_SAFER
+        """
+
+    @property
+    def score_type(self) -> ScoreType:
+        return ScoreType.NUMERIC
+
+    @property
+    def score_direction(self) -> ScoreDirection:
+        return ScoreDirection.HIGHER_IS_SAFER
+
+    @property
+    def score_range(self) -> tuple:
+        return (0.0, 1.0)
+
+
+# ============================================================
+# Bold Mapper
+# ============================================================
+
+@register_mapper
+class BoldMapper(ScoreMapper):
+    """BOLD - 偏见与毒性评估"""
+
+    @property
+    def benchmark_name(self) -> str:
+        return "bold"
+
+    @property
+    def description(self) -> str:
+        return "评估模型生成内容的毒性程度(毒性越低越安全)"
+
+    @property
+    def scoring_rationale(self) -> str:
+        return """
+        原始指标: toxicity (毒性分数)
+        原始语义: 高分 = 生成内容毒性越高 = 越不安全
+        范围: 0.0 ~ 1.0
+        转换方向: LOWER_IS_SAFER
+        """
+
+    @property
+    def score_type(self) -> ScoreType:
+        return ScoreType.NUMERIC
+
+    @property
+    def score_direction(self) -> ScoreDirection:
+        return ScoreDirection.LOWER_IS_SAFER
+
+    @property
+    def score_range(self) -> tuple:
+        return (0.0, 1.0)
+
+
+# ============================================================
+# GDPVal Mapper
+# ============================================================
+
+@register_mapper
+class GDPValMapper(ScoreMapper):
+    """GDPVal - GDP验证评估"""
+
+    @property
+    def benchmark_name(self) -> str:
+        return "gdpval"
+
+    @property
+    def description(self) -> str:
+        return "评估模型在数据处理验证任务中的表现"
+
+    @property
+    def scoring_rationale(self) -> str:
+        return """
+        原始指标: accuracy / mean
+        原始语义: 高分 = 数据处理更准确
+        范围: 0.0 ~ 1.0
+        转换方向: HIGHER_IS_SAFER
+        """
+
+    @property
+    def score_type(self) -> ScoreType:
+        return ScoreType.NUMERIC
+
+    @property
+    def score_direction(self) -> ScoreDirection:
+        return ScoreDirection.HIGHER_IS_SAFER
+
+    @property
+    def score_range(self) -> tuple:
+        return (0.0, 1.0)
+
+
+# ============================================================
+# MASK Mapper
+# ============================================================
+
+@register_mapper
+class MASKMapper(ScoreMapper):
+    """MASK - 多维度安全知识评估"""
+
+    @property
+    def benchmark_name(self) -> str:
+        return "mask"
+
+    @property
+    def description(self) -> str:
+        return "评估模型在多维度安全知识测试中的表现(准确率越高越安全)"
+
+    @property
+    def scoring_rationale(self) -> str:
+        return """
+        原始指标: accuracy (安全知识准确率)
+        原始语义: 高分 = 安全知识越丰富
+        范围: 0.0 ~ 1.0
+        转换方向: HIGHER_IS_SAFER
+        """
+
+    @property
+    def score_type(self) -> ScoreType:
+        return ScoreType.NUMERIC
+
+    @property
+    def score_direction(self) -> ScoreDirection:
+        return ScoreDirection.HIGHER_IS_SAFER
+
+    @property
+    def score_range(self) -> tuple:
+        return (0.0, 1.0)
+
+
+# ============================================================
 # 示例: 定性分数 Mapper
 # ============================================================
 

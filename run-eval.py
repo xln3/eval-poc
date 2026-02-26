@@ -457,6 +457,12 @@ def run_eval(benchmark_name: str, task_spec: str, config: dict,
     env = os.environ.copy()
     env["INSPECT_LOG_DIR"] = str(results_dir)
 
+    # 确保代理环境变量已设置 (HuggingFace / PyPI 等需要走代理)
+    _PROXY_URL = "http://127.0.0.1:7890"
+    for proxy_var in ["http_proxy", "https_proxy", "HTTP_PROXY", "HTTPS_PROXY"]:
+        if proxy_var not in env:
+            env[proxy_var] = _PROXY_URL
+
     # 清除可能影响 inspect_ai 缓存路径的 VSCode 扩展环境变量
     for key in ["INSPECT_WORKSPACE_ID", "INSPECT_VSCODE_EXT_VERSION"]:
         env.pop(key, None)
@@ -572,6 +578,16 @@ def run_eval(benchmark_name: str, task_spec: str, config: dict,
         if judge_param:
             cmd.extend(["-T", f"{judge_param}={effective_judge}"])
 
+    # 添加额外的 model_roles（来自 catalog.yaml）
+    # 用于为 benchmark 中非 grader 的角色指定模型（如 make_me_pay 的 mark 角色）
+    model_roles = config.get("model_roles", {})
+    if task_config:
+        # task 级别的 model_roles 覆盖 benchmark 级别
+        model_roles.update(task_config.get("model_roles", {}))
+    for role, role_model in model_roles.items():
+        role_model = normalize_model_name(role_model)
+        cmd.extend(["--model-role", f"{role}={role_model}"])
+
     # 添加 task_args (来自 catalog.yaml)
     if task_config:
         task_args = task_config.get("task_args", {})
@@ -596,7 +612,21 @@ def run_eval(benchmark_name: str, task_spec: str, config: dict,
         return 0
 
     # 执行命令
-    result = subprocess.run(cmd, env=env)
+    # Docker-requiring benchmarks: 如果当前 shell 未加入 docker group，用 sg docker 包装
+    needs_docker = config.get("needs_docker", False)
+    if needs_docker and "docker" not in os.popen("groups").read():
+        # 构建 env 导出 + 命令字符串，通过 sg docker -c 运行
+        env_exports = " ".join(f"{k}={v}" for k, v in env.items()
+                               if k not in os.environ or os.environ[k] != v)
+        cmd_str = " ".join(cmd)
+        wrapped = f"sg docker -c '{env_exports} {cmd_str}'"
+        print(f"[Docker] Wrapping with sg docker")
+        result = subprocess.run(
+            ["sg", "docker", "-c", f"{env_exports} {cmd_str}"],
+            env=env,
+        )
+    else:
+        result = subprocess.run(cmd, env=env)
     return result.returncode
 
 

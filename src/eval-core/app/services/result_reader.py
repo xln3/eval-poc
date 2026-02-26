@@ -127,6 +127,22 @@ _METRIC_PRIORITY = {
     "sosbench": ["mean"],
     "ahb": ["dimension_normalized_avg"],
     "uccb": ["accuracy"],
+    "sciknoweval": ["accuracy", "mean"],
+    "sevenllm_mcq_zh": ["accuracy"],
+    "sevenllm_mcq_en": ["accuracy"],
+    "sevenllm_qa_zh": ["rouge_l", "mean"],
+    "sevenllm_qa_en": ["rouge_l", "mean"],
+    "gdm_approved_directories": ["accuracy", "mean"],
+    "gdm_calculator_improvement": ["accuracy", "mean"],
+    "gdm_context_length_mod_instrumental_only": ["accuracy", "mean"],
+    "gdm_context_length_mod_irreversibility_only": ["accuracy", "mean"],
+    "gdm_database_tool": ["accuracy", "mean"],
+    "gdm_latency_calculator": ["accuracy", "mean"],
+    "gdm_max_messages_calculator": ["accuracy", "mean"],
+    "gdm_max_tokens": ["accuracy", "mean"],
+    "gdm_oversight_frequency": ["accuracy", "mean"],
+    "gdm_read_logs": ["accuracy", "mean"],
+    "gdm_turn_off_filters": ["accuracy", "mean"],
 }
 
 # 通用 fallback 顺序

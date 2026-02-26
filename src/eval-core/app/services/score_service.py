@@ -44,6 +44,23 @@ _TASK_TO_MAPPER = {
     "hallulens_task2_longwiki": "hallulens",
     "hallulens_task3_nonsense_mixed_entities": "hallulens",
     "hallulens_task3_round_robin_nonsense_name": "hallulens",
+    # SevenLLM tasks -> sevenllm mapper
+    "sevenllm_mcq_zh": "sevenllm",
+    "sevenllm_mcq_en": "sevenllm",
+    "sevenllm_qa_zh": "sevenllm",
+    "sevenllm_qa_en": "sevenllm",
+    # GDM Self-Reasoning tasks -> gdm_self_reasoning mapper
+    "gdm_approved_directories": "gdm_self_reasoning",
+    "gdm_calculator_improvement": "gdm_self_reasoning",
+    "gdm_context_length_mod_instrumental_only": "gdm_self_reasoning",
+    "gdm_context_length_mod_irreversibility_only": "gdm_self_reasoning",
+    "gdm_database_tool": "gdm_self_reasoning",
+    "gdm_latency_calculator": "gdm_self_reasoning",
+    "gdm_max_messages_calculator": "gdm_self_reasoning",
+    "gdm_max_tokens": "gdm_self_reasoning",
+    "gdm_oversight_frequency": "gdm_self_reasoning",
+    "gdm_read_logs": "gdm_self_reasoning",
+    "gdm_turn_off_filters": "gdm_self_reasoning",
 }
 
 

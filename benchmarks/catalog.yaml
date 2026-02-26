@@ -67,12 +67,17 @@ benchmarks:
 
   make_me_pay:
     # 风险: 1.1 恶意使用 / 10.1 多智能体安全 — 社会工程攻击模拟
+    # mark 模型 (受害者) 默认 google/gemini-2.5-flash-lite，通过 model_roles 覆盖
     source: upstream
     module: inspect_evals/make_me_pay
     python: "3.10"
+    judge_model: openai/alicloud-qwen3.5-plus
+    judge_provider: aihubmix_judge
+    model_roles:
+      mark: openai/alicloud-qwen3.5-plus
     tasks:
       - name: make_me_pay
-        path: inspect_evals/make_me_pay
+        path: upstream/inspect_evals/src/inspect_evals/make_me_pay/make_me_pay.py@make_me_pay
 
   # --- 1.2 过度拒绝: 模型因安全限制过强而拒绝合理且安全的请求 ---
 
@@ -104,8 +109,8 @@ benchmarks:
     source: upstream
     module: inspect_evals/cyberseceval_2
     python: "3.10"
-    judge_model: openai/glm-5
-    judge_provider: zhipu
+    judge_model: openai/alicloud-qwen3.5-plus
+    judge_provider: aihubmix_judge
     judge_param: judge_llm
     tasks:
       - name: cyse2_interpreter_abuse
@@ -137,11 +142,17 @@ benchmarks:
     source: upstream
     module: inspect_evals/fortress
     python: "3.10"
+    judge_model: openai/alicloud-qwen3.5-plus
+    judge_provider: aihubmix_judge
     tasks:
       - name: fortress_adversarial
         path: inspect_evals/fortress_adversarial
+        task_args:
+          grader_models: '["openai/alicloud-qwen3.5-plus"]'
       - name: fortress_benign
         path: inspect_evals/fortress_benign
+        task_args:
+          grader_model: openai/alicloud-qwen3.5-plus
 
   # --- 1.4 指令优先级: 模型在面对多来源或冲突指令时可能错误判断主次 ---
 
@@ -252,6 +263,8 @@ benchmarks:
     source: upstream
     module: inspect_evals/sciknoweval
     python: "3.10"
+    judge_model: openai/alicloud-qwen3.5-plus
+    judge_provider: aihubmix_judge
     tasks:
       - name: sciknoweval
         path: inspect_evals/sciknoweval
@@ -272,9 +285,14 @@ benchmarks:
     source: upstream
     module: inspect_evals/abstention_bench
     python: "3.10"
+    judge_model: openai/alicloud-qwen3.5-plus
+    judge_provider: aihubmix_judge
     tasks:
       - name: abstention_bench
         path: inspect_evals/abstention_bench
+        task_args:
+          dataset_name: alcuna
+          grader_model: openai/alicloud-qwen3.5-plus
 
   # ============================================================
   # 3. 合规：模型公平性
@@ -372,8 +390,8 @@ benchmarks:
     source: local
     module: eval_benchmarks/privacylens
     python: "3.10"
-    judge_model: openai/glm-5
-    judge_provider: zhipu
+    judge_model: openai/alicloud-qwen3.5-plus
+    judge_provider: aihubmix_judge
     judge_param: judge_model
     tasks:
       - name: privacylens_probing
@@ -395,6 +413,7 @@ benchmarks:
     source: upstream
     module: inspect_evals/cve_bench
     python: "3.12"
+    needs_docker: true
     extras: [cve_bench]
     tasks:
       - name: cve_bench
@@ -479,6 +498,8 @@ benchmarks:
     source: upstream
     module: inspect_evals/sosbench
     python: "3.10"
+    judge_model: openai/alicloud-qwen3.5-plus
+    judge_provider: aihubmix_judge
     tasks:
       - name: sosbench
         path: inspect_evals/sosbench
@@ -625,8 +646,8 @@ benchmarks:
     source: local
     module: eval_benchmarks/mm_safety_bench
     python: "3.10"
-    judge_model: openai/glm-5
-    judge_provider: zhipu
+    judge_model: openai/alicloud-qwen3.5-plus
+    judge_provider: aihubmix_judge
     judge_param: judge_model
     tasks:
       - name: mm_safety_bench_illegal_activity
@@ -659,8 +680,8 @@ benchmarks:
     source: local
     module: eval_benchmarks/mssbench
     python: "3.10"
-    judge_model: openai/glm-5
-    judge_provider: zhipu
+    judge_model: openai/alicloud-qwen3.5-plus
+    judge_provider: aihubmix_judge
     judge_param: judge_model
     tasks:
       - name: mssbench_chat_if
@@ -753,8 +774,8 @@ benchmarks:
     source: local
     module: eval_benchmarks/safeagentbench
     python: "3.10"
-    judge_model: openai/glm-5
-    judge_provider: zhipu
+    judge_model: openai/alicloud-qwen3.5-plus
+    judge_provider: aihubmix_judge
     judge_param: judge_model
     tasks:
       - name: safeagentbench
@@ -826,8 +847,8 @@ benchmarks:
     source: local
     module: eval_benchmarks/personalized_safety
     python: "3.10"
-    judge_model: openai/glm-5
-    judge_provider: zhipu
+    judge_model: openai/alicloud-qwen3.5-plus
+    judge_provider: aihubmix_judge
     judge_param: judge_model
     tasks:
       - name: personalized_safety_context_free
@@ -889,6 +910,7 @@ benchmarks:
     source: upstream
     module: inspect_evals/gdpval
     python: "3.10"
+    needs_docker: true
     tasks:
       - name: gdpval
         path: inspect_evals/gdpval
@@ -912,6 +934,7 @@ benchmarks:
     source: upstream
     module: inspect_evals/gdm_capabilities
     python: "3.10"
+    needs_docker: true
     tasks:
       - name: gdm_approved_directories
         path: upstream/inspect_evals/src/inspect_evals/gdm_capabilities/self_reasoning/task.py@gdm_approved_directories
