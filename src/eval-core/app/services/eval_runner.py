@@ -58,9 +58,9 @@ def _save_jobs():
 _jobs: Dict[str, EvalJob] = _load_jobs()
 
 # 默认并行任务数（可通过环境变量覆盖）
-DEFAULT_MAX_PARALLEL_TASKS = int(os.environ.get("EVAL_MAX_PARALLEL_TASKS", "8"))
+DEFAULT_MAX_PARALLEL_TASKS = int(os.environ.get("EVAL_MAX_PARALLEL_TASKS", "32"))
 # 默认 inspect_ai 并发连接数
-DEFAULT_MAX_CONNECTIONS = int(os.environ.get("EVAL_MAX_CONNECTIONS", "128"))
+DEFAULT_MAX_CONNECTIONS = int(os.environ.get("EVAL_MAX_CONNECTIONS", "256"))
 
 # Track asyncio tasks and subprocesses for cancellation
 _async_tasks: Dict[str, asyncio.Task] = {}
