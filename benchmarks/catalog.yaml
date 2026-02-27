@@ -979,6 +979,7 @@ benchmarks:
     source: upstream
     module: inspect_evals/gdm_capabilities
     python: "3.10"
+    needs_docker: true
     tasks:
       - name: gdm_oversight_pattern
         path: upstream/inspect_evals/src/inspect_evals/gdm_capabilities/stealth/task.py@gdm_oversight_pattern
