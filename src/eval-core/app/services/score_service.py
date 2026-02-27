@@ -53,6 +53,15 @@ _TASK_TO_MAPPER = {
     "assistant_bench_closed_book": "assistant_bench",
     "assistant_bench_closed_book_zero_shot": "assistant_bench",
     "assistant_bench_web_browser": "assistant_bench",
+    # MSSBench tasks -> mssbench mapper
+    "mssbench_chat_if": "mssbench",
+    "mssbench_chat_qc": "mssbench",
+    "mssbench_chat_ic": "mssbench",
+    "mssbench_chat_ic_cap": "mssbench",
+    "mssbench_embodied_if": "mssbench",
+    "mssbench_embodied_qc": "mssbench",
+    "mssbench_embodied_ic": "mssbench",
+    "mssbench_embodied_ic_cap": "mssbench",
     # GDM Self-Reasoning tasks -> gdm_self_reasoning mapper
     "gdm_approved_directories": "gdm_self_reasoning",
     "gdm_calculator_improvement": "gdm_self_reasoning",

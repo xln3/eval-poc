@@ -149,6 +149,14 @@ _METRIC_PRIORITY = {
     "assistant_bench_closed_book_zero_shot": ["assistant_bench_accuracy", "accuracy"],
     "assistant_bench_web_browser": ["assistant_bench_accuracy", "accuracy"],
     "gaia": ["accuracy"],
+    "mssbench_chat_if": ["accuracy"],
+    "mssbench_chat_qc": ["accuracy"],
+    "mssbench_chat_ic": ["accuracy"],
+    "mssbench_chat_ic_cap": ["accuracy"],
+    "mssbench_embodied_if": ["accuracy"],
+    "mssbench_embodied_qc": ["accuracy"],
+    "mssbench_embodied_ic": ["accuracy"],
+    "mssbench_embodied_ic_cap": ["accuracy"],
 }
 
 # 通用 fallback 顺序
