@@ -58,9 +58,13 @@ def _save_jobs():
 _jobs: Dict[str, EvalJob] = _load_jobs()
 
 # 默认并行任务数（可通过环境变量覆盖）
-DEFAULT_MAX_PARALLEL_TASKS = int(os.environ.get("EVAL_MAX_PARALLEL_TASKS", "4"))
+DEFAULT_MAX_PARALLEL_TASKS = int(os.environ.get("EVAL_MAX_PARALLEL_TASKS", "8"))
 # 默认 inspect_ai 并发连接数
-DEFAULT_MAX_CONNECTIONS = int(os.environ.get("EVAL_MAX_CONNECTIONS", "16"))
+DEFAULT_MAX_CONNECTIONS = int(os.environ.get("EVAL_MAX_CONNECTIONS", "128"))
+
+# Track asyncio tasks and subprocesses for cancellation
+_async_tasks: Dict[str, asyncio.Task] = {}
+_processes: Dict[str, List[asyncio.subprocess.Process]] = {}
 
 
 def get_all_jobs() -> List[EvalJob]:
@@ -113,7 +117,9 @@ async def create_job(req: EvalJobCreate) -> EvalJob:
     _save_jobs()
 
     # 启动异步执行
-    asyncio.create_task(_run_job(job, req.max_parallel_tasks, req.max_connections))
+    task = asyncio.create_task(_run_job(job, req.max_parallel_tasks, req.max_connections))
+    _async_tasks[job.id] = task
+    _processes[job.id] = []
     return job
 
 
@@ -165,6 +171,10 @@ async def _run_job(
     job.completed_at = datetime.now().isoformat()
     _save_jobs()
 
+    # Clean up handles
+    _async_tasks.pop(job.id, None)
+    _processes.pop(job.id, None)
+
 
 async def _run_single_task(job: EvalJob, task: EvalTaskProgress, max_connections: int = 16):
     """执行单个评测任务"""
@@ -198,8 +208,64 @@ async def _run_single_task(job: EvalJob, task: EvalTaskProgress, max_connections
         cwd=str(PROJECT_ROOT),
     )
 
+    # Track process for cancellation
+    if job.id in _processes:
+        _processes[job.id].append(process)
+
     stdout, stderr = await process.communicate()
+
+    # Remove from tracking after completion
+    if job.id in _processes:
+        try:
+            _processes[job.id].remove(process)
+        except ValueError:
+            pass
 
     if process.returncode != 0:
         error_msg = stderr.decode("utf-8", errors="replace")[-500:]
         raise RuntimeError(f"任务 {task.task_name} 执行失败 (exit {process.returncode}): {error_msg}")
+
+
+async def cancel_job(job_id: str) -> bool:
+    """Cancel a running or pending evaluation job."""
+    job = _jobs.get(job_id)
+    if not job:
+        return False
+    if job.status not in (EvalStatus.PENDING, EvalStatus.RUNNING):
+        return False
+
+    # 1. Cancel the asyncio task
+    task = _async_tasks.pop(job_id, None)
+    if task and not task.done():
+        task.cancel()
+
+    # 2. Terminate all tracked subprocesses
+    procs = _processes.pop(job_id, [])
+    for proc in procs:
+        try:
+            proc.terminate()
+        except ProcessLookupError:
+            pass
+    # Give processes a moment to terminate, then force-kill
+    if procs:
+        await asyncio.sleep(1)
+        for proc in procs:
+            try:
+                proc.kill()
+            except ProcessLookupError:
+                pass
+
+    # 3. Update job status
+    job.status = EvalStatus.CANCELLED
+    job.completed_at = datetime.now().isoformat()
+    job.error = "Cancelled by user"
+    job.current_task = None
+    # Mark pending/running tasks as cancelled
+    for t in job.tasks:
+        if t.status in (TaskStatus.PENDING, TaskStatus.RUNNING):
+            t.status = TaskStatus.FAILED
+            t.error = "Cancelled"
+    _save_jobs()
+
+    logger.info("Cancelled job %s", job_id)
+    return True

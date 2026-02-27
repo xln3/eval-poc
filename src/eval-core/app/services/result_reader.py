@@ -78,13 +78,21 @@ def get_results_for_job(model_id: str, task_names: List[str],
     """获取特定 job 时间窗口内的结果（run-scoped results）"""
     from datetime import datetime as dt
 
+    def _parse_naive(s: str) -> dt:
+        """Parse ISO datetime string, stripping timezone to naive for comparison."""
+        parsed = dt.fromisoformat(s.replace("Z", "+00:00"))
+        # Convert to naive (strip tzinfo) for consistent comparison
+        if parsed.tzinfo is not None:
+            parsed = parsed.replace(tzinfo=None)
+        return parsed
+
     # Parse time bounds
     try:
-        t_start = dt.fromisoformat(start_time.replace("+00:00", "+00:00").replace("Z", "+00:00"))
+        t_start = _parse_naive(start_time)
     except Exception:
         t_start = dt.min
     try:
-        t_end = dt.fromisoformat(end_time.replace("+00:00", "+00:00").replace("Z", "+00:00")) if end_time else dt.max
+        t_end = _parse_naive(end_time) if end_time else dt.max
     except Exception:
         t_end = dt.max
 
@@ -120,9 +128,7 @@ def get_results_for_job(model_id: str, task_names: List[str],
                     continue
                 # Filter by time window
                 try:
-                    t_eval = dt.fromisoformat(
-                        result.timestamp.replace("+00:00", "+00:00").replace("Z", "+00:00")
-                    )
+                    t_eval = _parse_naive(result.timestamp)
                 except Exception:
                     continue
                 # Allow 60s buffer before start (clock skew)

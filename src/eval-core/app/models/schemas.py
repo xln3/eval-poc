@@ -71,6 +71,7 @@ class EvalStatus(str, Enum):
     RUNNING = "running"
     COMPLETED = "completed"
     FAILED = "failed"
+    CANCELLED = "cancelled"
 
 
 class TaskStatus(str, Enum):
