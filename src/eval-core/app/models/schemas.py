@@ -95,6 +95,8 @@ class EvalJobCreate(_Base):
     judge_model: Optional[str] = None
     max_parallel_tasks: Optional[int] = None
     max_connections: Optional[int] = None
+    agent_id: Optional[str] = None
+    agent_name: Optional[str] = None
 
 
 class EvalJob(_Base):
@@ -111,6 +113,8 @@ class EvalJob(_Base):
     completed_at: Optional[str] = None
     error: Optional[str] = None
     limit: Optional[int] = None
+    agent_id: Optional[str] = None
+    agent_name: Optional[str] = None
 
 
 # ============================================================

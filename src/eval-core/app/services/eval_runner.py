@@ -64,6 +64,8 @@ async def create_job(req: EvalJobCreate) -> EvalJob:
         progress=0.0,
         created_at=datetime.now().isoformat(),
         limit=req.limit,
+        agent_id=req.agent_id,
+        agent_name=req.agent_name,
     )
     _jobs[job.id] = job
 
