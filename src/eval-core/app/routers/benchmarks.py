@@ -3,7 +3,7 @@
 from fastapi import APIRouter
 from typing import List
 from ..models.schemas import BenchmarkInfo
-from ..services.catalog_service import get_all_benchmarks, TASK_META
+from ..services.catalog_service import get_all_benchmarks, TASK_META, BENCHMARK_META
 
 router = APIRouter(prefix="/api/benchmarks", tags=["benchmarks"])
 
@@ -18,3 +18,9 @@ def list_benchmarks():
 def get_task_metadata():
     """获取所有任务的中文元数据"""
     return TASK_META
+
+
+@router.get("/benchmark-meta")
+def get_benchmark_metadata():
+    """获取所有 benchmark 的元数据（含中英文）"""
+    return BENCHMARK_META
