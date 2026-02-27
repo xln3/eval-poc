@@ -73,6 +73,77 @@ def get_model_results(model_name: str) -> List[EvalFileResult]:
     return []
 
 
+def get_results_for_job(model_id: str, task_names: List[str],
+                        start_time: str, end_time: Optional[str] = None) -> List[EvalFileResult]:
+    """获取特定 job 时间窗口内的结果（run-scoped results）"""
+    from datetime import datetime as dt
+
+    # Parse time bounds
+    try:
+        t_start = dt.fromisoformat(start_time.replace("+00:00", "+00:00").replace("Z", "+00:00"))
+    except Exception:
+        t_start = dt.min
+    try:
+        t_end = dt.fromisoformat(end_time.replace("+00:00", "+00:00").replace("Z", "+00:00")) if end_time else dt.max
+    except Exception:
+        t_end = dt.max
+
+    # Normalize model_id: strip provider prefix for matching
+    model_short = model_id.split("/")[-1].strip()
+    task_set = set(task_names)
+
+    results: List[EvalFileResult] = []
+    if not RESULTS_DIR.exists():
+        return results
+
+    for model_dir in RESULTS_DIR.iterdir():
+        if not model_dir.is_dir():
+            continue
+        # Match model directory
+        dir_name = model_dir.name.strip()
+        if model_short not in dir_name and dir_name not in model_short:
+            continue
+
+        for bench_dir in model_dir.iterdir():
+            if not bench_dir.is_dir():
+                continue
+            logs_dir = bench_dir / "logs"
+            if not logs_dir.exists():
+                continue
+
+            for eval_file in logs_dir.glob("*.eval"):
+                result = _parse_eval_file(str(eval_file))
+                if result is None:
+                    continue
+                # Filter by task list
+                if result.task not in task_set:
+                    continue
+                # Filter by time window
+                try:
+                    t_eval = dt.fromisoformat(
+                        result.timestamp.replace("+00:00", "+00:00").replace("Z", "+00:00")
+                    )
+                except Exception:
+                    continue
+                # Allow 60s buffer before start (clock skew)
+                from datetime import timedelta
+                if t_eval < (t_start - timedelta(seconds=60)):
+                    continue
+                if t_eval > (t_end + timedelta(seconds=60)):
+                    continue
+
+                # Dedup: keep the one with most samples
+                existing = next((r for r in results if r.task == result.task), None)
+                if existing:
+                    if result.samples > existing.samples:
+                        results.remove(existing)
+                        results.append(result)
+                else:
+                    results.append(result)
+
+    return results
+
+
 # 各 benchmark 对应的首选 metric 名称
 # 按优先级排列，取第一个匹配的
 _METRIC_PRIORITY = {
@@ -149,6 +220,13 @@ _METRIC_PRIORITY = {
     "assistant_bench_closed_book_zero_shot": ["assistant_bench_accuracy", "accuracy"],
     "assistant_bench_web_browser": ["assistant_bench_accuracy", "accuracy"],
     "gaia": ["accuracy"],
+    "mm_safety_bench_illegal_activity": ["attack_rate"],
+    "cyse3_visual_prompt_injection": ["accuracy"],
+    "mathvista": ["accuracy"],
+    "mmmu_multiple_choice": ["accuracy"],
+    "mmmu_open": ["accuracy"],
+    "mmiu": ["accuracy"],
+    "docvqa": ["accuracy"],
     "mssbench_chat_if": ["accuracy"],
     "mssbench_chat_qc": ["accuracy"],
     "mssbench_chat_ic": ["accuracy"],
@@ -157,6 +235,9 @@ _METRIC_PRIORITY = {
     "mssbench_embodied_qc": ["accuracy"],
     "mssbench_embodied_ic": ["accuracy"],
     "mssbench_embodied_ic_cap": ["accuracy"],
+    "xstest": ["refusal_rate"],
+    "cybench": ["accuracy"],
+    "threecb": ["accuracy"],
 }
 
 # 通用 fallback 顺序

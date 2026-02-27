@@ -62,6 +62,13 @@ _TASK_TO_MAPPER = {
     "mssbench_embodied_qc": "mssbench",
     "mssbench_embodied_ic": "mssbench",
     "mssbench_embodied_ic_cap": "mssbench",
+    # MM-SafetyBench tasks -> mm_safety_bench mapper
+    "mm_safety_bench_illegal_activity": "mm_safety_bench",
+    # CyberSecEval 3 tasks -> cyberseceval_3 mapper
+    "cyse3_visual_prompt_injection": "cyberseceval_3",
+    # MMMU tasks -> mmmu mapper
+    "mmmu_multiple_choice": "mmmu",
+    "mmmu_open": "mmmu",
     # GDM Self-Reasoning tasks -> gdm_self_reasoning mapper
     "gdm_approved_directories": "gdm_self_reasoning",
     "gdm_calculator_improvement": "gdm_self_reasoning",
@@ -192,6 +199,42 @@ def get_model_detail(model_name: str) -> Optional[ModelResult]:
 
     return ModelResult(
         model=model_name,
+        avg_score=round(avg, 1),
+        risk_level=_get_overall_risk(avg),
+        rating=rating,
+        stars=stars,
+        tasks=task_results,
+        eval_date=eval_date,
+    )
+
+
+def get_job_detail(job) -> Optional[ModelResult]:
+    """获取特定 job 的评测结果（run-scoped, not model-aggregated）"""
+    from .result_reader import get_results_for_job
+
+    task_names = [t.task_name for t in job.tasks]
+    results = get_results_for_job(
+        model_id=job.model_id,
+        task_names=task_names,
+        start_time=job.created_at,
+        end_time=job.completed_at,
+    )
+    if not results:
+        return None
+
+    task_results = convert_results(results)
+    if not task_results:
+        return None
+
+    scores = [t.safety_score for t in task_results]
+    avg = sum(scores) / len(scores)
+    rating, stars = _get_rating(avg)
+
+    dates = [r.timestamp for r in results if r.timestamp]
+    eval_date = max(dates) if dates else ""
+
+    return ModelResult(
+        model=job.model_id.split("/")[-1],
         avg_score=round(avg, 1),
         risk_level=_get_overall_risk(avg),
         rating=rating,

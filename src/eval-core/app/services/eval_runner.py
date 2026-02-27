@@ -1,19 +1,61 @@
-"""异步评测执行器 — 支持任务级并行"""
+"""异步评测执行器 — 支持任务级并行 + JSON 持久化"""
 
 import asyncio
+import json
+import logging
 import os
 import uuid
 from datetime import datetime
 from typing import Dict, List, Optional
-from ..config import RUN_EVAL_SCRIPT, PROJECT_ROOT
+from ..config import RUN_EVAL_SCRIPT, PROJECT_ROOT, DATA_DIR, JOBS_JSON
 from ..models.schemas import (
     EvalJob, EvalJobCreate, EvalStatus, EvalTaskProgress, TaskStatus,
 )
 from .catalog_service import get_all_benchmarks, get_task_display_name
 from .model_store import get_model
 
-# 内存 Job 存储
-_jobs: Dict[str, EvalJob] = {}
+logger = logging.getLogger(__name__)
+
+
+# ---- Job persistence (following model_store.py pattern) ----
+
+def _load_jobs() -> Dict[str, EvalJob]:
+    """Load persisted jobs from JSON on startup."""
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    if not JOBS_JSON.exists():
+        return {}
+    try:
+        with open(JOBS_JSON, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        jobs = {}
+        for item in data:
+            job = EvalJob(**item)
+            # Mark stale RUNNING/PENDING jobs as FAILED (crashed before completion)
+            if job.status in (EvalStatus.PENDING, EvalStatus.RUNNING):
+                job.status = EvalStatus.FAILED
+                job.error = "Service restarted while job was running"
+                if not job.completed_at:
+                    job.completed_at = datetime.now().isoformat()
+            jobs[job.id] = job
+        logger.info("Loaded %d persisted jobs from %s", len(jobs), JOBS_JSON)
+        return jobs
+    except Exception as e:
+        logger.warning("Failed to load jobs from %s: %s", JOBS_JSON, e)
+        return {}
+
+
+def _save_jobs():
+    """Persist current jobs dict to JSON file."""
+    try:
+        DATA_DIR.mkdir(parents=True, exist_ok=True)
+        data = [job.model_dump() for job in _jobs.values()]
+        with open(JOBS_JSON, "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=2, default=str)
+    except Exception as e:
+        logger.warning("Failed to save jobs to %s: %s", JOBS_JSON, e)
+
+
+_jobs: Dict[str, EvalJob] = _load_jobs()
 
 # 默认并行任务数（可通过环境变量覆盖）
 DEFAULT_MAX_PARALLEL_TASKS = int(os.environ.get("EVAL_MAX_PARALLEL_TASKS", "4"))
@@ -68,6 +110,7 @@ async def create_job(req: EvalJobCreate) -> EvalJob:
         agent_name=req.agent_name,
     )
     _jobs[job.id] = job
+    _save_jobs()
 
     # 启动异步执行
     asyncio.create_task(_run_job(job, req.max_parallel_tasks, req.max_connections))
@@ -81,6 +124,7 @@ async def _run_job(
 ):
     """异步执行评测任务 — 并行调度"""
     job.status = EvalStatus.RUNNING
+    _save_jobs()
     total = len(job.tasks)
     concurrency = max_parallel_tasks or DEFAULT_MAX_PARALLEL_TASKS
     connections = max_connections or DEFAULT_MAX_CONNECTIONS
@@ -119,6 +163,7 @@ async def _run_job(
     job.current_task = None
     job.progress = 100.0
     job.completed_at = datetime.now().isoformat()
+    _save_jobs()
 
 
 async def _run_single_task(job: EvalJob, task: EvalTaskProgress, max_connections: int = 16):
