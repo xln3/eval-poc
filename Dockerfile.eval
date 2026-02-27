@@ -1,0 +1,21 @@
+FROM python:3.10-slim
+
+WORKDIR /app
+
+# Install unzip (result_reader depends on it for .eval zip parsing)
+RUN apt-get update && apt-get install -y --no-install-recommends unzip && rm -rf /var/lib/apt/lists/*
+
+# Install Python dependencies
+COPY src/eval-core/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy application code
+COPY src/eval-core/app ./app
+COPY src/eval-core/data ./data
+COPY score_mapper.py .
+COPY report_generator.py .
+COPY benchmarks/catalog.yaml ./benchmarks/catalog.yaml
+
+EXPOSE 8001
+
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8001", "--workers", "1"]
