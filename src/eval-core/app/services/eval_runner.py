@@ -1,6 +1,7 @@
-"""异步评测执行器"""
+"""异步评测执行器 — 支持任务级并行"""
 
 import asyncio
+import os
 import uuid
 from datetime import datetime
 from typing import Dict, List, Optional
@@ -14,8 +15,10 @@ from .model_store import get_model
 # 内存 Job 存储
 _jobs: Dict[str, EvalJob] = {}
 
-# 全局锁: 同一时间只运行一个评测
-_eval_lock = asyncio.Lock()
+# 默认并行任务数（可通过环境变量覆盖）
+DEFAULT_MAX_PARALLEL_TASKS = int(os.environ.get("EVAL_MAX_PARALLEL_TASKS", "4"))
+# 默认 inspect_ai 并发连接数
+DEFAULT_MAX_CONNECTIONS = int(os.environ.get("EVAL_MAX_CONNECTIONS", "16"))
 
 
 def get_all_jobs() -> List[EvalJob]:
@@ -65,48 +68,58 @@ async def create_job(req: EvalJobCreate) -> EvalJob:
     _jobs[job.id] = job
 
     # 启动异步执行
-    asyncio.create_task(_run_job(job))
+    asyncio.create_task(_run_job(job, req.max_parallel_tasks, req.max_connections))
     return job
 
 
-async def _run_job(job: EvalJob):
-    """异步执行评测任务"""
-    async with _eval_lock:
-        job.status = EvalStatus.RUNNING
-        total = len(job.tasks)
+async def _run_job(
+    job: EvalJob,
+    max_parallel_tasks: Optional[int] = None,
+    max_connections: Optional[int] = None,
+):
+    """异步执行评测任务 — 并行调度"""
+    job.status = EvalStatus.RUNNING
+    total = len(job.tasks)
+    concurrency = max_parallel_tasks or DEFAULT_MAX_PARALLEL_TASKS
+    connections = max_connections or DEFAULT_MAX_CONNECTIONS
+    sem = asyncio.Semaphore(concurrency)
+    completed_count = 0
 
-        for i, task in enumerate(job.tasks):
+    async def _run_with_sem(task: EvalTaskProgress):
+        nonlocal completed_count
+        async with sem:
             task.status = TaskStatus.RUNNING
-            job.current_task = task.task_name
-            job.progress = (i / total) * 100 if total > 0 else 0
-
             try:
-                await _run_single_task(job, task)
+                await _run_single_task(job, task, connections)
                 task.status = TaskStatus.COMPLETED
             except Exception as e:
                 task.status = TaskStatus.FAILED
                 task.error = str(e)
+            finally:
+                completed_count += 1
+                job.progress = (completed_count / total) * 100 if total > 0 else 100
 
-            job.progress = ((i + 1) / total) * 100 if total > 0 else 100
+    # Run all tasks with bounded concurrency
+    await asyncio.gather(*[_run_with_sem(t) for t in job.tasks])
 
-        # 检查最终状态
-        failed = [t for t in job.tasks if t.status == TaskStatus.FAILED]
-        if failed:
-            if len(failed) == total:
-                job.status = EvalStatus.FAILED
-                job.error = f"所有 {total} 个任务执行失败"
-            else:
-                job.status = EvalStatus.COMPLETED
-                job.error = f"{len(failed)} 个任务执行失败"
+    # 检查最终状态
+    failed = [t for t in job.tasks if t.status == TaskStatus.FAILED]
+    if failed:
+        if len(failed) == total:
+            job.status = EvalStatus.FAILED
+            job.error = f"所有 {total} 个任务执行失败"
         else:
             job.status = EvalStatus.COMPLETED
+            job.error = f"{len(failed)} 个任务执行失败"
+    else:
+        job.status = EvalStatus.COMPLETED
 
-        job.current_task = None
-        job.progress = 100.0
-        job.completed_at = datetime.now().isoformat()
+    job.current_task = None
+    job.progress = 100.0
+    job.completed_at = datetime.now().isoformat()
 
 
-async def _run_single_task(job: EvalJob, task: EvalTaskProgress):
+async def _run_single_task(job: EvalJob, task: EvalTaskProgress, max_connections: int = 16):
     """执行单个评测任务"""
     # 构建命令: ./run-eval.py <benchmark>:<task> --model <model>
     task_spec = f"{task.benchmark}:{task.task_name}" if task.benchmark != task.task_name else task.task_name
@@ -127,6 +140,9 @@ async def _run_single_task(job: EvalJob, task: EvalTaskProgress):
             cmd.extend(["--api-base", model_cfg.api_base])
         if model_cfg and model_cfg.api_key:
             cmd.extend(["--api-key", model_cfg.api_key])
+
+    # 传递 inspect_ai 并发参数作为 extra args
+    cmd.extend(["--max-connections", str(max_connections)])
 
     process = await asyncio.create_subprocess_exec(
         *cmd,

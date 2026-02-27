@@ -93,6 +93,8 @@ class EvalJobCreate(_Base):
     benchmarks: List[str]
     limit: Optional[int] = None
     judge_model: Optional[str] = None
+    max_parallel_tasks: Optional[int] = None
+    max_connections: Optional[int] = None
 
 
 class EvalJob(_Base):

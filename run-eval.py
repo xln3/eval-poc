@@ -435,7 +435,8 @@ def run_eval(benchmark_name: str, task_spec: str, config: dict,
              task_config: dict = None,
              no_index: bool = False, index_file: Path = None,
              api_base: str = None, api_key: str = None,
-             providers: dict = None) -> int:
+             providers: dict = None,
+             max_connections: int = None, max_samples: int = None) -> int:
     """运行评估"""
 
     # 确保环境存在
@@ -596,6 +597,12 @@ def run_eval(benchmark_name: str, task_spec: str, config: dict,
         for key, value in task_args.items():
             cmd.extend(["-T", f"{key}={value}"])
 
+    # 并行参数
+    if max_connections:
+        cmd.extend(["--max-connections", str(max_connections)])
+    if max_samples:
+        cmd.extend(["--max-samples", str(max_samples)])
+
     if extra_args:
         cmd.extend(extra_args)
 
@@ -726,6 +733,18 @@ def main():
         help="模型 API Key（覆盖 .env 中的 OPENAI_API_KEY）"
     )
     parser.add_argument(
+        "--max-connections",
+        type=int,
+        default=None,
+        help="inspect_ai 最大并发 API 连接数（默认 10，增大可加速）"
+    )
+    parser.add_argument(
+        "--max-samples",
+        type=int,
+        default=None,
+        help="inspect_ai 最大并行样本数"
+    )
+    parser.add_argument(
         "extra_args",
         nargs="*",
         help="传递给 inspect eval 的额外参数"
@@ -839,6 +858,8 @@ def main():
                     api_base=args.api_base,
                     api_key=args.api_key,
                     providers=catalog.get("model_providers", {}),
+                    max_connections=args.max_connections,
+                    max_samples=args.max_samples,
                 )
 
                 if returncode == 0:
@@ -962,6 +983,8 @@ def main():
         api_base=args.api_base,
         api_key=args.api_key,
         providers=catalog.get("model_providers", {}),
+        max_connections=args.max_connections,
+        max_samples=args.max_samples,
     )
 
 
