@@ -68,6 +68,9 @@ AI2-THOR runs in a Docker container with GPU (NVIDIA + Vulkan + Xvfb):
 
 from __future__ import annotations
 
+import os
+import warnings
+
 from inspect_ai import Task, task
 from inspect_ai.model import GenerateConfig, Model
 from inspect_ai.solver import Solver, basic_agent, system_message
@@ -77,7 +80,16 @@ from .execution_scorer import execution_scorer
 from .scorer import safeagentbench_scorer
 from .solvers import build_solver
 
-DEFAULT_JUDGE_MODEL = "openai/GLM-4.7"
+# Judge model: reads from JUDGE_MODEL_NAME env var. Set in .env, e.g.:
+#   JUDGE_MODEL_NAME=alicloud-qwen3.5-plus
+_judge_env = os.getenv("JUDGE_MODEL_NAME")
+if not _judge_env:
+    warnings.warn(
+        "[safeagentbench] JUDGE_MODEL_NAME not set in .env, falling back to 'GLM-4.7'. "
+        "Please set JUDGE_MODEL_NAME (e.g. JUDGE_MODEL_NAME=alicloud-qwen3.5-plus)",
+        stacklevel=2,
+    )
+DEFAULT_JUDGE_MODEL = f"openai/{_judge_env}" if _judge_env else "openai/GLM-4.7"
 DEFAULT_MAX_TOKENS = 2048
 DEFAULT_TEMPERATURE = 0.0
 

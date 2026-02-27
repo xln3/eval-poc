@@ -182,11 +182,36 @@ class JudgeModelConfig:
     api_key: Optional[str] = None
     base_url: Optional[str] = None
 
+    # Presets: if JUDGE_MODEL_NAME is set in .env, the "env" preset is added
+    # and takes priority. Otherwise these are reference-only defaults.
+    # Set JUDGE_MODEL_NAME in .env, e.g.: JUDGE_MODEL_NAME=alicloud-qwen3.5-plus
     PRESETS = {
         "economy": ("gpt-4o-mini", "成本低，适合大规模测试"),
         "balanced": ("zai-glm-4.7", "性价比高，推荐"),
         "premium": ("gpt-4o", "精度最高，成本较高"),
     }
+
+    @classmethod
+    def from_env(cls) -> "JudgeModelConfig":
+        """Create JudgeModelConfig from environment variables.
+
+        Reads JUDGE_MODEL_NAME, JUDGE_API_KEY, JUDGE_BASE_URL from .env.
+        """
+        import os
+        model_name = os.getenv("JUDGE_MODEL_NAME")
+        if not model_name:
+            import warnings
+            warnings.warn(
+                "[preflight] JUDGE_MODEL_NAME not set in .env. "
+                "Please set JUDGE_MODEL_NAME (e.g. JUDGE_MODEL_NAME=alicloud-qwen3.5-plus)",
+                stacklevel=2,
+            )
+            model_name = "gpt-4o"
+        return cls(
+            model_name=model_name,
+            api_key=os.getenv("JUDGE_API_KEY"),
+            base_url=os.getenv("JUDGE_BASE_URL"),
+        )
 
 
 def check_docker() -> tuple[bool, str]:

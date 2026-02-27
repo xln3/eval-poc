@@ -1292,7 +1292,17 @@ def enrich_descriptions(cases: list, api_key: str, base_url: str) -> list:
     """Optionally enhance attack.description with LLM-generated text.
 
     Uses a local JSON cache to avoid redundant calls.
+    Model is read from TEST_MODEL_NAME env var (set in .env).
     """
+    enrich_model = os.environ.get("TEST_MODEL_NAME")
+    if not enrich_model:
+        print(
+            "WARNING: TEST_MODEL_NAME not set in .env, skipping --enrich. "
+            "Please set TEST_MODEL_NAME (e.g. TEST_MODEL_NAME=doubao-seed-2-0-pro-260215)",
+            file=sys.stderr,
+        )
+        return cases
+
     cache_path = os.path.join(os.path.dirname(__file__), ".enrich_cache.json")
     cache = {}
     if os.path.exists(cache_path):
@@ -1308,6 +1318,7 @@ def enrich_descriptions(cases: list, api_key: str, base_url: str) -> list:
         print("WARNING: openai package not installed, skipping --enrich", file=sys.stderr)
         return cases
 
+    print(f"Using model: {enrich_model} for LLM enrichment", file=sys.stderr)
     client = OpenAI(api_key=api_key, base_url=base_url)
     updated = 0
 
@@ -1332,7 +1343,7 @@ def enrich_descriptions(cases: list, api_key: str, base_url: str) -> list:
 
         try:
             resp = client.chat.completions.create(
-                model="doubao-seed-1-8-251228",
+                model=enrich_model,
                 messages=[{"role": "user", "content": prompt_text}],
                 temperature=0.3,
                 max_tokens=200,

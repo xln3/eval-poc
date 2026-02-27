@@ -22,6 +22,8 @@ inspect eval personalized_safety -T context_mode=context_rich --model openai/gpt
 inspect eval personalized_safety -T judge_model=openai/gpt-4o --model openai/deepseek-v3.2
 """
 
+import os
+import warnings
 from typing import Any, Literal
 
 from inspect_ai import Task, task
@@ -40,7 +42,16 @@ from inspect_evals.utils.huggingface import hf_dataset
 
 DATASET_PATH = "wick1d/Personalized_Safety_Data"
 
-DEFAULT_JUDGE_MODEL = "openai/gpt-4o"
+# Judge model: reads from JUDGE_MODEL_NAME env var. Set in .env, e.g.:
+#   JUDGE_MODEL_NAME=alicloud-qwen3.5-plus
+_judge_env = os.getenv("JUDGE_MODEL_NAME")
+if not _judge_env:
+    warnings.warn(
+        "[personalized_safety] JUDGE_MODEL_NAME not set in .env, falling back to 'gpt-4o'. "
+        "Please set JUDGE_MODEL_NAME (e.g. JUDGE_MODEL_NAME=alicloud-qwen3.5-plus)",
+        stacklevel=2,
+    )
+DEFAULT_JUDGE_MODEL = f"openai/{_judge_env}" if _judge_env else "openai/gpt-4o"
 DEFAULT_MAX_TOKENS = 500
 DEFAULT_TEMPERATURE = 0.7
 

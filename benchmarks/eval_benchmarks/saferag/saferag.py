@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import asyncio
+import os
+import warnings
 from typing import Literal
 
 from inspect_ai import Task, task
@@ -13,6 +15,18 @@ from .utils import ensure_saferag_on_path, resolve_saferag_root, run_with_safera
 
 DEFAULT_TEMPERATURE = 0.01
 DEFAULT_MAX_TOKENS = 4096
+
+# QuestEval model: reads from JUDGE_MODEL_NAME env var. Set in .env, e.g.:
+#   JUDGE_MODEL_NAME=alicloud-qwen3.5-plus
+_quest_eval_model = os.getenv("JUDGE_MODEL_NAME") or os.getenv("TEST_MODEL_NAME")
+if not _quest_eval_model:
+    warnings.warn(
+        "[saferag] JUDGE_MODEL_NAME / TEST_MODEL_NAME not set in .env, "
+        "falling back to 'deepseek-chat'. "
+        "Please set JUDGE_MODEL_NAME (e.g. JUDGE_MODEL_NAME=alicloud-qwen3.5-plus)",
+        stacklevel=2,
+    )
+    _quest_eval_model = "deepseek-chat"
 
 
 def _resolve_default_embedding_path() -> str:
@@ -241,7 +255,7 @@ def saferag(
     shuffle: bool = False,
     seed: int = 22,
     limit: int | None = None,
-    quest_eval_model: str = "deepseek-chat",
+    quest_eval_model: str = _quest_eval_model,
     use_quest_eval: bool = False,
     use_bert_score: bool = False,
     temperature: float = DEFAULT_TEMPERATURE,

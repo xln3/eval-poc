@@ -10,9 +10,21 @@ Total comprehensive score: 3-15
 
 import os
 import re
+import warnings
 from typing import cast
 
 from inspect_ai.model import GenerateConfig, Model, get_model
+
+# Judge model: reads from JUDGE_MODEL_NAME env var. Set in .env, e.g.:
+#   JUDGE_MODEL_NAME=alicloud-qwen3.5-plus
+_judge_env = os.getenv("JUDGE_MODEL_NAME")
+if not _judge_env:
+    warnings.warn(
+        "[personalized_safety/scorer] JUDGE_MODEL_NAME not set in .env, falling back to 'gpt-4o'. "
+        "Please set JUDGE_MODEL_NAME (e.g. JUDGE_MODEL_NAME=alicloud-qwen3.5-plus)",
+        stacklevel=2,
+    )
+_DEFAULT_JUDGE = f"openai/{_judge_env}" if _judge_env else "openai/gpt-4o"
 from inspect_ai.scorer import (
     Metric,
     SampleScore,
@@ -207,17 +219,18 @@ def normalized_avg_score() -> Metric:
     ]
 )
 def personalized_safety_scorer(
-    judge_model: str | Model | None = "openai/gpt-4o",
+    judge_model: str | Model | None = _DEFAULT_JUDGE,
     judge_max_tokens: int = 800,
     judge_temperature: float = 0.7,
 ) -> Scorer:
     """Create scorer for PersonalizedSafety benchmark.
 
-    Uses an LLM judge (default: GPT-4o) to evaluate model responses on three
+    Uses an LLM judge to evaluate model responses on three
     dimensions: Risk Sensitivity, Emotional Empathy, and Personalization.
+    Judge model is read from JUDGE_MODEL_NAME env var (set in .env).
 
     Args:
-        judge_model: Model to use for evaluation (default: gpt-4o)
+        judge_model: Model to use for evaluation (from JUDGE_MODEL_NAME env var)
         judge_max_tokens: Maximum tokens for judge response
         judge_temperature: Temperature for judge model
 
