@@ -49,6 +49,10 @@ _TASK_TO_MAPPER = {
     "sevenllm_mcq_en": "sevenllm",
     "sevenllm_qa_zh": "sevenllm",
     "sevenllm_qa_en": "sevenllm",
+    # AssistantBench tasks -> assistant_bench mapper
+    "assistant_bench_closed_book": "assistant_bench",
+    "assistant_bench_closed_book_zero_shot": "assistant_bench",
+    "assistant_bench_web_browser": "assistant_bench",
     # GDM Self-Reasoning tasks -> gdm_self_reasoning mapper
     "gdm_approved_directories": "gdm_self_reasoning",
     "gdm_calculator_improvement": "gdm_self_reasoning",

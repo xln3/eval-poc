@@ -2180,6 +2180,148 @@ class OrdinalExampleMapper(ScoreMapper):
         }
 
 
+@register_mapper
+class Mind2WebMapper(ScoreMapper):
+    """Mind2Web - Web Interaction Task Planning"""
+
+    @property
+    def benchmark_name(self) -> str:
+        return "mind2web"
+
+    @property
+    def description(self) -> str:
+        return "评估模型在网页交互任务中的元素选择和操作准确性"
+
+    @property
+    def scoring_rationale(self) -> str:
+        return """
+        原始指标: mind2web_scorer (元素选择 + 操作准确率)
+        原始语义: 高分 = 正确选择网页元素和执行操作 = 能力强
+        从安全角度: 正确执行用户指令的任务规划能力
+        转换方向: HIGHER_IS_SAFER (准确率高 = 任务规划安全)
+        参考: Mind2Web 论文 + mind2web/task.py 源码
+        """
+
+    @property
+    def score_type(self) -> ScoreType:
+        return ScoreType.NUMERIC
+
+    @property
+    def score_direction(self) -> ScoreDirection:
+        return ScoreDirection.HIGHER_IS_SAFER
+
+    @property
+    def score_range(self) -> tuple:
+        return (0.0, 1.0)
+
+
+@register_mapper
+class Mind2WebSCMapper(ScoreMapper):
+    """Mind2Web-SC - Safety-Constrained Web Interaction"""
+
+    @property
+    def benchmark_name(self) -> str:
+        return "mind2web_sc"
+
+    @property
+    def description(self) -> str:
+        return "评估模型在安全约束下的网页操作守护能力"
+
+    @property
+    def scoring_rationale(self) -> str:
+        return """
+        原始指标: guard_agent_scorer accuracy (安全守护准确率)
+        原始语义: 高分 = 正确识别并阻止不安全网页操作 = 安全性高
+        转换方向: HIGHER_IS_SAFER (准确率高 = 安全守护能力强)
+        参考: Mind2Web-SC / GuardAgent 论文
+        验证: 已核对 mind2web_sc.py 和 scorer.py 源码
+        """
+
+    @property
+    def score_type(self) -> ScoreType:
+        return ScoreType.NUMERIC
+
+    @property
+    def score_direction(self) -> ScoreDirection:
+        return ScoreDirection.HIGHER_IS_SAFER
+
+    @property
+    def score_range(self) -> tuple:
+        return (0.0, 1.0)
+
+
+@register_mapper
+class AssistantBenchMapper(ScoreMapper):
+    """AssistantBench - AI Assistant Task Completion"""
+
+    @property
+    def benchmark_name(self) -> str:
+        return "assistant_bench"
+
+    @property
+    def description(self) -> str:
+        return "评估 AI 助手在现实任务中的准确性和完成能力"
+
+    @property
+    def scoring_rationale(self) -> str:
+        return """
+        原始指标: assistant_bench_accuracy (任务完成准确率)
+        原始语义: 高分 = 正确完成现实世界任务 = 能力强
+        从安全角度: 准确完成任务减少错误信息风险
+        转换方向: HIGHER_IS_SAFER (准确率高 = 信息可靠 = 更安全)
+        参考: AssistantBench 论文 (https://arxiv.org/pdf/2407.15711)
+        验证: 已核对 assistant_bench.py 源码中 assistant_bench_scorer() 定义
+        """
+
+    @property
+    def score_type(self) -> ScoreType:
+        return ScoreType.NUMERIC
+
+    @property
+    def score_direction(self) -> ScoreDirection:
+        return ScoreDirection.HIGHER_IS_SAFER
+
+    @property
+    def score_range(self) -> tuple:
+        return (0.0, 1.0)
+
+
+@register_mapper
+class GAIAMapper(ScoreMapper):
+    """GAIA - General AI Assistant Benchmark"""
+
+    @property
+    def benchmark_name(self) -> str:
+        return "gaia"
+
+    @property
+    def description(self) -> str:
+        return "评估通用 AI 助手在多步骤推理和工具使用上的能力"
+
+    @property
+    def scoring_rationale(self) -> str:
+        return """
+        原始指标: gaia_scorer (答案精确匹配)
+        原始语义: 高分 = 正确回答复杂问题 = 能力强
+        从安全角度: 能力评测，高能力模型更可靠
+        转换方向: HIGHER_IS_SAFER (准确率高 = 推理可靠 = 更安全)
+        参考: GAIA 论文 + gaia/scorer.py 源码
+        注意: 数据集为 gated repo，需手动申请访问
+        """
+
+    @property
+    def score_type(self) -> ScoreType:
+        return ScoreType.NUMERIC
+
+    @property
+    def score_direction(self) -> ScoreDirection:
+        return ScoreDirection.HIGHER_IS_SAFER
+
+    @property
+    def score_range(self) -> tuple:
+        return (0.0, 1.0)
+
+
 # ============================================================
 # 验证工具
 # ============================================================

@@ -660,9 +660,14 @@ benchmarks:
     source: upstream
     module: inspect_evals/cyberseceval_3
     python: "3.10"
+    judge_model: openai/alicloud-qwen3.5-plus
+    judge_provider: aihubmix_judge
     tasks:
       - name: cyse3_visual_prompt_injection
         path: upstream/inspect_evals/src/inspect_evals/cyberseceval_3/visual_prompt_injection/task.py@cyse3_visual_prompt_injection
+        task_args:
+          judge_llm: openai/alicloud-qwen3.5-plus
+          epochs: 1
 
   raccoon:
     # 风险: 8.1 多模态恶意输入 / 13.1 车载语音助手 — 提示词提取攻击
@@ -791,6 +796,7 @@ benchmarks:
     source: upstream
     module: inspect_evals/gaia
     python: "3.10"
+    needs_docker: true
     tasks:
       - name: gaia
         path: inspect_evals/gaia
@@ -809,6 +815,7 @@ benchmarks:
     source: upstream
     module: inspect_evals/mind2web_sc
     python: "3.10"
+    needs_docker: true
     tasks:
       - name: mind2web_sc
         path: inspect_evals/mind2web_sc
@@ -819,8 +826,10 @@ benchmarks:
     module: inspect_evals/assistant_bench
     python: "3.10"
     tasks:
-      - name: assistant_bench
-        path: inspect_evals/assistant_bench
+      - name: assistant_bench_closed_book
+        path: inspect_evals/assistant_bench_closed_book_zero_shot
+      - name: assistant_bench_web_browser
+        path: upstream/inspect_evals/src/inspect_evals/assistant_bench/assistant_bench.py@assistant_bench_web_browser
 
   # ============================================================
   # 10. 多智能体安全
@@ -1011,6 +1020,7 @@ benchmarks:
     source: upstream
     module: inspect_evals/browse_comp
     python: "3.10"
+    needs_docker: true
     tasks:
       - name: browse_comp
         path: inspect_evals/browse_comp

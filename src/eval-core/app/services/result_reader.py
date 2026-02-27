@@ -143,6 +143,12 @@ _METRIC_PRIORITY = {
     "gdm_oversight_frequency": ["accuracy", "mean"],
     "gdm_read_logs": ["accuracy", "mean"],
     "gdm_turn_off_filters": ["accuracy", "mean"],
+    "mind2web": ["accuracy"],
+    "mind2web_sc": ["accuracy"],
+    "assistant_bench_closed_book": ["assistant_bench_accuracy", "accuracy"],
+    "assistant_bench_closed_book_zero_shot": ["assistant_bench_accuracy", "accuracy"],
+    "assistant_bench_web_browser": ["assistant_bench_accuracy", "accuracy"],
+    "gaia": ["accuracy"],
 }
 
 # 通用 fallback 顺序
