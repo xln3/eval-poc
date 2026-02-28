@@ -5,7 +5,7 @@ import json
 import logging
 import os
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List, Optional
 from ..config import RUN_EVAL_SCRIPT, PROJECT_ROOT, DATA_DIR, JOBS_JSON
 from ..models.schemas import (
@@ -35,7 +35,7 @@ def _load_jobs() -> Dict[str, EvalJob]:
                 job.status = EvalStatus.FAILED
                 job.error = "Service restarted while job was running"
                 if not job.completed_at:
-                    job.completed_at = datetime.now().isoformat()
+                    job.completed_at = datetime.now(timezone.utc).isoformat()
             jobs[job.id] = job
         logger.info("Loaded %d persisted jobs from %s", len(jobs), JOBS_JSON)
         return jobs
@@ -108,7 +108,7 @@ async def create_job(req: EvalJobCreate) -> EvalJob:
         benchmarks=req.benchmarks,
         tasks=tasks,
         progress=0.0,
-        created_at=datetime.now().isoformat(),
+        created_at=datetime.now(timezone.utc).isoformat(),
         limit=req.limit,
         agent_id=req.agent_id,
         agent_name=req.agent_name,
@@ -168,7 +168,7 @@ async def _run_job(
 
     job.current_task = None
     job.progress = 100.0
-    job.completed_at = datetime.now().isoformat()
+    job.completed_at = datetime.now(timezone.utc).isoformat()
     _save_jobs()
 
     # Clean up handles
@@ -260,7 +260,7 @@ async def cancel_job(job_id: str) -> bool:
 
     # 3. Update job status
     job.status = EvalStatus.CANCELLED
-    job.completed_at = datetime.now().isoformat()
+    job.completed_at = datetime.now(timezone.utc).isoformat()
     job.error = "Cancelled by user"
     job.current_task = None
     # Mark pending/running tasks as cancelled

@@ -76,23 +76,31 @@ def get_model_results(model_name: str) -> List[EvalFileResult]:
 def get_results_for_job(model_id: str, task_names: List[str],
                         start_time: str, end_time: Optional[str] = None) -> List[EvalFileResult]:
     """获取特定 job 时间窗口内的结果（run-scoped results）"""
-    from datetime import datetime as dt
+    from datetime import datetime as dt, timezone
 
-    def _parse_naive(s: str) -> dt:
-        """Parse ISO datetime string, stripping timezone to naive for comparison."""
+    def _parse_to_utc(s: str) -> dt:
+        """Parse ISO datetime string, converting to UTC naive datetime.
+
+        .eval files use UTC timestamps (e.g. '2026-02-28T09:21:23+00:00').
+        Job timestamps use local time without tz info (e.g. '2026-02-28T17:20:42').
+        Converting both to UTC ensures correct comparison.
+        """
         parsed = dt.fromisoformat(s.replace("Z", "+00:00"))
-        # Convert to naive (strip tzinfo) for consistent comparison
         if parsed.tzinfo is not None:
-            parsed = parsed.replace(tzinfo=None)
-        return parsed
+            # Has timezone info (e.g. .eval files) — convert to UTC
+            return parsed.astimezone(timezone.utc).replace(tzinfo=None)
+        else:
+            # No timezone info — assume local time, convert to UTC
+            local_tz = dt.now(timezone.utc).astimezone().tzinfo
+            return parsed.replace(tzinfo=local_tz).astimezone(timezone.utc).replace(tzinfo=None)
 
     # Parse time bounds
     try:
-        t_start = _parse_naive(start_time)
+        t_start = _parse_to_utc(start_time)
     except Exception:
         t_start = dt.min
     try:
-        t_end = _parse_naive(end_time) if end_time else dt.max
+        t_end = _parse_to_utc(end_time) if end_time else dt.max
     except Exception:
         t_end = dt.max
 
@@ -128,7 +136,7 @@ def get_results_for_job(model_id: str, task_names: List[str],
                     continue
                 # Filter by time window
                 try:
-                    t_eval = _parse_naive(result.timestamp)
+                    t_eval = _parse_to_utc(result.timestamp)
                 except Exception:
                     continue
                 # Allow 60s buffer before start (clock skew)

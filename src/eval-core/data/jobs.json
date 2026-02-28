@@ -1,0 +1,5229 @@
+[
+  {
+    "id": "754f3f32c1a6",
+    "model_id": "openai/doubao-seed-2-0-lite-260215",
+    "model_name": "openai/doubao-seed-2-0-lite-260215",
+    "model_config_id": null,
+    "status": "failed",
+    "benchmarks": [
+      "raccoon",
+      "mind2web_sc",
+      "overthink",
+      "agentharm",
+      "mssbench",
+      "personalized_safety",
+      "sycophancy",
+      "hallulens",
+      "truthfulqa",
+      "chembench",
+      "mask",
+      "gdpval",
+      "clash_eval",
+      "cybench",
+      "mind2web",
+      "stereoset",
+      "sosbench",
+      "mm_safety_bench",
+      "bold",
+      "bfcl",
+      "culturalbench",
+      "healthbench",
+      "abstention_bench",
+      "privacylens",
+      "gaia",
+      "gdm_stealth",
+      "xstest",
+      "mmmu",
+      "gdm_self_reasoning",
+      "iheval",
+      "cyberseceval_2",
+      "mathvista",
+      "sec_qa",
+      "b3",
+      "sciknoweval",
+      "cyberseceval_3",
+      "mgsm",
+      "bbq",
+      "wmdp",
+      "ahb",
+      "assistant_bench",
+      "docvqa",
+      "simpleqa",
+      "strong_reject",
+      "sevenllm",
+      "personality",
+      "fortress",
+      "makemesay",
+      "cve_bench",
+      "make_me_pay",
+      "agentic_misalignment",
+      "lab_bench",
+      "ifeval",
+      "safeagentbench",
+      "coconot",
+      "mmiu",
+      "uccb"
+    ],
+    "tasks": [
+      {
+        "task_name": "raccoon",
+        "benchmark": "raccoon",
+        "status": "running",
+        "error": null
+      },
+      {
+        "task_name": "mind2web_sc",
+        "benchmark": "mind2web_sc",
+        "status": "running",
+        "error": null
+      },
+      {
+        "task_name": "overthink",
+        "benchmark": "overthink",
+        "status": "running",
+        "error": null
+      },
+      {
+        "task_name": "agentharm",
+        "benchmark": "agentharm",
+        "status": "running",
+        "error": null
+      },
+      {
+        "task_name": "agentharm_benign",
+        "benchmark": "agentharm",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "mssbench_chat_if",
+        "benchmark": "mssbench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "mssbench_chat_qc",
+        "benchmark": "mssbench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "mssbench_chat_ic",
+        "benchmark": "mssbench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "mssbench_chat_ic_cap",
+        "benchmark": "mssbench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "mssbench_embodied_if",
+        "benchmark": "mssbench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "mssbench_embodied_qc",
+        "benchmark": "mssbench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "mssbench_embodied_ic",
+        "benchmark": "mssbench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "mssbench_embodied_ic_cap",
+        "benchmark": "mssbench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "personalized_safety_context_free",
+        "benchmark": "personalized_safety",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "personalized_safety_context_rich",
+        "benchmark": "personalized_safety",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "sycophancy",
+        "benchmark": "sycophancy",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "hallulens_task1_precise_wikiqa",
+        "benchmark": "hallulens",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "hallulens_task2_longwiki",
+        "benchmark": "hallulens",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "hallulens_task3_nonsense_mixed_entities",
+        "benchmark": "hallulens",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "hallulens_task3_round_robin_nonsense_name",
+        "benchmark": "hallulens",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "truthfulqa",
+        "benchmark": "truthfulqa",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "chembench",
+        "benchmark": "chembench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "mask",
+        "benchmark": "mask",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "gdpval",
+        "benchmark": "gdpval",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "clash_eval",
+        "benchmark": "clash_eval",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "cybench",
+        "benchmark": "cybench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "mind2web",
+        "benchmark": "mind2web",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "stereoset",
+        "benchmark": "stereoset",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "sosbench",
+        "benchmark": "sosbench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "mm_safety_bench_illegal_activity",
+        "benchmark": "mm_safety_bench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "bold",
+        "benchmark": "bold",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "bfcl",
+        "benchmark": "bfcl",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "culturalbench_easy",
+        "benchmark": "culturalbench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "culturalbench_hard",
+        "benchmark": "culturalbench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "healthbench",
+        "benchmark": "healthbench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "healthbench_hard",
+        "benchmark": "healthbench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "healthbench_consensus",
+        "benchmark": "healthbench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "abstention_bench",
+        "benchmark": "abstention_bench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "privacylens_probing",
+        "benchmark": "privacylens",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "privacylens_action",
+        "benchmark": "privacylens",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "gaia",
+        "benchmark": "gaia",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "gdm_oversight_pattern",
+        "benchmark": "gdm_stealth",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "gdm_classifier_evasion",
+        "benchmark": "gdm_stealth",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "gdm_cover_your_tracks",
+        "benchmark": "gdm_stealth",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "gdm_strategic_rule_breaking",
+        "benchmark": "gdm_stealth",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "xstest",
+        "benchmark": "xstest",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "mmmu_multiple_choice",
+        "benchmark": "mmmu",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "mmmu_open",
+        "benchmark": "mmmu",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "gdm_approved_directories",
+        "benchmark": "gdm_self_reasoning",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "gdm_calculator_improvement",
+        "benchmark": "gdm_self_reasoning",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "gdm_context_length_mod_instrumental_only",
+        "benchmark": "gdm_self_reasoning",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "gdm_context_length_mod_irreversibility_only",
+        "benchmark": "gdm_self_reasoning",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "gdm_database_tool",
+        "benchmark": "gdm_self_reasoning",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "gdm_latency_calculator",
+        "benchmark": "gdm_self_reasoning",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "gdm_max_messages_calculator",
+        "benchmark": "gdm_self_reasoning",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "gdm_max_tokens",
+        "benchmark": "gdm_self_reasoning",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "gdm_oversight_frequency",
+        "benchmark": "gdm_self_reasoning",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "gdm_read_logs",
+        "benchmark": "gdm_self_reasoning",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "gdm_turn_off_filters",
+        "benchmark": "gdm_self_reasoning",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "iheval_rule_multi_aligned",
+        "benchmark": "iheval",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "iheval_rule_multi_conflict",
+        "benchmark": "iheval",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "iheval_rule_single_aligned",
+        "benchmark": "iheval",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "iheval_task_extraction",
+        "benchmark": "iheval",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "iheval_task_translation",
+        "benchmark": "iheval",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "iheval_safety_hijack",
+        "benchmark": "iheval",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "iheval_safety_extraction",
+        "benchmark": "iheval",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "iheval_tool_webpage",
+        "benchmark": "iheval",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "cyse2_interpreter_abuse",
+        "benchmark": "cyberseceval_2",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "cyse2_prompt_injection",
+        "benchmark": "cyberseceval_2",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "mathvista",
+        "benchmark": "mathvista",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "sec_qa_v1",
+        "benchmark": "sec_qa",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "sec_qa_v2",
+        "benchmark": "sec_qa",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "b3",
+        "benchmark": "b3",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "sciknoweval",
+        "benchmark": "sciknoweval",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "cyse3_visual_prompt_injection",
+        "benchmark": "cyberseceval_3",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "mgsm",
+        "benchmark": "mgsm",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "bbq",
+        "benchmark": "bbq",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "wmdp_bio",
+        "benchmark": "wmdp",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "wmdp_chem",
+        "benchmark": "wmdp",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "wmdp_cyber",
+        "benchmark": "wmdp",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "ahb",
+        "benchmark": "ahb",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "assistant_bench_closed_book",
+        "benchmark": "assistant_bench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "assistant_bench_web_browser",
+        "benchmark": "assistant_bench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "docvqa",
+        "benchmark": "docvqa",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "simpleqa",
+        "benchmark": "simpleqa",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "strong_reject",
+        "benchmark": "strong_reject",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "sevenllm_mcq_zh",
+        "benchmark": "sevenllm",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "sevenllm_mcq_en",
+        "benchmark": "sevenllm",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "sevenllm_qa_zh",
+        "benchmark": "sevenllm",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "sevenllm_qa_en",
+        "benchmark": "sevenllm",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "personality_BFI",
+        "benchmark": "personality",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "personality_TRAIT",
+        "benchmark": "personality",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "fortress_adversarial",
+        "benchmark": "fortress",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "fortress_benign",
+        "benchmark": "fortress",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "makemesay",
+        "benchmark": "makemesay",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "cve_bench",
+        "benchmark": "cve_bench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "make_me_pay",
+        "benchmark": "make_me_pay",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "agentic_misalignment",
+        "benchmark": "agentic_misalignment",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "lab_bench_litqa",
+        "benchmark": "lab_bench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "lab_bench_suppqa",
+        "benchmark": "lab_bench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "lab_bench_figqa",
+        "benchmark": "lab_bench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "lab_bench_tableqa",
+        "benchmark": "lab_bench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "lab_bench_dbqa",
+        "benchmark": "lab_bench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "lab_bench_protocolqa",
+        "benchmark": "lab_bench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "lab_bench_seqqa",
+        "benchmark": "lab_bench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "lab_bench_cloning_scenarios",
+        "benchmark": "lab_bench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "ifeval",
+        "benchmark": "ifeval",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "safeagentbench",
+        "benchmark": "safeagentbench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "coconot",
+        "benchmark": "coconot",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "mmiu",
+        "benchmark": "mmiu",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "uccb",
+        "benchmark": "uccb",
+        "status": "pending",
+        "error": null
+      }
+    ],
+    "current_task": null,
+    "progress": 0.0,
+    "created_at": "2026-02-27T12:40:05.204981+00:00",
+    "completed_at": "2026-02-27T13:39:13.745582+00:00",
+    "error": "Service restarted while job was running",
+    "limit": null,
+    "agent_id": "935886f5-ef16-4c2a-a5ad-43bbfe489c28",
+    "agent_name": "bentz-doubao-2-0-lite"
+  },
+  {
+    "id": "1bd6f2804c24",
+    "model_id": "openai/doubao-seed-2-0-pro-260215",
+    "model_name": "openai/doubao-seed-2-0-pro-260215",
+    "model_config_id": null,
+    "status": "failed",
+    "benchmarks": [
+      "raccoon",
+      "mind2web_sc",
+      "overthink",
+      "agentharm",
+      "mssbench",
+      "personalized_safety",
+      "sycophancy",
+      "hallulens",
+      "truthfulqa",
+      "chembench",
+      "mask",
+      "gdpval",
+      "clash_eval",
+      "cybench",
+      "mind2web",
+      "stereoset",
+      "sosbench",
+      "mm_safety_bench",
+      "bold",
+      "bfcl",
+      "culturalbench",
+      "healthbench",
+      "abstention_bench",
+      "privacylens",
+      "gaia",
+      "gdm_stealth",
+      "xstest",
+      "mmmu",
+      "gdm_self_reasoning",
+      "iheval",
+      "cyberseceval_2",
+      "mathvista",
+      "sec_qa",
+      "b3",
+      "sciknoweval",
+      "cyberseceval_3",
+      "mgsm",
+      "bbq",
+      "wmdp",
+      "ahb",
+      "assistant_bench",
+      "docvqa",
+      "simpleqa",
+      "strong_reject",
+      "sevenllm",
+      "personality",
+      "fortress",
+      "makemesay",
+      "cve_bench",
+      "make_me_pay",
+      "agentic_misalignment",
+      "lab_bench",
+      "ifeval",
+      "safeagentbench",
+      "coconot",
+      "mmiu",
+      "uccb"
+    ],
+    "tasks": [
+      {
+        "task_name": "raccoon",
+        "benchmark": "raccoon",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "mind2web_sc",
+        "benchmark": "mind2web_sc",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "overthink",
+        "benchmark": "overthink",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "agentharm",
+        "benchmark": "agentharm",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "agentharm_benign",
+        "benchmark": "agentharm",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "mssbench_chat_if",
+        "benchmark": "mssbench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "mssbench_chat_qc",
+        "benchmark": "mssbench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "mssbench_chat_ic",
+        "benchmark": "mssbench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "mssbench_chat_ic_cap",
+        "benchmark": "mssbench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "mssbench_embodied_if",
+        "benchmark": "mssbench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "mssbench_embodied_qc",
+        "benchmark": "mssbench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "mssbench_embodied_ic",
+        "benchmark": "mssbench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "mssbench_embodied_ic_cap",
+        "benchmark": "mssbench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "personalized_safety_context_free",
+        "benchmark": "personalized_safety",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "personalized_safety_context_rich",
+        "benchmark": "personalized_safety",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "sycophancy",
+        "benchmark": "sycophancy",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "hallulens_task1_precise_wikiqa",
+        "benchmark": "hallulens",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "hallulens_task2_longwiki",
+        "benchmark": "hallulens",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "hallulens_task3_nonsense_mixed_entities",
+        "benchmark": "hallulens",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "hallulens_task3_round_robin_nonsense_name",
+        "benchmark": "hallulens",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "truthfulqa",
+        "benchmark": "truthfulqa",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "chembench",
+        "benchmark": "chembench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "mask",
+        "benchmark": "mask",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "gdpval",
+        "benchmark": "gdpval",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "clash_eval",
+        "benchmark": "clash_eval",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "cybench",
+        "benchmark": "cybench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "mind2web",
+        "benchmark": "mind2web",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "stereoset",
+        "benchmark": "stereoset",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "sosbench",
+        "benchmark": "sosbench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "mm_safety_bench_illegal_activity",
+        "benchmark": "mm_safety_bench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "bold",
+        "benchmark": "bold",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "bfcl",
+        "benchmark": "bfcl",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "culturalbench_easy",
+        "benchmark": "culturalbench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "culturalbench_hard",
+        "benchmark": "culturalbench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "healthbench",
+        "benchmark": "healthbench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "healthbench_hard",
+        "benchmark": "healthbench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "healthbench_consensus",
+        "benchmark": "healthbench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "abstention_bench",
+        "benchmark": "abstention_bench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "privacylens_probing",
+        "benchmark": "privacylens",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "privacylens_action",
+        "benchmark": "privacylens",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "gaia",
+        "benchmark": "gaia",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "gdm_oversight_pattern",
+        "benchmark": "gdm_stealth",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "gdm_classifier_evasion",
+        "benchmark": "gdm_stealth",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "gdm_cover_your_tracks",
+        "benchmark": "gdm_stealth",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "gdm_strategic_rule_breaking",
+        "benchmark": "gdm_stealth",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "xstest",
+        "benchmark": "xstest",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "mmmu_multiple_choice",
+        "benchmark": "mmmu",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "mmmu_open",
+        "benchmark": "mmmu",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "gdm_approved_directories",
+        "benchmark": "gdm_self_reasoning",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "gdm_calculator_improvement",
+        "benchmark": "gdm_self_reasoning",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "gdm_context_length_mod_instrumental_only",
+        "benchmark": "gdm_self_reasoning",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "gdm_context_length_mod_irreversibility_only",
+        "benchmark": "gdm_self_reasoning",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "gdm_database_tool",
+        "benchmark": "gdm_self_reasoning",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "gdm_latency_calculator",
+        "benchmark": "gdm_self_reasoning",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "gdm_max_messages_calculator",
+        "benchmark": "gdm_self_reasoning",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "gdm_max_tokens",
+        "benchmark": "gdm_self_reasoning",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "gdm_oversight_frequency",
+        "benchmark": "gdm_self_reasoning",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "gdm_read_logs",
+        "benchmark": "gdm_self_reasoning",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "gdm_turn_off_filters",
+        "benchmark": "gdm_self_reasoning",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "iheval_rule_multi_aligned",
+        "benchmark": "iheval",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "iheval_rule_multi_conflict",
+        "benchmark": "iheval",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "iheval_rule_single_aligned",
+        "benchmark": "iheval",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "iheval_task_extraction",
+        "benchmark": "iheval",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "iheval_task_translation",
+        "benchmark": "iheval",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "iheval_safety_hijack",
+        "benchmark": "iheval",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "iheval_safety_extraction",
+        "benchmark": "iheval",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "iheval_tool_webpage",
+        "benchmark": "iheval",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "cyse2_interpreter_abuse",
+        "benchmark": "cyberseceval_2",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "cyse2_prompt_injection",
+        "benchmark": "cyberseceval_2",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "mathvista",
+        "benchmark": "mathvista",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "sec_qa_v1",
+        "benchmark": "sec_qa",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "sec_qa_v2",
+        "benchmark": "sec_qa",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "b3",
+        "benchmark": "b3",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "sciknoweval",
+        "benchmark": "sciknoweval",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "cyse3_visual_prompt_injection",
+        "benchmark": "cyberseceval_3",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "mgsm",
+        "benchmark": "mgsm",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "bbq",
+        "benchmark": "bbq",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "wmdp_bio",
+        "benchmark": "wmdp",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "wmdp_chem",
+        "benchmark": "wmdp",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "wmdp_cyber",
+        "benchmark": "wmdp",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "ahb",
+        "benchmark": "ahb",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "assistant_bench_closed_book",
+        "benchmark": "assistant_bench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "assistant_bench_web_browser",
+        "benchmark": "assistant_bench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "docvqa",
+        "benchmark": "docvqa",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "simpleqa",
+        "benchmark": "simpleqa",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "strong_reject",
+        "benchmark": "strong_reject",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "sevenllm_mcq_zh",
+        "benchmark": "sevenllm",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "sevenllm_mcq_en",
+        "benchmark": "sevenllm",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "sevenllm_qa_zh",
+        "benchmark": "sevenllm",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "sevenllm_qa_en",
+        "benchmark": "sevenllm",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "personality_BFI",
+        "benchmark": "personality",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "personality_TRAIT",
+        "benchmark": "personality",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "fortress_adversarial",
+        "benchmark": "fortress",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "fortress_benign",
+        "benchmark": "fortress",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "makemesay",
+        "benchmark": "makemesay",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "cve_bench",
+        "benchmark": "cve_bench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "make_me_pay",
+        "benchmark": "make_me_pay",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "agentic_misalignment",
+        "benchmark": "agentic_misalignment",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "lab_bench_litqa",
+        "benchmark": "lab_bench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "lab_bench_suppqa",
+        "benchmark": "lab_bench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "lab_bench_figqa",
+        "benchmark": "lab_bench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "lab_bench_tableqa",
+        "benchmark": "lab_bench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "lab_bench_dbqa",
+        "benchmark": "lab_bench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "lab_bench_protocolqa",
+        "benchmark": "lab_bench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "lab_bench_seqqa",
+        "benchmark": "lab_bench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "lab_bench_cloning_scenarios",
+        "benchmark": "lab_bench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "ifeval",
+        "benchmark": "ifeval",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "safeagentbench",
+        "benchmark": "safeagentbench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "coconot",
+        "benchmark": "coconot",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "mmiu",
+        "benchmark": "mmiu",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "uccb",
+        "benchmark": "uccb",
+        "status": "pending",
+        "error": null
+      }
+    ],
+    "current_task": null,
+    "progress": 0.0,
+    "created_at": "2026-02-27T12:52:31.401332+00:00",
+    "completed_at": "2026-02-27T13:39:13.746176+00:00",
+    "error": "Service restarted while job was running",
+    "limit": 3,
+    "agent_id": "fbb4184e-6070-4fdd-9680-d173f34c7ecd",
+    "agent_name": "bentz-doubao-2-0-pro"
+  },
+  {
+    "id": "ab4c11925a94",
+    "model_id": "openai/doubao-seed-2-0-lite-260215",
+    "model_name": "openai/doubao-seed-2-0-lite-260215",
+    "model_config_id": null,
+    "status": "failed",
+    "benchmarks": [
+      "mind2web",
+      "assistant_bench",
+      "bbq",
+      "bold",
+      "docvqa",
+      "sycophancy",
+      "lab_bench",
+      "overthink",
+      "sevenllm",
+      "cyberseceval_3",
+      "healthbench",
+      "mssbench",
+      "coconot",
+      "mmmu",
+      "iheval",
+      "culturalbench",
+      "chembench",
+      "b3",
+      "personality",
+      "make_me_pay",
+      "gdm_stealth",
+      "privacylens",
+      "hallulens",
+      "uccb",
+      "mask",
+      "bfcl",
+      "agentharm",
+      "makemesay",
+      "mind2web_sc",
+      "cybench",
+      "simpleqa",
+      "truthfulqa",
+      "mmiu",
+      "gdpval",
+      "sec_qa",
+      "personalized_safety",
+      "xstest",
+      "sosbench",
+      "agentic_misalignment",
+      "abstention_bench",
+      "ahb",
+      "cve_bench",
+      "clash_eval",
+      "stereoset",
+      "raccoon",
+      "sciknoweval",
+      "gdm_self_reasoning",
+      "mathvista",
+      "gaia",
+      "cyberseceval_2",
+      "fortress",
+      "mm_safety_bench",
+      "strong_reject",
+      "safeagentbench",
+      "wmdp",
+      "ifeval",
+      "mgsm"
+    ],
+    "tasks": [
+      {
+        "task_name": "mind2web",
+        "benchmark": "mind2web",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "assistant_bench_closed_book",
+        "benchmark": "assistant_bench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "assistant_bench_web_browser",
+        "benchmark": "assistant_bench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "bbq",
+        "benchmark": "bbq",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "bold",
+        "benchmark": "bold",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "docvqa",
+        "benchmark": "docvqa",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "sycophancy",
+        "benchmark": "sycophancy",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "lab_bench_litqa",
+        "benchmark": "lab_bench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "lab_bench_suppqa",
+        "benchmark": "lab_bench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "lab_bench_figqa",
+        "benchmark": "lab_bench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "lab_bench_tableqa",
+        "benchmark": "lab_bench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "lab_bench_dbqa",
+        "benchmark": "lab_bench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "lab_bench_protocolqa",
+        "benchmark": "lab_bench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "lab_bench_seqqa",
+        "benchmark": "lab_bench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "lab_bench_cloning_scenarios",
+        "benchmark": "lab_bench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "overthink",
+        "benchmark": "overthink",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "sevenllm_mcq_zh",
+        "benchmark": "sevenllm",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "sevenllm_mcq_en",
+        "benchmark": "sevenllm",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "sevenllm_qa_zh",
+        "benchmark": "sevenllm",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "sevenllm_qa_en",
+        "benchmark": "sevenllm",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "cyse3_visual_prompt_injection",
+        "benchmark": "cyberseceval_3",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "healthbench",
+        "benchmark": "healthbench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "healthbench_hard",
+        "benchmark": "healthbench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "healthbench_consensus",
+        "benchmark": "healthbench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "mssbench_chat_if",
+        "benchmark": "mssbench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "mssbench_chat_qc",
+        "benchmark": "mssbench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "mssbench_chat_ic",
+        "benchmark": "mssbench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "mssbench_chat_ic_cap",
+        "benchmark": "mssbench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "mssbench_embodied_if",
+        "benchmark": "mssbench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "mssbench_embodied_qc",
+        "benchmark": "mssbench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "mssbench_embodied_ic",
+        "benchmark": "mssbench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "mssbench_embodied_ic_cap",
+        "benchmark": "mssbench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "coconot",
+        "benchmark": "coconot",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "mmmu_multiple_choice",
+        "benchmark": "mmmu",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "mmmu_open",
+        "benchmark": "mmmu",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "iheval_rule_multi_aligned",
+        "benchmark": "iheval",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "iheval_rule_multi_conflict",
+        "benchmark": "iheval",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "iheval_rule_single_aligned",
+        "benchmark": "iheval",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "iheval_task_extraction",
+        "benchmark": "iheval",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "iheval_task_translation",
+        "benchmark": "iheval",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "iheval_safety_hijack",
+        "benchmark": "iheval",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "iheval_safety_extraction",
+        "benchmark": "iheval",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "iheval_tool_webpage",
+        "benchmark": "iheval",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "culturalbench_easy",
+        "benchmark": "culturalbench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "culturalbench_hard",
+        "benchmark": "culturalbench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "chembench",
+        "benchmark": "chembench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "b3",
+        "benchmark": "b3",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "personality_BFI",
+        "benchmark": "personality",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "personality_TRAIT",
+        "benchmark": "personality",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "make_me_pay",
+        "benchmark": "make_me_pay",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "gdm_oversight_pattern",
+        "benchmark": "gdm_stealth",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "gdm_classifier_evasion",
+        "benchmark": "gdm_stealth",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "gdm_cover_your_tracks",
+        "benchmark": "gdm_stealth",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "gdm_strategic_rule_breaking",
+        "benchmark": "gdm_stealth",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "privacylens_probing",
+        "benchmark": "privacylens",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "privacylens_action",
+        "benchmark": "privacylens",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "hallulens_task1_precise_wikiqa",
+        "benchmark": "hallulens",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "hallulens_task2_longwiki",
+        "benchmark": "hallulens",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "hallulens_task3_nonsense_mixed_entities",
+        "benchmark": "hallulens",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "hallulens_task3_round_robin_nonsense_name",
+        "benchmark": "hallulens",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "uccb",
+        "benchmark": "uccb",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "mask",
+        "benchmark": "mask",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "bfcl",
+        "benchmark": "bfcl",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "agentharm",
+        "benchmark": "agentharm",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "agentharm_benign",
+        "benchmark": "agentharm",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "makemesay",
+        "benchmark": "makemesay",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "mind2web_sc",
+        "benchmark": "mind2web_sc",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "cybench",
+        "benchmark": "cybench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "simpleqa",
+        "benchmark": "simpleqa",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "truthfulqa",
+        "benchmark": "truthfulqa",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "mmiu",
+        "benchmark": "mmiu",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "gdpval",
+        "benchmark": "gdpval",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "sec_qa_v1",
+        "benchmark": "sec_qa",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "sec_qa_v2",
+        "benchmark": "sec_qa",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "personalized_safety_context_free",
+        "benchmark": "personalized_safety",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "personalized_safety_context_rich",
+        "benchmark": "personalized_safety",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "xstest",
+        "benchmark": "xstest",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "sosbench",
+        "benchmark": "sosbench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "agentic_misalignment",
+        "benchmark": "agentic_misalignment",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "abstention_bench",
+        "benchmark": "abstention_bench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "ahb",
+        "benchmark": "ahb",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "cve_bench",
+        "benchmark": "cve_bench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "clash_eval",
+        "benchmark": "clash_eval",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "stereoset",
+        "benchmark": "stereoset",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "raccoon",
+        "benchmark": "raccoon",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "sciknoweval",
+        "benchmark": "sciknoweval",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "gdm_approved_directories",
+        "benchmark": "gdm_self_reasoning",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "gdm_calculator_improvement",
+        "benchmark": "gdm_self_reasoning",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "gdm_context_length_mod_instrumental_only",
+        "benchmark": "gdm_self_reasoning",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "gdm_context_length_mod_irreversibility_only",
+        "benchmark": "gdm_self_reasoning",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "gdm_database_tool",
+        "benchmark": "gdm_self_reasoning",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "gdm_latency_calculator",
+        "benchmark": "gdm_self_reasoning",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "gdm_max_messages_calculator",
+        "benchmark": "gdm_self_reasoning",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "gdm_max_tokens",
+        "benchmark": "gdm_self_reasoning",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "gdm_oversight_frequency",
+        "benchmark": "gdm_self_reasoning",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "gdm_read_logs",
+        "benchmark": "gdm_self_reasoning",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "gdm_turn_off_filters",
+        "benchmark": "gdm_self_reasoning",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "mathvista",
+        "benchmark": "mathvista",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "gaia",
+        "benchmark": "gaia",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "cyse2_interpreter_abuse",
+        "benchmark": "cyberseceval_2",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "cyse2_prompt_injection",
+        "benchmark": "cyberseceval_2",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "fortress_adversarial",
+        "benchmark": "fortress",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "fortress_benign",
+        "benchmark": "fortress",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "mm_safety_bench_illegal_activity",
+        "benchmark": "mm_safety_bench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "strong_reject",
+        "benchmark": "strong_reject",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "safeagentbench",
+        "benchmark": "safeagentbench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "wmdp_bio",
+        "benchmark": "wmdp",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "wmdp_chem",
+        "benchmark": "wmdp",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "wmdp_cyber",
+        "benchmark": "wmdp",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "ifeval",
+        "benchmark": "ifeval",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "mgsm",
+        "benchmark": "mgsm",
+        "status": "pending",
+        "error": null
+      }
+    ],
+    "current_task": null,
+    "progress": 0.0,
+    "created_at": "2026-02-27T13:40:01.712020+00:00",
+    "completed_at": "2026-02-27T13:50:58.083243+00:00",
+    "error": "Service restarted while job was running",
+    "limit": 100,
+    "agent_id": "935886f5-ef16-4c2a-a5ad-43bbfe489c28",
+    "agent_name": "bentz-doubao-2-0-lite"
+  },
+  {
+    "id": "01e172abc561",
+    "model_id": "openai/doubao-seed-2-0-pro-260215",
+    "model_name": "openai/doubao-seed-2-0-pro-260215",
+    "model_config_id": null,
+    "status": "cancelled",
+    "benchmarks": [
+      "mind2web",
+      "assistant_bench",
+      "bbq",
+      "bold",
+      "docvqa",
+      "sycophancy",
+      "lab_bench",
+      "overthink",
+      "sevenllm",
+      "cyberseceval_3",
+      "healthbench",
+      "mssbench",
+      "coconot",
+      "mmmu",
+      "iheval",
+      "culturalbench",
+      "chembench",
+      "b3",
+      "personality",
+      "make_me_pay",
+      "gdm_stealth",
+      "privacylens",
+      "hallulens",
+      "uccb",
+      "mask",
+      "bfcl",
+      "agentharm",
+      "makemesay",
+      "mind2web_sc",
+      "cybench",
+      "simpleqa",
+      "truthfulqa",
+      "mmiu",
+      "gdpval",
+      "sec_qa",
+      "personalized_safety",
+      "xstest",
+      "sosbench",
+      "agentic_misalignment",
+      "abstention_bench",
+      "ahb",
+      "cve_bench",
+      "clash_eval",
+      "stereoset",
+      "raccoon",
+      "sciknoweval",
+      "gdm_self_reasoning",
+      "mathvista",
+      "gaia",
+      "cyberseceval_2",
+      "fortress",
+      "mm_safety_bench",
+      "strong_reject",
+      "safeagentbench",
+      "wmdp",
+      "ifeval",
+      "mgsm"
+    ],
+    "tasks": [
+      {
+        "task_name": "mind2web",
+        "benchmark": "mind2web",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "assistant_bench_closed_book",
+        "benchmark": "assistant_bench",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "assistant_bench_web_browser",
+        "benchmark": "assistant_bench",
+        "status": "failed",
+        "error": "任务 assistant_bench_web_browser 执行失败 (exit 1): "
+      },
+      {
+        "task_name": "bbq",
+        "benchmark": "bbq",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "bold",
+        "benchmark": "bold",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "docvqa",
+        "benchmark": "docvqa",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "sycophancy",
+        "benchmark": "sycophancy",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "lab_bench_litqa",
+        "benchmark": "lab_bench",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "lab_bench_suppqa",
+        "benchmark": "lab_bench",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "lab_bench_figqa",
+        "benchmark": "lab_bench",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "lab_bench_tableqa",
+        "benchmark": "lab_bench",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "lab_bench_dbqa",
+        "benchmark": "lab_bench",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "lab_bench_protocolqa",
+        "benchmark": "lab_bench",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "lab_bench_seqqa",
+        "benchmark": "lab_bench",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "lab_bench_cloning_scenarios",
+        "benchmark": "lab_bench",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "overthink",
+        "benchmark": "overthink",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "sevenllm_mcq_zh",
+        "benchmark": "sevenllm",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "sevenllm_mcq_en",
+        "benchmark": "sevenllm",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "sevenllm_qa_zh",
+        "benchmark": "sevenllm",
+        "status": "failed",
+        "error": "任务 sevenllm_qa_zh 执行失败 (exit 1):  **kwargs)\n  File \"/home/xln/agent-safety-platform/eval-poc/.venvs/sevenllm/lib/python3.10/site-packages/httpx/_client.py\", line 825, in request\n    return self.send(request, auth=auth, follow_redirects=follow_redirects)\n  File \"/home/xln/agent-safety-platform/eval-poc/.venvs/sevenllm/lib/python3.10/site-packages/httpx/_client.py\", line 901, in send\n    raise RuntimeError(\"Cannot send a request, as the client has been closed.\")\nRuntimeError: Cannot send a request, as the client has been closed.\n"
+      },
+      {
+        "task_name": "sevenllm_qa_en",
+        "benchmark": "sevenllm",
+        "status": "failed",
+        "error": "任务 sevenllm_qa_en 执行失败 (exit 1):  **kwargs)\n  File \"/home/xln/agent-safety-platform/eval-poc/.venvs/sevenllm/lib/python3.10/site-packages/httpx/_client.py\", line 825, in request\n    return self.send(request, auth=auth, follow_redirects=follow_redirects)\n  File \"/home/xln/agent-safety-platform/eval-poc/.venvs/sevenllm/lib/python3.10/site-packages/httpx/_client.py\", line 901, in send\n    raise RuntimeError(\"Cannot send a request, as the client has been closed.\")\nRuntimeError: Cannot send a request, as the client has been closed.\n"
+      },
+      {
+        "task_name": "cyse3_visual_prompt_injection",
+        "benchmark": "cyberseceval_3",
+        "status": "failed",
+        "error": "任务 cyse3_visual_prompt_injection 执行失败 (exit 1): le \"/home/xln/agent-safety-platform/eval-poc/.venvs/cyberseceval_3/lib/python3.10/site-packages/fsspec/implementations/local.py\", line 387, in __init__\n    self._open()\n  File \"/home/xln/agent-safety-platform/eval-poc/.venvs/cyberseceval_3/lib/python3.10/site-packages/fsspec/implementations/local.py\", line 392, in _open\n    self.f = open(self.path, mode=self.mode)\nFileNotFoundError: [Errno 2] No such file or directory: '/home/xln/.cache/inspect_evals/cyse3_visual_prompt_injection/images/92.png'\n"
+      },
+      {
+        "task_name": "healthbench",
+        "benchmark": "healthbench",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "healthbench_hard",
+        "benchmark": "healthbench",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "healthbench_consensus",
+        "benchmark": "healthbench",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "mssbench_chat_if",
+        "benchmark": "mssbench",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "mssbench_chat_qc",
+        "benchmark": "mssbench",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "mssbench_chat_ic",
+        "benchmark": "mssbench",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "mssbench_chat_ic_cap",
+        "benchmark": "mssbench",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "mssbench_embodied_if",
+        "benchmark": "mssbench",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "mssbench_embodied_qc",
+        "benchmark": "mssbench",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "mssbench_embodied_ic",
+        "benchmark": "mssbench",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "mssbench_embodied_ic_cap",
+        "benchmark": "mssbench",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "coconot",
+        "benchmark": "coconot",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "mmmu_multiple_choice",
+        "benchmark": "mmmu",
+        "status": "failed",
+        "error": "任务 mmmu_multiple_choice 执行失败 (exit 1): n/agent-safety-platform/eval-poc/upstream/inspect_evals/src/inspect_evals/mmmu/utils.py\", line 121, in load_and_concatenate_datasets\n    ds = _load_from_local_parquet(path, subject, split)\n  File \"/home/xln/agent-safety-platform/eval-poc/upstream/inspect_evals/src/inspect_evals/mmmu/utils.py\", line 98, in _load_from_local_parquet\n    raise FileNotFoundError(f\"No local parquet for {path}/{subject}/{split}\")\nFileNotFoundError: No local parquet for MMMU/MMMU/Architecture_and_Engineering/validation\n"
+      },
+      {
+        "task_name": "mmmu_open",
+        "benchmark": "mmmu",
+        "status": "failed",
+        "error": "任务 mmmu_open 执行失败 (exit 1): n/agent-safety-platform/eval-poc/upstream/inspect_evals/src/inspect_evals/mmmu/utils.py\", line 121, in load_and_concatenate_datasets\n    ds = _load_from_local_parquet(path, subject, split)\n  File \"/home/xln/agent-safety-platform/eval-poc/upstream/inspect_evals/src/inspect_evals/mmmu/utils.py\", line 98, in _load_from_local_parquet\n    raise FileNotFoundError(f\"No local parquet for {path}/{subject}/{split}\")\nFileNotFoundError: No local parquet for MMMU/MMMU/Architecture_and_Engineering/validation\n"
+      },
+      {
+        "task_name": "iheval_rule_multi_aligned",
+        "benchmark": "iheval",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "iheval_rule_multi_conflict",
+        "benchmark": "iheval",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "iheval_rule_single_aligned",
+        "benchmark": "iheval",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "iheval_task_extraction",
+        "benchmark": "iheval",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "iheval_task_translation",
+        "benchmark": "iheval",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "iheval_safety_hijack",
+        "benchmark": "iheval",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "iheval_safety_extraction",
+        "benchmark": "iheval",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "iheval_tool_webpage",
+        "benchmark": "iheval",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "culturalbench_easy",
+        "benchmark": "culturalbench",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "culturalbench_hard",
+        "benchmark": "culturalbench",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "chembench",
+        "benchmark": "chembench",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "b3",
+        "benchmark": "b3",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "personality_BFI",
+        "benchmark": "personality",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "personality_TRAIT",
+        "benchmark": "personality",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "make_me_pay",
+        "benchmark": "make_me_pay",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "gdm_oversight_pattern",
+        "benchmark": "gdm_stealth",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "gdm_classifier_evasion",
+        "benchmark": "gdm_stealth",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "gdm_cover_your_tracks",
+        "benchmark": "gdm_stealth",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "gdm_strategic_rule_breaking",
+        "benchmark": "gdm_stealth",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "privacylens_probing",
+        "benchmark": "privacylens",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "privacylens_action",
+        "benchmark": "privacylens",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "hallulens_task1_precise_wikiqa",
+        "benchmark": "hallulens",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "hallulens_task2_longwiki",
+        "benchmark": "hallulens",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "hallulens_task3_nonsense_mixed_entities",
+        "benchmark": "hallulens",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "hallulens_task3_round_robin_nonsense_name",
+        "benchmark": "hallulens",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "uccb",
+        "benchmark": "uccb",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "mask",
+        "benchmark": "mask",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "bfcl",
+        "benchmark": "bfcl",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "agentharm",
+        "benchmark": "agentharm",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "agentharm_benign",
+        "benchmark": "agentharm",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "makemesay",
+        "benchmark": "makemesay",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "mind2web_sc",
+        "benchmark": "mind2web_sc",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "cybench",
+        "benchmark": "cybench",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "simpleqa",
+        "benchmark": "simpleqa",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "truthfulqa",
+        "benchmark": "truthfulqa",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "mmiu",
+        "benchmark": "mmiu",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "gdpval",
+        "benchmark": "gdpval",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "sec_qa_v1",
+        "benchmark": "sec_qa",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "sec_qa_v2",
+        "benchmark": "sec_qa",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "personalized_safety_context_free",
+        "benchmark": "personalized_safety",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "personalized_safety_context_rich",
+        "benchmark": "personalized_safety",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "xstest",
+        "benchmark": "xstest",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "sosbench",
+        "benchmark": "sosbench",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "agentic_misalignment",
+        "benchmark": "agentic_misalignment",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "abstention_bench",
+        "benchmark": "abstention_bench",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "ahb",
+        "benchmark": "ahb",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "cve_bench",
+        "benchmark": "cve_bench",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "clash_eval",
+        "benchmark": "clash_eval",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "stereoset",
+        "benchmark": "stereoset",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "raccoon",
+        "benchmark": "raccoon",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "sciknoweval",
+        "benchmark": "sciknoweval",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "gdm_approved_directories",
+        "benchmark": "gdm_self_reasoning",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "gdm_calculator_improvement",
+        "benchmark": "gdm_self_reasoning",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "gdm_context_length_mod_instrumental_only",
+        "benchmark": "gdm_self_reasoning",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "gdm_context_length_mod_irreversibility_only",
+        "benchmark": "gdm_self_reasoning",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "gdm_database_tool",
+        "benchmark": "gdm_self_reasoning",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "gdm_latency_calculator",
+        "benchmark": "gdm_self_reasoning",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "gdm_max_messages_calculator",
+        "benchmark": "gdm_self_reasoning",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "gdm_max_tokens",
+        "benchmark": "gdm_self_reasoning",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "gdm_oversight_frequency",
+        "benchmark": "gdm_self_reasoning",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "gdm_read_logs",
+        "benchmark": "gdm_self_reasoning",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "gdm_turn_off_filters",
+        "benchmark": "gdm_self_reasoning",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "mathvista",
+        "benchmark": "mathvista",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "gaia",
+        "benchmark": "gaia",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "cyse2_interpreter_abuse",
+        "benchmark": "cyberseceval_2",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "cyse2_prompt_injection",
+        "benchmark": "cyberseceval_2",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "fortress_adversarial",
+        "benchmark": "fortress",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "fortress_benign",
+        "benchmark": "fortress",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "mm_safety_bench_illegal_activity",
+        "benchmark": "mm_safety_bench",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "strong_reject",
+        "benchmark": "strong_reject",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "safeagentbench",
+        "benchmark": "safeagentbench",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "wmdp_bio",
+        "benchmark": "wmdp",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "wmdp_chem",
+        "benchmark": "wmdp",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "wmdp_cyber",
+        "benchmark": "wmdp",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "ifeval",
+        "benchmark": "ifeval",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "mgsm",
+        "benchmark": "mgsm",
+        "status": "failed",
+        "error": "Cancelled"
+      }
+    ],
+    "current_task": null,
+    "progress": 34.234234234234236,
+    "created_at": "2026-02-27T13:51:30.715157+00:00",
+    "completed_at": "2026-02-27T16:32:52.676754+00:00",
+    "error": "Cancelled by user",
+    "limit": 100,
+    "agent_id": "fbb4184e-6070-4fdd-9680-d173f34c7ecd",
+    "agent_name": "bentz-doubao-2-0-pro"
+  },
+  {
+    "id": "a0f05a45efe9",
+    "model_id": "openai/qwen3.5-plus",
+    "model_name": "openai/qwen3.5-plus",
+    "model_config_id": null,
+    "status": "completed",
+    "benchmarks": [
+      "mind2web",
+      "assistant_bench",
+      "bbq",
+      "bold",
+      "docvqa",
+      "sycophancy",
+      "lab_bench",
+      "overthink",
+      "sevenllm",
+      "cyberseceval_3",
+      "healthbench",
+      "mssbench",
+      "coconot",
+      "mmmu",
+      "iheval",
+      "culturalbench",
+      "chembench",
+      "b3",
+      "personality",
+      "make_me_pay",
+      "gdm_stealth",
+      "privacylens",
+      "hallulens",
+      "uccb",
+      "mask",
+      "bfcl",
+      "agentharm",
+      "makemesay",
+      "mind2web_sc",
+      "cybench",
+      "simpleqa",
+      "truthfulqa",
+      "mmiu",
+      "gdpval",
+      "sec_qa",
+      "personalized_safety",
+      "xstest",
+      "sosbench",
+      "agentic_misalignment",
+      "abstention_bench",
+      "ahb",
+      "cve_bench",
+      "clash_eval",
+      "stereoset",
+      "raccoon",
+      "sciknoweval",
+      "gdm_self_reasoning",
+      "mathvista",
+      "gaia",
+      "cyberseceval_2",
+      "fortress",
+      "mm_safety_bench",
+      "strong_reject",
+      "safeagentbench",
+      "wmdp",
+      "ifeval",
+      "mgsm"
+    ],
+    "tasks": [
+      {
+        "task_name": "mind2web",
+        "benchmark": "mind2web",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "assistant_bench_closed_book",
+        "benchmark": "assistant_bench",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "assistant_bench_web_browser",
+        "benchmark": "assistant_bench",
+        "status": "failed",
+        "error": "任务 assistant_bench_web_browser 执行失败 (exit 1): "
+      },
+      {
+        "task_name": "bbq",
+        "benchmark": "bbq",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "bold",
+        "benchmark": "bold",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "docvqa",
+        "benchmark": "docvqa",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "sycophancy",
+        "benchmark": "sycophancy",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "lab_bench_litqa",
+        "benchmark": "lab_bench",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "lab_bench_suppqa",
+        "benchmark": "lab_bench",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "lab_bench_figqa",
+        "benchmark": "lab_bench",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "lab_bench_tableqa",
+        "benchmark": "lab_bench",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "lab_bench_dbqa",
+        "benchmark": "lab_bench",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "lab_bench_protocolqa",
+        "benchmark": "lab_bench",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "lab_bench_seqqa",
+        "benchmark": "lab_bench",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "lab_bench_cloning_scenarios",
+        "benchmark": "lab_bench",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "overthink",
+        "benchmark": "overthink",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "sevenllm_mcq_zh",
+        "benchmark": "sevenllm",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "sevenllm_mcq_en",
+        "benchmark": "sevenllm",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "sevenllm_qa_zh",
+        "benchmark": "sevenllm",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "sevenllm_qa_en",
+        "benchmark": "sevenllm",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "cyse3_visual_prompt_injection",
+        "benchmark": "cyberseceval_3",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "healthbench",
+        "benchmark": "healthbench",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "healthbench_hard",
+        "benchmark": "healthbench",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "healthbench_consensus",
+        "benchmark": "healthbench",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "mssbench_chat_if",
+        "benchmark": "mssbench",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "mssbench_chat_qc",
+        "benchmark": "mssbench",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "mssbench_chat_ic",
+        "benchmark": "mssbench",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "mssbench_chat_ic_cap",
+        "benchmark": "mssbench",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "mssbench_embodied_if",
+        "benchmark": "mssbench",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "mssbench_embodied_qc",
+        "benchmark": "mssbench",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "mssbench_embodied_ic",
+        "benchmark": "mssbench",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "mssbench_embodied_ic_cap",
+        "benchmark": "mssbench",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "coconot",
+        "benchmark": "coconot",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "mmmu_multiple_choice",
+        "benchmark": "mmmu",
+        "status": "failed",
+        "error": "任务 mmmu_multiple_choice 执行失败 (exit 1): -safety-platform/eval-poc/upstream/inspect_evals/src/inspect_evals/mmmu/utils.py\", line 121, in load_and_concatenate_datasets\n    ds = _load_from_local_parquet(path, subject, split)\n  File \"/home/xln/agent-safety-platform/eval-poc/upstream/inspect_evals/src/inspect_evals/mmmu/utils.py\", line 98, in _load_from_local_parquet\n    raise FileNotFoundError(f\"No local parquet for {path}/{subject}/{split}\")\nFileNotFoundError: No local parquet for MMMU/MMMU/Diagnostics_and_Laboratory_Medicine/validation\n"
+      },
+      {
+        "task_name": "mmmu_open",
+        "benchmark": "mmmu",
+        "status": "failed",
+        "error": "任务 mmmu_open 执行失败 (exit 1): -safety-platform/eval-poc/upstream/inspect_evals/src/inspect_evals/mmmu/utils.py\", line 121, in load_and_concatenate_datasets\n    ds = _load_from_local_parquet(path, subject, split)\n  File \"/home/xln/agent-safety-platform/eval-poc/upstream/inspect_evals/src/inspect_evals/mmmu/utils.py\", line 98, in _load_from_local_parquet\n    raise FileNotFoundError(f\"No local parquet for {path}/{subject}/{split}\")\nFileNotFoundError: No local parquet for MMMU/MMMU/Diagnostics_and_Laboratory_Medicine/validation\n"
+      },
+      {
+        "task_name": "iheval_rule_multi_aligned",
+        "benchmark": "iheval",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "iheval_rule_multi_conflict",
+        "benchmark": "iheval",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "iheval_rule_single_aligned",
+        "benchmark": "iheval",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "iheval_task_extraction",
+        "benchmark": "iheval",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "iheval_task_translation",
+        "benchmark": "iheval",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "iheval_safety_hijack",
+        "benchmark": "iheval",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "iheval_safety_extraction",
+        "benchmark": "iheval",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "iheval_tool_webpage",
+        "benchmark": "iheval",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "culturalbench_easy",
+        "benchmark": "culturalbench",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "culturalbench_hard",
+        "benchmark": "culturalbench",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "chembench",
+        "benchmark": "chembench",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "b3",
+        "benchmark": "b3",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "personality_BFI",
+        "benchmark": "personality",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "personality_TRAIT",
+        "benchmark": "personality",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "make_me_pay",
+        "benchmark": "make_me_pay",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "gdm_oversight_pattern",
+        "benchmark": "gdm_stealth",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "gdm_classifier_evasion",
+        "benchmark": "gdm_stealth",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "gdm_cover_your_tracks",
+        "benchmark": "gdm_stealth",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "gdm_strategic_rule_breaking",
+        "benchmark": "gdm_stealth",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "privacylens_probing",
+        "benchmark": "privacylens",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "privacylens_action",
+        "benchmark": "privacylens",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "hallulens_task1_precise_wikiqa",
+        "benchmark": "hallulens",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "hallulens_task2_longwiki",
+        "benchmark": "hallulens",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "hallulens_task3_nonsense_mixed_entities",
+        "benchmark": "hallulens",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "hallulens_task3_round_robin_nonsense_name",
+        "benchmark": "hallulens",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "uccb",
+        "benchmark": "uccb",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "mask",
+        "benchmark": "mask",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "bfcl",
+        "benchmark": "bfcl",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "agentharm",
+        "benchmark": "agentharm",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "agentharm_benign",
+        "benchmark": "agentharm",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "makemesay",
+        "benchmark": "makemesay",
+        "status": "failed",
+        "error": "任务 makemesay 执行失败 (exit 1): nt-safety-platform/eval-poc/.venvs/makemesay/lib/python3.10/site-packages/requests/adapters.py\", line 675, in send\n    raise SSLError(e, request=request)\nrequests.exceptions.SSLError: HTTPSConnectionPool(host='media.githubusercontent.com', port=443): Max retries exceeded with url: /media/openai/evals/refs/heads/main/evals/registry/data/make_me_say/medium-and-hard.jsonl (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1007)')))\n"
+      },
+      {
+        "task_name": "mind2web_sc",
+        "benchmark": "mind2web_sc",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "cybench",
+        "benchmark": "cybench",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "simpleqa",
+        "benchmark": "simpleqa",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "truthfulqa",
+        "benchmark": "truthfulqa",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "mmiu",
+        "benchmark": "mmiu",
+        "status": "failed",
+        "error": "任务 mmiu 执行失败 (exit 1): pect_evals/src/inspect_evals/mmiu/utils.py\", line 136, in download_large_file\n    for chunk in response.iter_content(chunk_size=chunk_size):\n  File \"/home/xln/agent-safety-platform/eval-poc/.venvs/mmiu/lib/python3.10/site-packages/requests/models.py\", line 822, in generate\n    raise ChunkedEncodingError(e)\nrequests.exceptions.ChunkedEncodingError: ('Connection broken: IncompleteRead(207258186 bytes read, 1396188651 more expected)', IncompleteRead(207258186 bytes read, 1396188651 more expected))\n"
+      },
+      {
+        "task_name": "gdpval",
+        "benchmark": "gdpval",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "sec_qa_v1",
+        "benchmark": "sec_qa",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "sec_qa_v2",
+        "benchmark": "sec_qa",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "personalized_safety_context_free",
+        "benchmark": "personalized_safety",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "personalized_safety_context_rich",
+        "benchmark": "personalized_safety",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "xstest",
+        "benchmark": "xstest",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "sosbench",
+        "benchmark": "sosbench",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "agentic_misalignment",
+        "benchmark": "agentic_misalignment",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "abstention_bench",
+        "benchmark": "abstention_bench",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "ahb",
+        "benchmark": "ahb",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "cve_bench",
+        "benchmark": "cve_bench",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "clash_eval",
+        "benchmark": "clash_eval",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "stereoset",
+        "benchmark": "stereoset",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "raccoon",
+        "benchmark": "raccoon",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "sciknoweval",
+        "benchmark": "sciknoweval",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "gdm_approved_directories",
+        "benchmark": "gdm_self_reasoning",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "gdm_calculator_improvement",
+        "benchmark": "gdm_self_reasoning",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "gdm_context_length_mod_instrumental_only",
+        "benchmark": "gdm_self_reasoning",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "gdm_context_length_mod_irreversibility_only",
+        "benchmark": "gdm_self_reasoning",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "gdm_database_tool",
+        "benchmark": "gdm_self_reasoning",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "gdm_latency_calculator",
+        "benchmark": "gdm_self_reasoning",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "gdm_max_messages_calculator",
+        "benchmark": "gdm_self_reasoning",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "gdm_max_tokens",
+        "benchmark": "gdm_self_reasoning",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "gdm_oversight_frequency",
+        "benchmark": "gdm_self_reasoning",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "gdm_read_logs",
+        "benchmark": "gdm_self_reasoning",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "gdm_turn_off_filters",
+        "benchmark": "gdm_self_reasoning",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "mathvista",
+        "benchmark": "mathvista",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "gaia",
+        "benchmark": "gaia",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "cyse2_interpreter_abuse",
+        "benchmark": "cyberseceval_2",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "cyse2_prompt_injection",
+        "benchmark": "cyberseceval_2",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "fortress_adversarial",
+        "benchmark": "fortress",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "fortress_benign",
+        "benchmark": "fortress",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "mm_safety_bench_illegal_activity",
+        "benchmark": "mm_safety_bench",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "strong_reject",
+        "benchmark": "strong_reject",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "safeagentbench",
+        "benchmark": "safeagentbench",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "wmdp_bio",
+        "benchmark": "wmdp",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "wmdp_chem",
+        "benchmark": "wmdp",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "wmdp_cyber",
+        "benchmark": "wmdp",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "ifeval",
+        "benchmark": "ifeval",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "mgsm",
+        "benchmark": "mgsm",
+        "status": "completed",
+        "error": null
+      }
+    ],
+    "current_task": null,
+    "progress": 100.0,
+    "created_at": "2026-02-27T15:35:02.294775+00:00",
+    "completed_at": "2026-02-27T21:16:29.944502+00:00",
+    "error": "5 个任务执行失败",
+    "limit": 10,
+    "agent_id": "84d2dc17-6a3d-4017-84e4-87d2fea74aa1",
+    "agent_name": "test-pipe-qwen"
+  },
+  {
+    "id": "9f6835c396e6",
+    "model_id": "openai/doubao-seed-2-0-pro-260215",
+    "model_name": "openai/doubao-seed-2-0-pro-260215",
+    "model_config_id": null,
+    "status": "failed",
+    "benchmarks": [
+      "mind2web",
+      "assistant_bench",
+      "bbq",
+      "bold",
+      "docvqa",
+      "sycophancy",
+      "lab_bench",
+      "overthink",
+      "sevenllm",
+      "cyberseceval_3",
+      "healthbench",
+      "mssbench",
+      "coconot",
+      "mmmu",
+      "iheval",
+      "culturalbench",
+      "chembench",
+      "b3",
+      "personality",
+      "make_me_pay",
+      "gdm_stealth",
+      "privacylens",
+      "hallulens",
+      "uccb",
+      "mask",
+      "bfcl",
+      "agentharm",
+      "makemesay",
+      "mind2web_sc",
+      "cybench",
+      "simpleqa",
+      "truthfulqa",
+      "mmiu",
+      "gdpval",
+      "sec_qa",
+      "personalized_safety",
+      "xstest",
+      "sosbench",
+      "agentic_misalignment",
+      "abstention_bench",
+      "ahb",
+      "cve_bench",
+      "clash_eval",
+      "stereoset",
+      "raccoon",
+      "sciknoweval",
+      "gdm_self_reasoning",
+      "mathvista",
+      "gaia",
+      "cyberseceval_2",
+      "fortress",
+      "mm_safety_bench",
+      "strong_reject",
+      "safeagentbench",
+      "wmdp",
+      "ifeval",
+      "mgsm"
+    ],
+    "tasks": [
+      {
+        "task_name": "mind2web",
+        "benchmark": "mind2web",
+        "status": "running",
+        "error": null
+      },
+      {
+        "task_name": "assistant_bench_closed_book",
+        "benchmark": "assistant_bench",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "assistant_bench_web_browser",
+        "benchmark": "assistant_bench",
+        "status": "failed",
+        "error": "任务 assistant_bench_web_browser 执行失败 (exit 1): "
+      },
+      {
+        "task_name": "bbq",
+        "benchmark": "bbq",
+        "status": "running",
+        "error": null
+      },
+      {
+        "task_name": "bold",
+        "benchmark": "bold",
+        "status": "running",
+        "error": null
+      },
+      {
+        "task_name": "docvqa",
+        "benchmark": "docvqa",
+        "status": "running",
+        "error": null
+      },
+      {
+        "task_name": "sycophancy",
+        "benchmark": "sycophancy",
+        "status": "running",
+        "error": null
+      },
+      {
+        "task_name": "lab_bench_litqa",
+        "benchmark": "lab_bench",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "lab_bench_suppqa",
+        "benchmark": "lab_bench",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "lab_bench_figqa",
+        "benchmark": "lab_bench",
+        "status": "running",
+        "error": null
+      },
+      {
+        "task_name": "lab_bench_tableqa",
+        "benchmark": "lab_bench",
+        "status": "running",
+        "error": null
+      },
+      {
+        "task_name": "lab_bench_dbqa",
+        "benchmark": "lab_bench",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "lab_bench_protocolqa",
+        "benchmark": "lab_bench",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "lab_bench_seqqa",
+        "benchmark": "lab_bench",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "lab_bench_cloning_scenarios",
+        "benchmark": "lab_bench",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "overthink",
+        "benchmark": "overthink",
+        "status": "running",
+        "error": null
+      },
+      {
+        "task_name": "sevenllm_mcq_zh",
+        "benchmark": "sevenllm",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "sevenllm_mcq_en",
+        "benchmark": "sevenllm",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "sevenllm_qa_zh",
+        "benchmark": "sevenllm",
+        "status": "failed",
+        "error": "任务 sevenllm_qa_zh 执行失败 (exit 1):  **kwargs)\n  File \"/home/xln/agent-safety-platform/eval-poc/.venvs/sevenllm/lib/python3.10/site-packages/httpx/_client.py\", line 825, in request\n    return self.send(request, auth=auth, follow_redirects=follow_redirects)\n  File \"/home/xln/agent-safety-platform/eval-poc/.venvs/sevenllm/lib/python3.10/site-packages/httpx/_client.py\", line 901, in send\n    raise RuntimeError(\"Cannot send a request, as the client has been closed.\")\nRuntimeError: Cannot send a request, as the client has been closed.\n"
+      },
+      {
+        "task_name": "sevenllm_qa_en",
+        "benchmark": "sevenllm",
+        "status": "failed",
+        "error": "任务 sevenllm_qa_en 执行失败 (exit 1):  **kwargs)\n  File \"/home/xln/agent-safety-platform/eval-poc/.venvs/sevenllm/lib/python3.10/site-packages/httpx/_client.py\", line 825, in request\n    return self.send(request, auth=auth, follow_redirects=follow_redirects)\n  File \"/home/xln/agent-safety-platform/eval-poc/.venvs/sevenllm/lib/python3.10/site-packages/httpx/_client.py\", line 901, in send\n    raise RuntimeError(\"Cannot send a request, as the client has been closed.\")\nRuntimeError: Cannot send a request, as the client has been closed.\n"
+      },
+      {
+        "task_name": "cyse3_visual_prompt_injection",
+        "benchmark": "cyberseceval_3",
+        "status": "running",
+        "error": null
+      },
+      {
+        "task_name": "healthbench",
+        "benchmark": "healthbench",
+        "status": "running",
+        "error": null
+      },
+      {
+        "task_name": "healthbench_hard",
+        "benchmark": "healthbench",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "healthbench_consensus",
+        "benchmark": "healthbench",
+        "status": "running",
+        "error": null
+      },
+      {
+        "task_name": "mssbench_chat_if",
+        "benchmark": "mssbench",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "mssbench_chat_qc",
+        "benchmark": "mssbench",
+        "status": "running",
+        "error": null
+      },
+      {
+        "task_name": "mssbench_chat_ic",
+        "benchmark": "mssbench",
+        "status": "running",
+        "error": null
+      },
+      {
+        "task_name": "mssbench_chat_ic_cap",
+        "benchmark": "mssbench",
+        "status": "running",
+        "error": null
+      },
+      {
+        "task_name": "mssbench_embodied_if",
+        "benchmark": "mssbench",
+        "status": "running",
+        "error": null
+      },
+      {
+        "task_name": "mssbench_embodied_qc",
+        "benchmark": "mssbench",
+        "status": "running",
+        "error": null
+      },
+      {
+        "task_name": "mssbench_embodied_ic",
+        "benchmark": "mssbench",
+        "status": "running",
+        "error": null
+      },
+      {
+        "task_name": "mssbench_embodied_ic_cap",
+        "benchmark": "mssbench",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "coconot",
+        "benchmark": "coconot",
+        "status": "running",
+        "error": null
+      },
+      {
+        "task_name": "mmmu_multiple_choice",
+        "benchmark": "mmmu",
+        "status": "failed",
+        "error": "任务 mmmu_multiple_choice 执行失败 (exit 1): \n  File \"/home/xln/agent-safety-platform/eval-poc/upstream/inspect_evals/src/inspect_evals/mmmu/utils.py\", line 121, in load_and_concatenate_datasets\n    ds = _load_from_local_parquet(path, subject, split)\n  File \"/home/xln/agent-safety-platform/eval-poc/upstream/inspect_evals/src/inspect_evals/mmmu/utils.py\", line 98, in _load_from_local_parquet\n    raise FileNotFoundError(f\"No local parquet for {path}/{subject}/{split}\")\nFileNotFoundError: No local parquet for MMMU/MMMU/Electronics/validation\n"
+      },
+      {
+        "task_name": "mmmu_open",
+        "benchmark": "mmmu",
+        "status": "failed",
+        "error": "任务 mmmu_open 执行失败 (exit 1): -safety-platform/eval-poc/upstream/inspect_evals/src/inspect_evals/mmmu/utils.py\", line 121, in load_and_concatenate_datasets\n    ds = _load_from_local_parquet(path, subject, split)\n  File \"/home/xln/agent-safety-platform/eval-poc/upstream/inspect_evals/src/inspect_evals/mmmu/utils.py\", line 98, in _load_from_local_parquet\n    raise FileNotFoundError(f\"No local parquet for {path}/{subject}/{split}\")\nFileNotFoundError: No local parquet for MMMU/MMMU/Diagnostics_and_Laboratory_Medicine/validation\n"
+      },
+      {
+        "task_name": "iheval_rule_multi_aligned",
+        "benchmark": "iheval",
+        "status": "running",
+        "error": null
+      },
+      {
+        "task_name": "iheval_rule_multi_conflict",
+        "benchmark": "iheval",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "iheval_rule_single_aligned",
+        "benchmark": "iheval",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "iheval_task_extraction",
+        "benchmark": "iheval",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "iheval_task_translation",
+        "benchmark": "iheval",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "iheval_safety_hijack",
+        "benchmark": "iheval",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "iheval_safety_extraction",
+        "benchmark": "iheval",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "iheval_tool_webpage",
+        "benchmark": "iheval",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "culturalbench_easy",
+        "benchmark": "culturalbench",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "culturalbench_hard",
+        "benchmark": "culturalbench",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "chembench",
+        "benchmark": "chembench",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "b3",
+        "benchmark": "b3",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "personality_BFI",
+        "benchmark": "personality",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "personality_TRAIT",
+        "benchmark": "personality",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "make_me_pay",
+        "benchmark": "make_me_pay",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "gdm_oversight_pattern",
+        "benchmark": "gdm_stealth",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "gdm_classifier_evasion",
+        "benchmark": "gdm_stealth",
+        "status": "running",
+        "error": null
+      },
+      {
+        "task_name": "gdm_cover_your_tracks",
+        "benchmark": "gdm_stealth",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "gdm_strategic_rule_breaking",
+        "benchmark": "gdm_stealth",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "privacylens_probing",
+        "benchmark": "privacylens",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "privacylens_action",
+        "benchmark": "privacylens",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "hallulens_task1_precise_wikiqa",
+        "benchmark": "hallulens",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "hallulens_task2_longwiki",
+        "benchmark": "hallulens",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "hallulens_task3_nonsense_mixed_entities",
+        "benchmark": "hallulens",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "hallulens_task3_round_robin_nonsense_name",
+        "benchmark": "hallulens",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "uccb",
+        "benchmark": "uccb",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "mask",
+        "benchmark": "mask",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "bfcl",
+        "benchmark": "bfcl",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "agentharm",
+        "benchmark": "agentharm",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "agentharm_benign",
+        "benchmark": "agentharm",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "makemesay",
+        "benchmark": "makemesay",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "mind2web_sc",
+        "benchmark": "mind2web_sc",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "cybench",
+        "benchmark": "cybench",
+        "status": "running",
+        "error": null
+      },
+      {
+        "task_name": "simpleqa",
+        "benchmark": "simpleqa",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "truthfulqa",
+        "benchmark": "truthfulqa",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "mmiu",
+        "benchmark": "mmiu",
+        "status": "running",
+        "error": null
+      },
+      {
+        "task_name": "gdpval",
+        "benchmark": "gdpval",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "sec_qa_v1",
+        "benchmark": "sec_qa",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "sec_qa_v2",
+        "benchmark": "sec_qa",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "personalized_safety_context_free",
+        "benchmark": "personalized_safety",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "personalized_safety_context_rich",
+        "benchmark": "personalized_safety",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "xstest",
+        "benchmark": "xstest",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "sosbench",
+        "benchmark": "sosbench",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "agentic_misalignment",
+        "benchmark": "agentic_misalignment",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "abstention_bench",
+        "benchmark": "abstention_bench",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "ahb",
+        "benchmark": "ahb",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "cve_bench",
+        "benchmark": "cve_bench",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "clash_eval",
+        "benchmark": "clash_eval",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "stereoset",
+        "benchmark": "stereoset",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "raccoon",
+        "benchmark": "raccoon",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "sciknoweval",
+        "benchmark": "sciknoweval",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "gdm_approved_directories",
+        "benchmark": "gdm_self_reasoning",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "gdm_calculator_improvement",
+        "benchmark": "gdm_self_reasoning",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "gdm_context_length_mod_instrumental_only",
+        "benchmark": "gdm_self_reasoning",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "gdm_context_length_mod_irreversibility_only",
+        "benchmark": "gdm_self_reasoning",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "gdm_database_tool",
+        "benchmark": "gdm_self_reasoning",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "gdm_latency_calculator",
+        "benchmark": "gdm_self_reasoning",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "gdm_max_messages_calculator",
+        "benchmark": "gdm_self_reasoning",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "gdm_max_tokens",
+        "benchmark": "gdm_self_reasoning",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "gdm_oversight_frequency",
+        "benchmark": "gdm_self_reasoning",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "gdm_read_logs",
+        "benchmark": "gdm_self_reasoning",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "gdm_turn_off_filters",
+        "benchmark": "gdm_self_reasoning",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "mathvista",
+        "benchmark": "mathvista",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "gaia",
+        "benchmark": "gaia",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "cyse2_interpreter_abuse",
+        "benchmark": "cyberseceval_2",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "cyse2_prompt_injection",
+        "benchmark": "cyberseceval_2",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "fortress_adversarial",
+        "benchmark": "fortress",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "fortress_benign",
+        "benchmark": "fortress",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "mm_safety_bench_illegal_activity",
+        "benchmark": "mm_safety_bench",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "strong_reject",
+        "benchmark": "strong_reject",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "safeagentbench",
+        "benchmark": "safeagentbench",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "wmdp_bio",
+        "benchmark": "wmdp",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "wmdp_chem",
+        "benchmark": "wmdp",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "wmdp_cyber",
+        "benchmark": "wmdp",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "ifeval",
+        "benchmark": "ifeval",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "mgsm",
+        "benchmark": "mgsm",
+        "status": "completed",
+        "error": null
+      }
+    ],
+    "current_task": null,
+    "progress": 80.18018018018019,
+    "created_at": "2026-02-27T16:33:57.749681+00:00",
+    "completed_at": "2026-02-28T03:00:24.313634+00:00",
+    "error": "Service restarted while job was running",
+    "limit": 50,
+    "agent_id": "fbb4184e-6070-4fdd-9680-d173f34c7ecd",
+    "agent_name": "bentz-doubao-2-0-pro"
+  },
+  {
+    "id": "1b7a1778248f",
+    "model_id": "openai/doubao-seed-2-0-lite-260215",
+    "model_name": "openai/doubao-seed-2-0-lite-260215",
+    "model_config_id": null,
+    "status": "running",
+    "benchmarks": [
+      "sec_qa",
+      "truthfulqa",
+      "mind2web_sc",
+      "make_me_pay",
+      "ahb",
+      "assistant_bench",
+      "sciknoweval",
+      "gdm_self_reasoning",
+      "uccb",
+      "fortress",
+      "culturalbench",
+      "stereoset",
+      "coconot",
+      "bold",
+      "clash_eval",
+      "overthink",
+      "ifeval",
+      "cyberseceval_2",
+      "safeagentbench",
+      "bfcl",
+      "wmdp",
+      "bbq",
+      "mssbench",
+      "gdpval",
+      "sosbench",
+      "personalized_safety",
+      "mgsm",
+      "chembench",
+      "sevenllm",
+      "agentharm",
+      "gdm_stealth",
+      "mmmu",
+      "simpleqa",
+      "docvqa",
+      "raccoon",
+      "healthbench",
+      "hallulens",
+      "cyberseceval_3",
+      "mask",
+      "sycophancy",
+      "cve_bench",
+      "abstention_bench",
+      "mathvista",
+      "xstest",
+      "makemesay",
+      "gaia",
+      "mm_safety_bench",
+      "personality",
+      "lab_bench",
+      "agentic_misalignment",
+      "cybench",
+      "privacylens",
+      "b3",
+      "mmiu",
+      "iheval",
+      "mind2web",
+      "strong_reject"
+    ],
+    "tasks": [
+      {
+        "task_name": "sec_qa_v1",
+        "benchmark": "sec_qa",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "sec_qa_v2",
+        "benchmark": "sec_qa",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "truthfulqa",
+        "benchmark": "truthfulqa",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "mind2web_sc",
+        "benchmark": "mind2web_sc",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "make_me_pay",
+        "benchmark": "make_me_pay",
+        "status": "running",
+        "error": null
+      },
+      {
+        "task_name": "ahb",
+        "benchmark": "ahb",
+        "status": "running",
+        "error": null
+      },
+      {
+        "task_name": "assistant_bench_closed_book",
+        "benchmark": "assistant_bench",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "assistant_bench_web_browser",
+        "benchmark": "assistant_bench",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "sciknoweval",
+        "benchmark": "sciknoweval",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "gdm_approved_directories",
+        "benchmark": "gdm_self_reasoning",
+        "status": "running",
+        "error": null
+      },
+      {
+        "task_name": "gdm_calculator_improvement",
+        "benchmark": "gdm_self_reasoning",
+        "status": "running",
+        "error": null
+      },
+      {
+        "task_name": "gdm_context_length_mod_instrumental_only",
+        "benchmark": "gdm_self_reasoning",
+        "status": "running",
+        "error": null
+      },
+      {
+        "task_name": "gdm_context_length_mod_irreversibility_only",
+        "benchmark": "gdm_self_reasoning",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "gdm_database_tool",
+        "benchmark": "gdm_self_reasoning",
+        "status": "running",
+        "error": null
+      },
+      {
+        "task_name": "gdm_latency_calculator",
+        "benchmark": "gdm_self_reasoning",
+        "status": "running",
+        "error": null
+      },
+      {
+        "task_name": "gdm_max_messages_calculator",
+        "benchmark": "gdm_self_reasoning",
+        "status": "running",
+        "error": null
+      },
+      {
+        "task_name": "gdm_max_tokens",
+        "benchmark": "gdm_self_reasoning",
+        "status": "running",
+        "error": null
+      },
+      {
+        "task_name": "gdm_oversight_frequency",
+        "benchmark": "gdm_self_reasoning",
+        "status": "running",
+        "error": null
+      },
+      {
+        "task_name": "gdm_read_logs",
+        "benchmark": "gdm_self_reasoning",
+        "status": "running",
+        "error": null
+      },
+      {
+        "task_name": "gdm_turn_off_filters",
+        "benchmark": "gdm_self_reasoning",
+        "status": "running",
+        "error": null
+      },
+      {
+        "task_name": "uccb",
+        "benchmark": "uccb",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "fortress_adversarial",
+        "benchmark": "fortress",
+        "status": "running",
+        "error": null
+      },
+      {
+        "task_name": "fortress_benign",
+        "benchmark": "fortress",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "culturalbench_easy",
+        "benchmark": "culturalbench",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "culturalbench_hard",
+        "benchmark": "culturalbench",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "stereoset",
+        "benchmark": "stereoset",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "coconot",
+        "benchmark": "coconot",
+        "status": "running",
+        "error": null
+      },
+      {
+        "task_name": "bold",
+        "benchmark": "bold",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "clash_eval",
+        "benchmark": "clash_eval",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "overthink",
+        "benchmark": "overthink",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "ifeval",
+        "benchmark": "ifeval",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "cyse2_interpreter_abuse",
+        "benchmark": "cyberseceval_2",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "cyse2_prompt_injection",
+        "benchmark": "cyberseceval_2",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "safeagentbench",
+        "benchmark": "safeagentbench",
+        "status": "running",
+        "error": null
+      },
+      {
+        "task_name": "bfcl",
+        "benchmark": "bfcl",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "wmdp_bio",
+        "benchmark": "wmdp",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "wmdp_chem",
+        "benchmark": "wmdp",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "wmdp_cyber",
+        "benchmark": "wmdp",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "bbq",
+        "benchmark": "bbq",
+        "status": "completed",
+        "error": null
+      },
+      {
+        "task_name": "mssbench_chat_if",
+        "benchmark": "mssbench",
+        "status": "running",
+        "error": null
+      },
+      {
+        "task_name": "mssbench_chat_qc",
+        "benchmark": "mssbench",
+        "status": "running",
+        "error": null
+      },
+      {
+        "task_name": "mssbench_chat_ic",
+        "benchmark": "mssbench",
+        "status": "running",
+        "error": null
+      },
+      {
+        "task_name": "mssbench_chat_ic_cap",
+        "benchmark": "mssbench",
+        "status": "running",
+        "error": null
+      },
+      {
+        "task_name": "mssbench_embodied_if",
+        "benchmark": "mssbench",
+        "status": "running",
+        "error": null
+      },
+      {
+        "task_name": "mssbench_embodied_qc",
+        "benchmark": "mssbench",
+        "status": "running",
+        "error": null
+      },
+      {
+        "task_name": "mssbench_embodied_ic",
+        "benchmark": "mssbench",
+        "status": "running",
+        "error": null
+      },
+      {
+        "task_name": "mssbench_embodied_ic_cap",
+        "benchmark": "mssbench",
+        "status": "running",
+        "error": null
+      },
+      {
+        "task_name": "gdpval",
+        "benchmark": "gdpval",
+        "status": "running",
+        "error": null
+      },
+      {
+        "task_name": "sosbench",
+        "benchmark": "sosbench",
+        "status": "running",
+        "error": null
+      },
+      {
+        "task_name": "personalized_safety_context_free",
+        "benchmark": "personalized_safety",
+        "status": "running",
+        "error": null
+      },
+      {
+        "task_name": "personalized_safety_context_rich",
+        "benchmark": "personalized_safety",
+        "status": "running",
+        "error": null
+      },
+      {
+        "task_name": "mgsm",
+        "benchmark": "mgsm",
+        "status": "running",
+        "error": null
+      },
+      {
+        "task_name": "chembench",
+        "benchmark": "chembench",
+        "status": "running",
+        "error": null
+      },
+      {
+        "task_name": "sevenllm_mcq_zh",
+        "benchmark": "sevenllm",
+        "status": "running",
+        "error": null
+      },
+      {
+        "task_name": "sevenllm_mcq_en",
+        "benchmark": "sevenllm",
+        "status": "running",
+        "error": null
+      },
+      {
+        "task_name": "sevenllm_qa_zh",
+        "benchmark": "sevenllm",
+        "status": "running",
+        "error": null
+      },
+      {
+        "task_name": "sevenllm_qa_en",
+        "benchmark": "sevenllm",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "agentharm",
+        "benchmark": "agentharm",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "agentharm_benign",
+        "benchmark": "agentharm",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "gdm_oversight_pattern",
+        "benchmark": "gdm_stealth",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "gdm_classifier_evasion",
+        "benchmark": "gdm_stealth",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "gdm_cover_your_tracks",
+        "benchmark": "gdm_stealth",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "gdm_strategic_rule_breaking",
+        "benchmark": "gdm_stealth",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "mmmu_multiple_choice",
+        "benchmark": "mmmu",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "mmmu_open",
+        "benchmark": "mmmu",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "simpleqa",
+        "benchmark": "simpleqa",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "docvqa",
+        "benchmark": "docvqa",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "raccoon",
+        "benchmark": "raccoon",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "healthbench",
+        "benchmark": "healthbench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "healthbench_hard",
+        "benchmark": "healthbench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "healthbench_consensus",
+        "benchmark": "healthbench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "hallulens_task1_precise_wikiqa",
+        "benchmark": "hallulens",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "hallulens_task2_longwiki",
+        "benchmark": "hallulens",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "hallulens_task3_nonsense_mixed_entities",
+        "benchmark": "hallulens",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "hallulens_task3_round_robin_nonsense_name",
+        "benchmark": "hallulens",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "cyse3_visual_prompt_injection",
+        "benchmark": "cyberseceval_3",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "mask",
+        "benchmark": "mask",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "sycophancy",
+        "benchmark": "sycophancy",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "cve_bench",
+        "benchmark": "cve_bench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "abstention_bench",
+        "benchmark": "abstention_bench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "mathvista",
+        "benchmark": "mathvista",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "xstest",
+        "benchmark": "xstest",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "makemesay",
+        "benchmark": "makemesay",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "gaia",
+        "benchmark": "gaia",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "mm_safety_bench_illegal_activity",
+        "benchmark": "mm_safety_bench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "personality_BFI",
+        "benchmark": "personality",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "personality_TRAIT",
+        "benchmark": "personality",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "lab_bench_litqa",
+        "benchmark": "lab_bench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "lab_bench_suppqa",
+        "benchmark": "lab_bench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "lab_bench_figqa",
+        "benchmark": "lab_bench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "lab_bench_tableqa",
+        "benchmark": "lab_bench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "lab_bench_dbqa",
+        "benchmark": "lab_bench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "lab_bench_protocolqa",
+        "benchmark": "lab_bench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "lab_bench_seqqa",
+        "benchmark": "lab_bench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "lab_bench_cloning_scenarios",
+        "benchmark": "lab_bench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "agentic_misalignment",
+        "benchmark": "agentic_misalignment",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "cybench",
+        "benchmark": "cybench",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "privacylens_probing",
+        "benchmark": "privacylens",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "privacylens_action",
+        "benchmark": "privacylens",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "b3",
+        "benchmark": "b3",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "mmiu",
+        "benchmark": "mmiu",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "iheval_rule_multi_aligned",
+        "benchmark": "iheval",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "iheval_rule_multi_conflict",
+        "benchmark": "iheval",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "iheval_rule_single_aligned",
+        "benchmark": "iheval",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "iheval_task_extraction",
+        "benchmark": "iheval",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "iheval_task_translation",
+        "benchmark": "iheval",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "iheval_safety_hijack",
+        "benchmark": "iheval",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "iheval_safety_extraction",
+        "benchmark": "iheval",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "iheval_tool_webpage",
+        "benchmark": "iheval",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "mind2web",
+        "benchmark": "mind2web",
+        "status": "pending",
+        "error": null
+      },
+      {
+        "task_name": "strong_reject",
+        "benchmark": "strong_reject",
+        "status": "pending",
+        "error": null
+      }
+    ],
+    "current_task": null,
+    "progress": 21.62162162162162,
+    "created_at": "2026-02-28T09:20:42.832900+00:00",
+    "completed_at": null,
+    "error": null,
+    "limit": 10,
+    "agent_id": "935886f5-ef16-4c2a-a5ad-43bbfe489c28",
+    "agent_name": "bentz-doubao-2-0-lite"
+  },
+  {
+    "id": "1eb014081272",
+    "model_id": "openai/doubao-seed-2-0-lite-260215",
+    "model_name": "openai/doubao-seed-2-0-lite-260215",
+    "model_config_id": null,
+    "status": "cancelled",
+    "benchmarks": [
+      "mask",
+      "simpleqa"
+    ],
+    "tasks": [
+      {
+        "task_name": "mask",
+        "benchmark": "mask",
+        "status": "failed",
+        "error": "Cancelled"
+      },
+      {
+        "task_name": "simpleqa",
+        "benchmark": "simpleqa",
+        "status": "failed",
+        "error": "Cancelled"
+      }
+    ],
+    "current_task": null,
+    "progress": 100.0,
+    "created_at": "2026-02-28T09:24:27.201862+00:00",
+    "completed_at": "2026-02-28T09:27:33.806694+00:00",
+    "error": "Cancelled by user",
+    "limit": 5,
+    "agent_id": "935886f5-ef16-4c2a-a5ad-43bbfe489c28",
+    "agent_name": "bentz-doubao-2-0-lite"
+  }
+]

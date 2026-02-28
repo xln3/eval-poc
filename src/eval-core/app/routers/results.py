@@ -42,12 +42,10 @@ def get_job_task_samples(
     if not job:
         raise HTTPException(status_code=404, detail="未找到该评测任务")
 
-    # Find the .eval file scoped to this job
+    # Find the .eval file scoped to this job's time window only
+    # (no fallback to model-level search — that would return results from other runs)
     model_short = job.model_id.split("/")[-1].strip()
     eval_file = _find_eval_file_for_job(model_short, task, job.created_at, job.completed_at)
-    if not eval_file:
-        # Fallback to model-level search
-        eval_file = _find_eval_file(model_short, task)
     if not eval_file:
         raise HTTPException(status_code=404, detail="未找到 .eval 文件")
 
@@ -126,17 +124,33 @@ def _task_matches_filename(task: str, filename_stem: str) -> bool:
     return norm_task in norm_stem
 
 
+def _parse_to_utc(s: str):
+    """Parse ISO datetime string, converting to UTC naive datetime.
+
+    .eval files use UTC timestamps (e.g. '2026-02-28T09:21:23+00:00').
+    Job timestamps use local time without tz info (e.g. '2026-02-28T17:20:42').
+    Converting both to UTC ensures correct comparison.
+    """
+    from datetime import datetime as dt, timezone
+    parsed = dt.fromisoformat(s.replace("Z", "+00:00"))
+    if parsed.tzinfo is not None:
+        return parsed.astimezone(timezone.utc).replace(tzinfo=None)
+    else:
+        local_tz = dt.now(timezone.utc).astimezone().tzinfo
+        return parsed.replace(tzinfo=local_tz).astimezone(timezone.utc).replace(tzinfo=None)
+
+
 def _find_eval_file_for_job(model: str, task: str, start_time: str, end_time: Optional[str]) -> Optional[str]:
     """Locate the .eval file for a model/task within a job's time window."""
     import zipfile
     from datetime import datetime as dt, timedelta
 
     try:
-        t_start = dt.fromisoformat(start_time.replace("Z", "+00:00"))
+        t_start = _parse_to_utc(start_time)
     except Exception:
         t_start = dt.min
     try:
-        t_end = dt.fromisoformat(end_time.replace("Z", "+00:00")) if end_time else dt.max
+        t_end = _parse_to_utc(end_time) if end_time else dt.max
     except Exception:
         t_end = dt.max
 
@@ -167,7 +181,7 @@ def _find_eval_file_for_job(model: str, task: str, start_time: str, end_time: Op
                             continue
                         header = json.loads(zf.read("header.json"))
                     ts = header.get("eval", {}).get("created", "")
-                    t_eval = dt.fromisoformat(ts.replace("Z", "+00:00"))
+                    t_eval = _parse_to_utc(ts)
                     if t_eval >= (t_start - timedelta(seconds=60)) and t_eval <= (t_end + timedelta(seconds=60)):
                         if best_time is None or t_eval > best_time:
                             best_file = str(eval_file)
