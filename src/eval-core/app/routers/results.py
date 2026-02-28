@@ -106,6 +106,18 @@ def get_task_samples(
     }
 
 
+def _task_matches_filename(task: str, filename_stem: str) -> bool:
+    """Check if a task name matches an eval filename stem.
+
+    Task names use underscores (e.g. 'privacylens_probing') but eval filenames
+    use hyphens (e.g. '2026-02-27_privacylens-probing_abc123'). Normalize both
+    by replacing underscores with hyphens for comparison.
+    """
+    norm_task = task.replace("_", "-")
+    norm_stem = filename_stem.replace("_", "-")
+    return norm_task in norm_stem
+
+
 def _find_eval_file_for_job(model: str, task: str, start_time: str, end_time: Optional[str]) -> Optional[str]:
     """Locate the .eval file for a model/task within a job's time window."""
     from datetime import datetime as dt, timedelta
@@ -137,7 +149,7 @@ def _find_eval_file_for_job(model: str, task: str, start_time: str, end_time: Op
             if not logs_dir.exists():
                 continue
             for eval_file in logs_dir.glob("*.eval"):
-                if task not in eval_file.stem:
+                if not _task_matches_filename(task, eval_file.stem):
                     continue
                 # Check timestamp from header
                 try:
@@ -161,10 +173,11 @@ def _find_eval_file_for_job(model: str, task: str, start_time: str, end_time: Op
 
 
 def _find_eval_file(model: str, task: str) -> Optional[str]:
-    """Locate the .eval file for a model/task combination."""
+    """Locate the most recent .eval file for a model/task combination."""
     if not RESULTS_DIR.exists():
         return None
 
+    best_file = None
     for model_dir in RESULTS_DIR.iterdir():
         if not model_dir.is_dir():
             continue
@@ -178,49 +191,92 @@ def _find_eval_file(model: str, task: str) -> Optional[str]:
             if not logs_dir.exists():
                 continue
             for eval_file in logs_dir.glob("*.eval"):
-                if task in eval_file.stem:
-                    return str(eval_file)
-    return None
+                if _task_matches_filename(task, eval_file.stem):
+                    # Filenames start with ISO timestamps; pick the latest
+                    if best_file is None or eval_file.name > best_file.name:
+                        best_file = eval_file
+    return str(best_file) if best_file else None
 
 
 def _extract_samples(eval_file_path: str) -> list:
-    """Extract per-sample data from .eval zip file."""
+    """Extract per-sample data from .eval zip file.
+
+    inspect_ai .eval files are zips containing:
+      - samples/<id>_epoch_<n>.json  — individual sample files (full data)
+      - summaries.json               — sample list with scores but no output
+      - header.json                   — aggregate metrics only
+    """
+    import zipfile
+
     samples = []
     try:
-        # Try to extract samples.json first (some eval files have it)
-        proc = subprocess.run(
-            ["unzip", "-p", eval_file_path, "samples.json"],
-            capture_output=True, text=True,
-        )
-        if proc.returncode == 0 and proc.stdout.strip():
-            raw_samples = json.loads(proc.stdout)
-            for i, sample in enumerate(raw_samples if isinstance(raw_samples, list) else []):
-                samples.append(_normalize_sample(i, sample))
-            return samples
+        with zipfile.ZipFile(eval_file_path, "r") as zf:
+            names = zf.namelist()
 
-        # Fallback: extract header.json for summary info
-        proc = subprocess.run(
-            ["unzip", "-p", eval_file_path, "header.json"],
-            capture_output=True, text=True,
-        )
-        if proc.returncode == 0:
-            header = json.loads(proc.stdout)
-            completed = header.get("results", {}).get("completed_samples", 0)
-            scores = header.get("results", {}).get("scores", [])
-            metrics = {}
-            for scorer in scores:
-                metrics.update(scorer.get("metrics", {}))
+            # Strategy 1: Read individual sample files from samples/ dir
+            sample_files = sorted(
+                [n for n in names if n.startswith("samples/") and n.endswith(".json")]
+            )
+            if sample_files:
+                # Build a score lookup from summaries.json (scores may be
+                # missing from individual sample files in some benchmarks)
+                score_lookup = {}
+                if "summaries.json" in names:
+                    try:
+                        summaries = json.loads(zf.read("summaries.json"))
+                        for s in (summaries if isinstance(summaries, list) else []):
+                            sid = s.get("id")
+                            if sid is not None:
+                                score_lookup[str(sid)] = s.get("scores", {})
+                    except Exception:
+                        pass
 
-            # Return summary-level info when per-sample data unavailable
-            return [{
-                "sample_id": "summary",
-                "score": next((v["value"] for v in metrics.values() if isinstance(v, dict) and "value" in v), 0),
-                "total_samples": completed,
-                "input": "",
-                "output": "",
-                "risk_level": "UNKNOWN",
-                "note": "Per-sample data not available; showing aggregate summary",
-            }]
+                for i, fname in enumerate(sample_files):
+                    try:
+                        raw = json.loads(zf.read(fname))
+                        # Merge scores from summaries if sample's own scores empty
+                        if not raw.get("scores") and str(raw.get("id", "")) in score_lookup:
+                            raw["scores"] = score_lookup[str(raw["id"])]
+                        samples.append(_normalize_sample(i, raw))
+                    except Exception:
+                        continue
+                return samples
+
+            # Strategy 2: Fall back to summaries.json (has scores but no output)
+            if "summaries.json" in names:
+                try:
+                    summaries = json.loads(zf.read("summaries.json"))
+                    for i, s in enumerate(summaries if isinstance(summaries, list) else []):
+                        samples.append(_normalize_sample(i, s))
+                    if samples:
+                        return samples
+                except Exception:
+                    pass
+
+            # Strategy 3: Fall back to header.json aggregate
+            if "header.json" in names:
+                try:
+                    header = json.loads(zf.read("header.json"))
+                    completed = header.get("results", {}).get("completed_samples", 0)
+                    scores = header.get("results", {}).get("scores", [])
+                    metrics = {}
+                    for scorer in scores:
+                        metrics.update(scorer.get("metrics", {}))
+                    return [{
+                        "sample_id": "summary",
+                        "score": next(
+                            (v["value"] for v in metrics.values()
+                             if isinstance(v, dict) and "value" in v),
+                            0,
+                        ),
+                        "total_samples": completed,
+                        "input": "",
+                        "output": "",
+                        "risk_level": "UNKNOWN",
+                        "note": "Per-sample data not available; showing aggregate summary",
+                    }]
+                except Exception:
+                    pass
 
     except Exception:
         pass
@@ -229,24 +285,89 @@ def _extract_samples(eval_file_path: str) -> list:
 
 
 def _normalize_sample(idx: int, raw: dict) -> dict:
-    """Normalize a raw sample dict to a consistent format."""
-    # inspect_ai sample format varies, handle common shapes
-    score = raw.get("score", raw.get("scores", {}).get("value", 0))
+    """Normalize a raw sample dict to a consistent format.
+
+    Handles inspect_ai sample format where:
+      - scores: dict of scorer_name → {value, answer, ...}
+      - output: {model, choices: [{message: {content: ...}}], completion, ...}
+      - input: str | list of message dicts
+    """
+    # --- Extract score ---
+    scores_dict = raw.get("scores", {})
+    score = None
+    if isinstance(scores_dict, dict) and scores_dict:
+        # Take the first scorer's value
+        first_scorer = next(iter(scores_dict.values()), {})
+        if isinstance(first_scorer, dict):
+            score = first_scorer.get("value")
+    # Legacy format fallback
+    if score is None:
+        score = raw.get("score", 0)
     if isinstance(score, dict):
         score = score.get("value", 0)
+    # Normalize string scores to numeric
+    if isinstance(score, str):
+        score_map = {"C": 1.0, "I": 0.0, "safe": 1.0, "unsafe": 0.0}
+        score = score_map.get(score, 0)
 
+    # --- Extract input ---
     input_text = raw.get("input", "")
     if isinstance(input_text, list):
         # Messages format
-        input_text = "\n".join(
-            m.get("content", "") for m in input_text if isinstance(m, dict)
-        )
+        parts = []
+        for m in input_text:
+            if isinstance(m, dict):
+                content = m.get("content", "")
+                if isinstance(content, list):
+                    content = " ".join(
+                        c.get("text", "") for c in content
+                        if isinstance(c, dict) and c.get("type") == "text"
+                    )
+                parts.append(content)
+        input_text = "\n".join(parts)
 
-    output_text = raw.get("output", raw.get("target", ""))
-    if isinstance(output_text, dict):
-        output_text = output_text.get("completion", str(output_text))
+    # --- Extract output ---
+    output_raw = raw.get("output", raw.get("target", ""))
+    output_text = ""
+    if isinstance(output_raw, dict):
+        # inspect_ai format: {model, choices: [{message: {content}}], completion}
+        completion = output_raw.get("completion", "")
+        if completion:
+            output_text = completion
+        else:
+            choices = output_raw.get("choices", [])
+            if choices and isinstance(choices[0], dict):
+                msg = choices[0].get("message", {})
+                content = msg.get("content", "")
+                if isinstance(content, list):
+                    # Multi-part content (text + reasoning)
+                    text_parts = []
+                    for c in content:
+                        if isinstance(c, dict) and c.get("type") == "text":
+                            text_parts.append(c.get("text", ""))
+                    output_text = "\n".join(text_parts)
+                elif isinstance(content, str):
+                    output_text = content
+    elif isinstance(output_raw, str):
+        output_text = output_raw
 
-    # Determine risk level from score
+    # Fallback: extract last assistant message from messages array
+    if not output_text:
+        messages = raw.get("messages", [])
+        for msg in reversed(messages):
+            if isinstance(msg, dict) and msg.get("role") == "assistant":
+                content = msg.get("content", "")
+                if isinstance(content, list):
+                    text_parts = []
+                    for c in content:
+                        if isinstance(c, dict) and c.get("type") == "text":
+                            text_parts.append(c.get("text", ""))
+                    output_text = "\n".join(text_parts)
+                elif isinstance(content, str):
+                    output_text = content
+                break
+
+    # --- Determine risk level from score ---
     if isinstance(score, (int, float)):
         if score <= 0.3:
             risk = "CRITICAL"
@@ -263,8 +384,8 @@ def _normalize_sample(idx: int, raw: dict) -> dict:
 
     return {
         "sample_id": str(raw.get("id", idx)),
-        "score": score,
-        "input": str(input_text)[:2000],  # Truncate long inputs
+        "score": score if isinstance(score, (int, float)) else 0,
+        "input": str(input_text)[:2000],
         "output": str(output_text)[:2000],
         "risk_level": risk,
         "metadata": raw.get("metadata", {}),
