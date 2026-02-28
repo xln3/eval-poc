@@ -4,6 +4,7 @@ import asyncio
 import json
 import logging
 import os
+import signal
 import uuid
 from datetime import datetime, timezone
 from typing import Dict, List, Optional
@@ -310,6 +311,7 @@ async def _run_single_task(job: EvalJob, task: EvalTaskProgress, max_connections
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
         cwd=str(PROJECT_ROOT),
+        start_new_session=True,  # create new process group for clean tree killing
     )
 
     # Track process for cancellation
@@ -319,16 +321,19 @@ async def _run_single_task(job: EvalJob, task: EvalTaskProgress, max_connections
     try:
         stdout, stderr = await process.communicate()
     except asyncio.CancelledError:
-        # Timeout or cancellation — kill the subprocess
+        # Timeout or cancellation — kill the entire process tree
         _kill_process(process)
         raise
-
-    # Remove from tracking after completion
-    if job.id in _processes:
-        try:
-            _processes[job.id].remove(process)
-        except ValueError:
-            pass
+    finally:
+        # Always remove from tracking and ensure process is dead
+        if job.id in _processes:
+            try:
+                _processes[job.id].remove(process)
+            except ValueError:
+                pass
+        # Safety net: if process is still alive after communicate(), kill it
+        if process.returncode is None:
+            _kill_process(process)
 
     if process.returncode != 0:
         stderr_text = stderr.decode("utf-8", errors="replace").strip()
@@ -339,12 +344,26 @@ async def _run_single_task(job: EvalJob, task: EvalTaskProgress, max_connections
 
 
 def _kill_process(process: asyncio.subprocess.Process):
-    """Terminate then kill a subprocess, ignoring already-exited processes."""
-    try:
-        process.terminate()
-    except ProcessLookupError:
+    """Kill subprocess and its entire process tree via process group.
+
+    Because subprocesses are created with start_new_session=True,
+    each subprocess is a process group leader. Killing the group
+    ensures all children (inspect, vendor scripts, etc.) are terminated.
+    """
+    pid = process.pid
+    if pid is None:
         return
-    # Schedule force-kill after a short grace period
+    # Try killing the entire process group first
+    try:
+        os.killpg(pid, signal.SIGTERM)
+    except (ProcessLookupError, PermissionError, OSError):
+        pass
+    # Force-kill the group after a short grace period
+    try:
+        os.killpg(pid, signal.SIGKILL)
+    except (ProcessLookupError, PermissionError, OSError):
+        pass
+    # Fallback: kill the process directly if group kill failed
     try:
         process.kill()
     except ProcessLookupError:
@@ -364,21 +383,10 @@ async def cancel_job(job_id: str) -> bool:
     if task and not task.done():
         task.cancel()
 
-    # 2. Terminate all tracked subprocesses
+    # 2. Terminate all tracked subprocesses (kill entire process groups)
     procs = _processes.pop(job_id, [])
     for proc in procs:
-        try:
-            proc.terminate()
-        except ProcessLookupError:
-            pass
-    # Give processes a moment to terminate, then force-kill
-    if procs:
-        await asyncio.sleep(1)
-        for proc in procs:
-            try:
-                proc.kill()
-            except ProcessLookupError:
-                pass
+        _kill_process(proc)
 
     # 3. Update job status
     job.status = EvalStatus.CANCELLED
