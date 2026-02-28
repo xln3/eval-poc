@@ -67,17 +67,7 @@ def _classify_error(error_msg: str) -> str:
     return "UNKNOWN_ERROR"
 
 
-_ERROR_LABELS = {
-    "AUTH_FAILURE": "模型认证失败 (API Key 无效或过期)",
-    "ACCESS_DENIED": "访问被拒绝 (权限不足)",
-    "RATE_LIMITED": "API 速率限制 (请求过于频繁)",
-    "MODEL_NOT_FOUND": "模型未找到 (模型 ID 或 endpoint 错误)",
-    "CONNECTION_ERROR": "网络连接失败 (无法连接到模型 API)",
-    "TIMEOUT": "任务执行超时",
-    "RESOURCE_EXHAUSTED": "资源不足 (内存/GPU 耗尽)",
-    "CONTENT_FILTERED": "内容安全过滤 (模型拒绝响应)",
-    "UNKNOWN_ERROR": "未知错误",
-}
+_NON_RETRYABLE = {"AUTH_FAILURE", "ACCESS_DENIED", "MODEL_NOT_FOUND"}
 
 
 # ---- Job persistence (following model_store.py pattern) ----
@@ -240,7 +230,7 @@ async def _run_job(
                 # Don't retry certain fatal errors
                 if last_error:
                     error_type = _classify_error(last_error)
-                    if error_type in ("AUTH_FAILURE", "ACCESS_DENIED", "MODEL_NOT_FOUND"):
+                    if error_type in _NON_RETRYABLE:
                         logger.info(
                             "Task %s: non-retryable error (%s), skipping remaining retries",
                             task.task_name, error_type,
@@ -254,9 +244,8 @@ async def _run_job(
             if last_error:
                 task.status = TaskStatus.FAILED
                 task.retry_count = min(attempt, MAX_TASK_RETRIES) - 1
-                error_type = _classify_error(last_error)
-                label = _ERROR_LABELS.get(error_type, "未知错误")
-                task.error = f"[{label}] {last_error} (重试 {task.retry_count} 次后失败)"
+                task.error_type = _classify_error(last_error)
+                task.error = last_error
 
             completed_count += 1
             job.progress = (completed_count / total) * 100 if total > 0 else 100

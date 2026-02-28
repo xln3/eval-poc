@@ -87,6 +87,7 @@ class EvalTaskProgress(BaseModel):
     benchmark: str
     status: TaskStatus = TaskStatus.PENDING
     error: Optional[str] = None
+    error_type: Optional[str] = None
     retry_count: int = 0
 
 
