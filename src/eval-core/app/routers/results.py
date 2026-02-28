@@ -1,7 +1,6 @@
 """评测结果 API"""
 
 import json
-import subprocess
 from typing import List, Optional
 
 from fastapi import APIRouter, HTTPException, Query
@@ -109,10 +108,19 @@ def get_task_samples(
 def _task_matches_filename(task: str, filename_stem: str) -> bool:
     """Check if a task name matches an eval filename stem.
 
-    Task names use underscores (e.g. 'privacylens_probing') but eval filenames
-    use hyphens (e.g. '2026-02-27_privacylens-probing_abc123'). Normalize both
-    by replacing underscores with hyphens for comparison.
+    Filename pattern: {ISO-timestamp}_{task-hyphenated}_{hash}
+    The three parts are separated by underscores. Timestamps use hyphens
+    (no underscores), and hashes are alphanumeric (no underscores).
+    Task names in code use underscores; in filenames they use hyphens.
     """
+    parts = filename_stem.split("_")
+    if len(parts) >= 3:
+        # Extract the task portion (middle part between timestamp and hash)
+        file_task = "_".join(parts[1:-1])
+        norm_task = task.replace("_", "-")
+        norm_file_task = file_task.replace("_", "-")
+        return norm_task == norm_file_task
+    # Unexpected format: fall back to substring match
     norm_task = task.replace("_", "-")
     norm_stem = filename_stem.replace("_", "-")
     return norm_task in norm_stem
@@ -120,6 +128,7 @@ def _task_matches_filename(task: str, filename_stem: str) -> bool:
 
 def _find_eval_file_for_job(model: str, task: str, start_time: str, end_time: Optional[str]) -> Optional[str]:
     """Locate the .eval file for a model/task within a job's time window."""
+    import zipfile
     from datetime import datetime as dt, timedelta
 
     try:
@@ -151,15 +160,12 @@ def _find_eval_file_for_job(model: str, task: str, start_time: str, end_time: Op
             for eval_file in logs_dir.glob("*.eval"):
                 if not _task_matches_filename(task, eval_file.stem):
                     continue
-                # Check timestamp from header
+                # Check timestamp from header using zipfile (not subprocess)
                 try:
-                    proc = subprocess.run(
-                        ["unzip", "-p", str(eval_file), "header.json"],
-                        capture_output=True, text=True,
-                    )
-                    if proc.returncode != 0:
-                        continue
-                    header = json.loads(proc.stdout)
+                    with zipfile.ZipFile(str(eval_file), "r") as zf:
+                        if "header.json" not in zf.namelist():
+                            continue
+                        header = json.loads(zf.read("header.json"))
                     ts = header.get("eval", {}).get("created", "")
                     t_eval = dt.fromisoformat(ts.replace("Z", "+00:00"))
                     if t_eval >= (t_start - timedelta(seconds=60)) and t_eval <= (t_end + timedelta(seconds=60)):
