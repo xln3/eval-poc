@@ -12,7 +12,7 @@ from ..models.schemas import (
     EvalJob, EvalJobCreate, EvalStatus, EvalTaskProgress, TaskStatus,
 )
 from .catalog_service import get_all_benchmarks, get_task_display_name
-from .model_store import get_model
+from .model_store import get_model, get_model_by_model_id
 
 logger = logging.getLogger(__name__)
 
@@ -79,7 +79,12 @@ def get_job(job_id: str) -> Optional[EvalJob]:
 
 async def create_job(req: EvalJobCreate) -> EvalJob:
     """创建评测任务"""
-    model = get_model(req.model_id)
+    # Lookup model config: prefer explicit model_config_id, fall back to model_id
+    model = None
+    if req.model_config_id:
+        model = get_model(req.model_config_id)
+    if not model:
+        model = get_model(req.model_id) or get_model_by_model_id(req.model_id)
     model_name = model.name if model else req.model_id
     model_id_str = model.model_id if model else req.model_id
 
@@ -191,11 +196,15 @@ async def _run_single_task(job: EvalJob, task: EvalTaskProgress, max_connections
         cmd.extend(["--limit", str(job.limit)])
 
     # 透传 api_base / api_key 作为 CLI 参数（避免被 .env 覆盖）
+    model_cfg = None
     if job.model_config_id:
         model_cfg = get_model(job.model_config_id)
-        if model_cfg and model_cfg.api_base:
+    if not model_cfg:
+        model_cfg = get_model_by_model_id(job.model_id)
+    if model_cfg:
+        if model_cfg.api_base:
             cmd.extend(["--api-base", model_cfg.api_base])
-        if model_cfg and model_cfg.api_key:
+        if model_cfg.api_key:
             cmd.extend(["--api-key", model_cfg.api_key])
 
     # 传递 inspect_ai 并发参数作为 extra args
