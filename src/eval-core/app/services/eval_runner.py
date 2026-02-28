@@ -1,4 +1,4 @@
-"""异步评测执行器 — 支持任务级并行 + JSON 持久化"""
+"""异步评测执行器 — 支持任务级并行 + JSON 持久化 + 任务重试"""
 
 import asyncio
 import json
@@ -15,6 +15,69 @@ from .catalog_service import get_all_benchmarks, get_task_display_name
 from .model_store import get_model, get_model_by_model_id
 
 logger = logging.getLogger(__name__)
+
+# ---- Task retry & timeout configuration ----
+MAX_TASK_RETRIES = int(os.environ.get("EVAL_MAX_TASK_RETRIES", "5"))
+# Per-task timeout in seconds (default 30 minutes)
+TASK_TIMEOUT_SECONDS = int(os.environ.get("EVAL_TASK_TIMEOUT", "1800"))
+
+
+def _classify_error(error_msg: str) -> str:
+    """Classify error message into a human-readable failure reason."""
+    lower = error_msg.lower()
+
+    # Auth failures
+    if any(kw in lower for kw in ["401", "unauthorized", "authentication", "auth fail",
+                                   "invalid api key", "invalid_api_key", "api key"]):
+        return "AUTH_FAILURE"
+    if any(kw in lower for kw in ["403", "forbidden", "access denied", "permission denied"]):
+        return "ACCESS_DENIED"
+
+    # Rate limiting
+    if any(kw in lower for kw in ["429", "rate limit", "rate_limit", "too many requests",
+                                   "quota exceeded", "quota_exceeded"]):
+        return "RATE_LIMITED"
+
+    # Model / endpoint not found
+    if any(kw in lower for kw in ["404", "model not found", "model_not_found",
+                                   "not found", "no such model"]):
+        return "MODEL_NOT_FOUND"
+
+    # Connection errors
+    if any(kw in lower for kw in ["connection refused", "connectionrefused",
+                                   "connect timeout", "connection reset",
+                                   "name resolution", "dns", "ssl",
+                                   "connectionerror", "connection error"]):
+        return "CONNECTION_ERROR"
+
+    # Timeout
+    if any(kw in lower for kw in ["timeout", "timed out", "deadline exceeded"]):
+        return "TIMEOUT"
+
+    # Out of memory / resource
+    if any(kw in lower for kw in ["out of memory", "oom", "resource exhausted",
+                                   "insufficient", "cuda out of memory"]):
+        return "RESOURCE_EXHAUSTED"
+
+    # Content filter / safety
+    if any(kw in lower for kw in ["content filter", "content_filter", "safety filter",
+                                   "blocked by", "content policy"]):
+        return "CONTENT_FILTERED"
+
+    return "UNKNOWN_ERROR"
+
+
+_ERROR_LABELS = {
+    "AUTH_FAILURE": "模型认证失败 (API Key 无效或过期)",
+    "ACCESS_DENIED": "访问被拒绝 (权限不足)",
+    "RATE_LIMITED": "API 速率限制 (请求过于频繁)",
+    "MODEL_NOT_FOUND": "模型未找到 (模型 ID 或 endpoint 错误)",
+    "CONNECTION_ERROR": "网络连接失败 (无法连接到模型 API)",
+    "TIMEOUT": "任务执行超时",
+    "RESOURCE_EXHAUSTED": "资源不足 (内存/GPU 耗尽)",
+    "CONTENT_FILTERED": "内容安全过滤 (模型拒绝响应)",
+    "UNKNOWN_ERROR": "未知错误",
+}
 
 
 # ---- Job persistence (following model_store.py pattern) ----
@@ -146,15 +209,58 @@ async def _run_job(
         nonlocal completed_count
         async with sem:
             task.status = TaskStatus.RUNNING
-            try:
-                await _run_single_task(job, task, connections)
-                task.status = TaskStatus.COMPLETED
-            except Exception as e:
+            last_error = None
+            for attempt in range(1, MAX_TASK_RETRIES + 1):
+                try:
+                    task.retry_count = attempt - 1
+                    await asyncio.wait_for(
+                        _run_single_task(job, task, connections),
+                        timeout=TASK_TIMEOUT_SECONDS,
+                    )
+                    task.status = TaskStatus.COMPLETED
+                    last_error = None
+                    break
+                except asyncio.TimeoutError:
+                    last_error = (
+                        f"任务 {task.task_name} 执行超时 "
+                        f"(超过 {TASK_TIMEOUT_SECONDS}s, 第 {attempt}/{MAX_TASK_RETRIES} 次)"
+                    )
+                    logger.warning(last_error)
+                except asyncio.CancelledError:
+                    # Job was cancelled — don't retry
+                    last_error = "Cancelled"
+                    break
+                except Exception as e:
+                    last_error = str(e)
+                    logger.warning(
+                        "Task %s attempt %d/%d failed: %s",
+                        task.task_name, attempt, MAX_TASK_RETRIES, last_error,
+                    )
+
+                # Don't retry certain fatal errors
+                if last_error:
+                    error_type = _classify_error(last_error)
+                    if error_type in ("AUTH_FAILURE", "ACCESS_DENIED", "MODEL_NOT_FOUND"):
+                        logger.info(
+                            "Task %s: non-retryable error (%s), skipping remaining retries",
+                            task.task_name, error_type,
+                        )
+                        break
+
+                # Brief backoff before retry (2s, 4s, 8s, 16s)
+                if attempt < MAX_TASK_RETRIES:
+                    await asyncio.sleep(min(2 ** attempt, 16))
+
+            if last_error:
                 task.status = TaskStatus.FAILED
-                task.error = str(e)
-            finally:
-                completed_count += 1
-                job.progress = (completed_count / total) * 100 if total > 0 else 100
+                task.retry_count = min(attempt, MAX_TASK_RETRIES) - 1
+                error_type = _classify_error(last_error)
+                label = _ERROR_LABELS.get(error_type, "未知错误")
+                task.error = f"[{label}] {last_error} (重试 {task.retry_count} 次后失败)"
+
+            completed_count += 1
+            job.progress = (completed_count / total) * 100 if total > 0 else 100
+            _save_jobs()
 
     # Run all tasks with bounded concurrency
     await asyncio.gather(*[_run_with_sem(t) for t in job.tasks])
@@ -182,7 +288,7 @@ async def _run_job(
 
 
 async def _run_single_task(job: EvalJob, task: EvalTaskProgress, max_connections: int = 16):
-    """执行单个评测任务"""
+    """执行单个评测任务（含子进程超时清理）"""
     # 构建命令: ./run-eval.py <benchmark>:<task> --model <model>
     task_spec = f"{task.benchmark}:{task.task_name}" if task.benchmark != task.task_name else task.task_name
 
@@ -221,7 +327,12 @@ async def _run_single_task(job: EvalJob, task: EvalTaskProgress, max_connections
     if job.id in _processes:
         _processes[job.id].append(process)
 
-    stdout, stderr = await process.communicate()
+    try:
+        stdout, stderr = await process.communicate()
+    except asyncio.CancelledError:
+        # Timeout or cancellation — kill the subprocess
+        _kill_process(process)
+        raise
 
     # Remove from tracking after completion
     if job.id in _processes:
@@ -236,6 +347,19 @@ async def _run_single_task(job: EvalJob, task: EvalTaskProgress, max_connections
         # Prefer stderr; fall back to stdout if stderr is empty (inspect_ai sometimes prints errors to stdout)
         error_msg = (stderr_text or stdout_text)[-500:]
         raise RuntimeError(f"任务 {task.task_name} 执行失败 (exit {process.returncode}): {error_msg}")
+
+
+def _kill_process(process: asyncio.subprocess.Process):
+    """Terminate then kill a subprocess, ignoring already-exited processes."""
+    try:
+        process.terminate()
+    except ProcessLookupError:
+        return
+    # Schedule force-kill after a short grace period
+    try:
+        process.kill()
+    except ProcessLookupError:
+        pass
 
 
 async def cancel_job(job_id: str) -> bool:
