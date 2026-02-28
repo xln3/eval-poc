@@ -340,7 +340,13 @@ async def _run_single_task(job: EvalJob, task: EvalTaskProgress, max_connections
         stderr_text = stderr.decode("utf-8", errors="replace").strip()
         stdout_text = stdout.decode("utf-8", errors="replace").strip()
         # Prefer stderr; fall back to stdout if stderr is empty (inspect_ai sometimes prints errors to stdout)
-        error_msg = (stderr_text or stdout_text)[-500:]
+        raw = stderr_text or stdout_text
+        # Keep both the beginning (where the real error usually is) and the end (context),
+        # so that long Docker help text doesn't bury the actual error message.
+        if len(raw) > 800:
+            error_msg = raw[:400] + "\n...[truncated]...\n" + raw[-400:]
+        else:
+            error_msg = raw
         raise RuntimeError(f"任务 {task.task_name} 执行失败 (exit {process.returncode}): {error_msg}")
 
 
