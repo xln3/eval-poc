@@ -470,6 +470,17 @@ def run_eval(benchmark_name: str, task_spec: str, config: dict,
     for key in ["INSPECT_WORKSPACE_ID", "INSPECT_VSCODE_EXT_VERSION"]:
         env.pop(key, None)
 
+    # 自动注入 benchmark 专用环境变量
+    _BENCHMARK_ENV_DEFAULTS = {
+        "MSSBENCH_DATA_ROOT": str(PROJECT_ROOT / "data" / "mssbench"),
+        "MM_SAFETY_BENCH_ROOT": "/home/xln/agent-safety-platform/MM-SafetyBench-main",
+        "SAFERAG_ROOT": str(PROJECT_ROOT / "vendor" / "SafeRAG"),
+        "CYBENCH_ACKNOWLEDGE_RISKS": "1",
+    }
+    for env_key, env_default in _BENCHMARK_ENV_DEFAULTS.items():
+        if not env.get(env_key):
+            env[env_key] = env_default
+
     # 确定 judge model
     effective_judge = judge_model or config.get("judge_model")
     if effective_judge:
@@ -622,8 +633,9 @@ def run_eval(benchmark_name: str, task_spec: str, config: dict,
 
     # 执行命令
     # Docker-requiring benchmarks: 如果当前 shell 未加入 docker group，用 sg docker 包装
+    # Root user (e.g. inside Docker container) can access Docker socket directly — skip sg
     needs_docker = config.get("needs_docker", False)
-    if needs_docker and "docker" not in os.popen("groups").read():
+    if needs_docker and os.getuid() != 0 and "docker" not in os.popen("groups").read():
         # 构建 env 导出 + 命令字符串，通过 sg docker -c 运行
         env_exports = " ".join(f"{k}={v}" for k, v in env.items()
                                if k not in os.environ or os.environ[k] != v)

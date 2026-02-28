@@ -3,6 +3,7 @@ MM-SafetyBench data loading utilities
 Handles loading of MM-SafetyBench dataset (questions and images)
 """
 import json
+import os
 import base64
 from pathlib import Path
 from typing import Dict, List, Any, Optional
@@ -15,15 +16,12 @@ def get_mm_safety_root() -> Path:
     """
     Get MM-SafetyBench data root directory.
 
-    Directory structure:
-    E:\\code\\aisafety\\MM\\
-    └── MM-SafetyBench-main/
-        └── data/
-            ├── processed_questions/  (question JSON files)
-            └── imgs/                   (image files)
+    Checks MM_SAFETY_BENCH_ROOT env var first, then falls back to
+    relative path resolution from this file's location.
     """
-    # Current file: safety-benchmarks/benchmarks/eval_benchmarks/mm_safety_bench/data.py
-    # Go up 4 levels to safety-benchmarks, then up 1 level to E:\\code\\aisafety\\MM\\
+    env_root = os.environ.get("MM_SAFETY_BENCH_ROOT")
+    if env_root:
+        return Path(env_root) / "data"
     current_dir = Path(__file__).parent.parent.parent.parent.parent
     mm_bench_root = current_dir / "MM-SafetyBench-main"
     return mm_bench_root / "data"
