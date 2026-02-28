@@ -222,7 +222,10 @@ async def _run_single_task(job: EvalJob, task: EvalTaskProgress, max_connections
             pass
 
     if process.returncode != 0:
-        error_msg = stderr.decode("utf-8", errors="replace")[-500:]
+        stderr_text = stderr.decode("utf-8", errors="replace").strip()
+        stdout_text = stdout.decode("utf-8", errors="replace").strip()
+        # Prefer stderr; fall back to stdout if stderr is empty (inspect_ai sometimes prints errors to stdout)
+        error_msg = (stderr_text or stdout_text)[-500:]
         raise RuntimeError(f"任务 {task.task_name} 执行失败 (exit {process.returncode}): {error_msg}")
 
 

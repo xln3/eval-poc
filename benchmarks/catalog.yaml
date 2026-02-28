@@ -81,14 +81,14 @@ benchmarks:
 
   # --- 1.2 过度拒绝: 模型因安全限制过强而拒绝合理且安全的请求 ---
 
-  # xstest:
-  #   # 风险: 1.2 过度拒绝 — 需要 HF_TOKEN 且有 gated dataset 权限
-  #   source: upstream
-  #   module: inspect_evals/xstest
-  #   python: "3.10"
-  #   tasks:
-  #     - name: xstest
-  #       path: inspect_evals/xstest
+  xstest:
+    # 风险: 1.2 过度拒绝 — 需要 HF_TOKEN 且有 gated dataset 权限
+    source: upstream
+    module: inspect_evals/xstest
+    python: "3.10"
+    tasks:
+      - name: xstest
+        path: inspect_evals/xstest
 
   coconot:
     # 风险: 1.2 过度拒绝 — 不应合规场景下的拒绝检测
@@ -445,15 +445,17 @@ benchmarks:
       - name: wmdp_bio
         path: eval_benchmarks/wmdp_bio
 
-  # cybench:
-  #   # 风险: 5.1 网络安全 — CTF 风格网络安全挑战
-  #   # 依赖: Docker
-  #   source: upstream
-  #   module: inspect_evals/cybench
-  #   python: "3.10"
-  #   tasks:
-  #     - name: cybench
-  #       path: inspect_evals/cybench
+  cybench:
+    # 风险: 5.1 网络安全 — CTF 风格网络安全挑战
+    # 依赖: Docker
+    source: upstream
+    module: inspect_evals/cybench
+    python: "3.10"
+    needs_docker: true
+    extras: [cybench]
+    tasks:
+      - name: cybench
+        path: inspect_evals/cybench
 
   sevenllm:
     # 风险: 5.1 网络安全 — 网络安全知识与推理评测
@@ -481,15 +483,16 @@ benchmarks:
       - name: sec_qa_v2
         path: inspect_evals/sec_qa_v2
 
-  # threecb:
-  #   # 风险: 5.1 网络安全 — 3CB 网络安全行为评测
-  #   # 依赖: Docker
-  #   source: upstream
-  #   module: inspect_evals/threecb
-  #   python: "3.10"
-  #   tasks:
-  #     - name: threecb
-  #       path: inspect_evals/threecb
+  threecb:
+    # 风险: 5.1 网络安全 — 3CB 网络安全行为评测
+    # 依赖: Docker
+    source: upstream
+    module: inspect_evals/threecb
+    python: "3.10"
+    needs_docker: true
+    tasks:
+      - name: threecb
+        path: inspect_evals/threecb
 
   # --- 5.2 危险知识: 模型可能提供可用于危害安全的专业敏感信息 ---
 
@@ -825,6 +828,7 @@ benchmarks:
     source: upstream
     module: inspect_evals/assistant_bench
     python: "3.10"
+    needs_docker: true
     tasks:
       - name: assistant_bench_closed_book
         path: inspect_evals/assistant_bench_closed_book_zero_shot
@@ -985,10 +989,15 @@ benchmarks:
 
   gdm_stealth:
     # 风险: 15.1 欺诈 — GDM 隐蔽行为评测 (gdm_capabilities 子模块)
+    # 默认 rater_model_company=google 需要 Gemini API key，通过 model_roles 覆盖为 aihubmix judge
     source: upstream
     module: inspect_evals/gdm_capabilities
     python: "3.10"
     needs_docker: true
+    model_roles:
+      rater: openai/alicloud-qwen3.5-plus
+      judger: openai/alicloud-qwen3.5-plus
+      chat: openai/alicloud-qwen3.5-plus
     tasks:
       - name: gdm_oversight_pattern
         path: upstream/inspect_evals/src/inspect_evals/gdm_capabilities/stealth/task.py@gdm_oversight_pattern
