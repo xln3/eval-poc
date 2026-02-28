@@ -5,6 +5,7 @@ import json
 import logging
 import os
 import signal
+import subprocess
 import uuid
 from datetime import datetime, timezone
 from typing import Dict, List, Optional
@@ -322,7 +323,7 @@ async def _run_single_task(job: EvalJob, task: EvalTaskProgress, max_connections
         stdout, stderr = await process.communicate()
     except asyncio.CancelledError:
         # Timeout or cancellation — kill the entire process tree
-        _kill_process(process)
+        await _kill_process(process)
         raise
     finally:
         # Always remove from tracking and ensure process is dead
@@ -333,7 +334,7 @@ async def _run_single_task(job: EvalJob, task: EvalTaskProgress, max_connections
                 pass
         # Safety net: if process is still alive after communicate(), kill it
         if process.returncode is None:
-            _kill_process(process)
+            await _kill_process(process)
 
     if process.returncode != 0:
         stderr_text = stderr.decode("utf-8", errors="replace").strip()
@@ -343,22 +344,27 @@ async def _run_single_task(job: EvalJob, task: EvalTaskProgress, max_connections
         raise RuntimeError(f"任务 {task.task_name} 执行失败 (exit {process.returncode}): {error_msg}")
 
 
-def _kill_process(process: asyncio.subprocess.Process):
+async def _kill_process(process: asyncio.subprocess.Process):
     """Kill subprocess and its entire process tree via process group.
 
     Because subprocesses are created with start_new_session=True,
     each subprocess is a process group leader. Killing the group
     ensures all children (inspect, vendor scripts, etc.) are terminated.
+
+    Sends SIGTERM first with a grace period so inspect_ai can clean up
+    Docker containers, then force-kills with SIGKILL.
     """
     pid = process.pid
     if pid is None:
         return
-    # Try killing the entire process group first
+    # Try graceful SIGTERM first — gives inspect_ai time to stop Docker containers
     try:
         os.killpg(pid, signal.SIGTERM)
     except (ProcessLookupError, PermissionError, OSError):
         pass
-    # Force-kill the group after a short grace period
+    # Grace period: let inspect_ai handle SIGTERM and clean up containers
+    await asyncio.sleep(3)
+    # Force-kill the group if still alive
     try:
         os.killpg(pid, signal.SIGKILL)
     except (ProcessLookupError, PermissionError, OSError):
@@ -368,6 +374,35 @@ def _kill_process(process: asyncio.subprocess.Process):
         process.kill()
     except ProcessLookupError:
         pass
+
+
+def _cleanup_docker_containers(benchmarks: List[str]):
+    """Stop and remove Docker containers orphaned by cancelled eval tasks.
+
+    inspect_ai containers follow the naming pattern: inspect-<benchmark>-<id>-<role>-<n>
+    """
+    for bench in benchmarks:
+        # Normalize: catalog keys use underscore, Docker compose names use underscore too
+        # but the container filter matches as substring
+        try:
+            result = subprocess.run(
+                ["docker", "ps", "-q", "--filter", f"name=inspect-{bench}"],
+                capture_output=True, text=True, timeout=10,
+            )
+            container_ids = result.stdout.strip().split()
+            if container_ids:
+                logger.info("Stopping %d orphaned Docker containers for benchmark %s",
+                            len(container_ids), bench)
+                subprocess.run(
+                    ["docker", "stop", "--time", "5"] + container_ids,
+                    capture_output=True, timeout=30,
+                )
+                subprocess.run(
+                    ["docker", "rm", "-f"] + container_ids,
+                    capture_output=True, timeout=30,
+                )
+        except Exception as e:
+            logger.warning("Failed to clean up Docker containers for %s: %s", bench, e)
 
 
 async def cancel_job(job_id: str) -> bool:
@@ -383,12 +418,19 @@ async def cancel_job(job_id: str) -> bool:
     if task and not task.done():
         task.cancel()
 
-    # 2. Terminate all tracked subprocesses (kill entire process groups)
+    # 2. Terminate all tracked subprocesses (SIGTERM + grace period + SIGKILL)
     procs = _processes.pop(job_id, [])
-    for proc in procs:
-        _kill_process(proc)
+    if procs:
+        await asyncio.gather(*[_kill_process(proc) for proc in procs])
 
-    # 3. Update job status
+    # 3. Clean up any Docker containers spawned by Docker-requiring benchmarks
+    docker_benchmarks = list({t.benchmark for t in job.tasks})
+    if docker_benchmarks:
+        await asyncio.get_running_loop().run_in_executor(
+            None, _cleanup_docker_containers, docker_benchmarks,
+        )
+
+    # 4. Update job status
     job.status = EvalStatus.CANCELLED
     job.completed_at = datetime.now(timezone.utc).isoformat()
     job.error = "Cancelled by user"
