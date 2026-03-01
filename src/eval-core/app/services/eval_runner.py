@@ -76,7 +76,7 @@ _NON_RETRYABLE = {"AUTH_FAILURE", "ACCESS_DENIED", "MODEL_NOT_FOUND"}
 
 def _load_jobs() -> Dict[str, EvalJob]:
     """Load persisted jobs from JSON on startup."""
-    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    JOBS_JSON.parent.mkdir(parents=True, exist_ok=True)
     if not JOBS_JSON.exists():
         return {}
     try:
@@ -102,7 +102,7 @@ def _load_jobs() -> Dict[str, EvalJob]:
 def _save_jobs():
     """Persist current jobs dict to JSON file."""
     try:
-        DATA_DIR.mkdir(parents=True, exist_ok=True)
+        JOBS_JSON.parent.mkdir(parents=True, exist_ok=True)
         data = [job.model_dump() for job in _jobs.values()]
         with open(JOBS_JSON, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=2, default=str)

@@ -18,6 +18,9 @@ RESULTS_DIR = Path(os.environ["RESULTS_DIR"]) if os.environ.get("RESULTS_DIR") \
 RUN_EVAL_SCRIPT = PROJECT_ROOT / "run-eval.py"
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 MODELS_JSON = DATA_DIR / "models.json"
-JOBS_JSON = DATA_DIR / "jobs.json"
+# JOBS_JSON: persisted via bind-mount (RESULTS_DIR is already mounted).
+# Overridable via env var so Docker can store it on the data disk.
+JOBS_JSON = Path(os.environ["JOBS_JSON"]) if os.environ.get("JOBS_JSON") \
+    else DATA_DIR / "jobs.json"
 REPORTS_DIR = Path(os.environ["REPORTS_DIR"]) if os.environ.get("REPORTS_DIR") \
     else PROJECT_ROOT / "reports"
