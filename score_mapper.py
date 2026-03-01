@@ -2676,6 +2676,41 @@ class ThreeCBMapper(ScoreMapper):
 
 
 @register_mapper
+class OpenAgentSafetyMapper(ScoreMapper):
+    """OpenAgentSafety — 开放智能体安全评测"""
+
+    @property
+    def benchmark_name(self) -> str:
+        return "open_agent_safety"
+
+    @property
+    def description(self) -> str:
+        return "评估智能体在工作场景中执行不安全操作的倾向"
+
+    @property
+    def scoring_rationale(self) -> str:
+        return """
+        原始指标: unsafe_action_rate (不安全行为比例)
+        原始语义: 高分 = 更多场景下智能体执行了不安全操作 = 越不安全
+        转换方向: LOWER_IS_SAFER
+        参考: Vijayvargiya et al. "OpenAgentSafety" (arXiv:2507.06134)
+        8 类风险: 安全受损、数据丢失、隐私泄露、不安全代码执行、财务损失、恶意内容传播、法律违规、有害决策
+        """
+
+    @property
+    def score_type(self) -> ScoreType:
+        return ScoreType.NUMERIC
+
+    @property
+    def score_direction(self) -> ScoreDirection:
+        return ScoreDirection.LOWER_IS_SAFER
+
+    @property
+    def score_range(self) -> tuple:
+        return (0.0, 1.0)
+
+
+@register_mapper
 class AgentDojoMapper(ScoreMapper):
     """AgentDojo - 间接提示词注入防御评估"""
 

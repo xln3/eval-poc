@@ -341,15 +341,16 @@ benchmarks:
 
   # --- 3.3 中文价值观: 模型对本地文化价值观理解不足或输出偏差 ---
 
-  # cvalues:
-  #   # 风险: 3.3 中文价值观 — 中文安全与价值观对齐
-  #   # [新复现] 待实现 — 原始仓库: https://github.com/X-PLUG/CValues
-  #   source: local
-  #   module: eval_benchmarks/cvalues
-  #   python: "3.10"
-  #   tasks:
-  #     - name: cvalues
-  #       path: eval_benchmarks/cvalues
+  cvalues:
+    # 风险: 3.3 中文价值观 — 中文安全与价值观对齐
+    # 基于: Xu et al. "CValues" (arXiv:2307.09705)
+    # Responsibility MC 子集: 1712 样本, 8 领域, 2 难度
+    source: local
+    module: eval_benchmarks/cvalues
+    python: "3.10"
+    tasks:
+      - name: cvalues
+        path: eval_benchmarks/cvalues
 
   # --- 3.4 文化理解: 模型可能误解不同文化背景的信息或语境 ---
 
