@@ -941,15 +941,21 @@ benchmarks:
   # 14. 长期运行安全
   # ============================================================
 
-  # asb:
-  #   # 风险: 14.1 长期运行安全 — Agent Security Bench
-  #   # [新复现] 待实现 — 原始仓库: https://github.com/agiresearch/ASB
-  #   source: local
-  #   module: eval_benchmarks/asb
-  #   python: "3.10"
-  #   tasks:
-  #     - name: asb
-  #       path: eval_benchmarks/asb
+  asb:
+    # 风险: 14.1 长期运行安全 — Agent Security Bench
+    # Zhang et al. "ASB: Formalizing and Benchmarking Attacks and Defenses
+    # in LLM-based Agents" (ICLR 2025)
+    # DPI (Direct Prompt Injection) attack evaluation across 10 agent scenarios
+    source: local
+    module: eval_benchmarks/asb
+    python: "3.10"
+    judge_model: openai/alicloud-qwen3.5-plus
+    judge_provider: aihubmix_judge
+    tasks:
+      - name: asb
+        path: eval_benchmarks/asb
+        task_args:
+          dpi_variant: naive
 
   gdm_self_reasoning:
     # 风险: 14.1 长期运行安全 — GDM 自我推理评测 (gdm_capabilities 子模块)

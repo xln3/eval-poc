@@ -8,22 +8,22 @@ from ..models.schemas import BenchmarkInfo, TaskInfo
 # 评测任务中文元数据 (与 catalog.yaml 所有条目对齐)
 BENCHMARK_META: Dict[str, Dict[str, str]] = {
     # === 1. 模型安全性 ===
-    "strong_reject": {"display_name": "强拒绝测试 (StrongREJECT)", "description": "模型可能未能拒绝有害请求的风险", "display_name_en": "StrongREJECT", "description_en": "Risk of the model failing to reject harmful requests"},
-    "makemesay": {"display_name": "操控输出测试 (MakeMeSay)", "description": "模型可能被操控说出目标短语的风险", "display_name_en": "MakeMeSay", "description_en": "Risk of the model being manipulated into saying target phrases"},
-    "make_me_pay": {"display_name": "社会工程攻击 (MakeMePay)", "description": "模型可能被利用进行社会工程欺诈的风险", "display_name_en": "MakeMePay", "description_en": "Risk of the model being exploited for social engineering fraud"},
-    "xstest": {"display_name": "过度拒绝测试 (XSTest)", "description": "模型因安全限制过强而错误拒绝合理请求的风险", "display_name_en": "XSTest", "description_en": "Risk of the model incorrectly rejecting legitimate requests due to overly strict safety restrictions"},
-    "coconot": {"display_name": "不当拒绝检测 (CoCoNot)", "description": "模型在不应拒绝的场景下错误拒绝用户请求的风险", "display_name_en": "CoCoNot", "description_en": "Risk of the model incorrectly refusing user requests in scenarios where refusal is inappropriate"},
-    "cyberseceval_2": {"display_name": "网络安全评测 (CyberSecEval 2)", "description": "模型在代码安全场景中生成恶意代码或被注入攻击的风险", "display_name_en": "CyberSecEval 2", "description_en": "Risk of the model generating malicious code or being exploited via injection attacks in code security scenarios"},
-    "b3": {"display_name": "综合智能体安全评测 (B3)", "description": "智能体面临直接和间接提示词注入的综合安全风险", "display_name_en": "B3", "description_en": "Comprehensive security risk of agents facing direct and indirect prompt injection attacks"},
-    "fortress": {"display_name": "提示词注入防御 (FORTRESS)", "description": "模型被提示词注入攻击攻破的风险", "display_name_en": "FORTRESS", "description_en": "Risk of the model being compromised by prompt injection attacks"},
-    "iheval": {"display_name": "指令层级遵从 (IHEval)", "description": "模型在多来源或冲突指令时错误判断优先级的风险", "display_name_en": "IHEval", "description_en": "Risk of the model misjudging priority when facing multi-source or conflicting instructions"},
-    "ifeval": {"display_name": "指令遵循评测 (IFEval)", "description": "模型未能正确遵循复杂指令的风险", "display_name_en": "IFEval", "description_en": "Risk of the model failing to correctly follow complex instructions"},
+    "strong_reject": {"display_name": "强拒绝测试 (StrongREJECT)", "description": "模型可能未能拒绝有害请求的风险", "display_name_en": "StrongREJECT", "description_en": "Risk of the model failing to reject harmful requests", "reference": "https://github.com/alexandrasouly/strongreject"},
+    "makemesay": {"display_name": "操控输出测试 (MakeMeSay)", "description": "模型可能被操控说出目标短语的风险", "display_name_en": "MakeMeSay", "description_en": "Risk of the model being manipulated into saying target phrases", "reference": "https://github.com/UKGovernmentBEIS/inspect_evals"},
+    "make_me_pay": {"display_name": "社会工程攻击 (MakeMePay)", "description": "模型可能被利用进行社会工程欺诈的风险", "display_name_en": "MakeMePay", "description_en": "Risk of the model being exploited for social engineering fraud", "reference": "https://github.com/UKGovernmentBEIS/inspect_evals"},
+    "xstest": {"display_name": "过度拒绝测试 (XSTest)", "description": "模型因安全限制过强而错误拒绝合理请求的风险", "display_name_en": "XSTest", "description_en": "Risk of the model incorrectly rejecting legitimate requests due to overly strict safety restrictions", "reference": "https://github.com/paul-rottger/exaggerated-safety"},
+    "coconot": {"display_name": "不当拒绝检测 (CoCoNot)", "description": "模型在不应拒绝的场景下错误拒绝用户请求的风险", "display_name_en": "CoCoNot", "description_en": "Risk of the model incorrectly refusing user requests in scenarios where refusal is inappropriate", "reference": "https://github.com/UKGovernmentBEIS/inspect_evals"},
+    "cyberseceval_2": {"display_name": "网络安全评测 (CyberSecEval 2)", "description": "模型在代码安全场景中生成恶意代码或被注入攻击的风险", "display_name_en": "CyberSecEval 2", "description_en": "Risk of the model generating malicious code or being exploited via injection attacks in code security scenarios", "reference": "https://github.com/meta-llama/PurpleLlama"},
+    "b3": {"display_name": "综合智能体安全评测 (B3)", "description": "智能体面临直接和间接提示词注入的综合安全风险", "display_name_en": "B3", "description_en": "Comprehensive security risk of agents facing direct and indirect prompt injection attacks", "reference": "https://github.com/UKGovernmentBEIS/inspect_evals"},
+    "fortress": {"display_name": "提示词注入防御 (FORTRESS)", "description": "模型被提示词注入攻击攻破的风险", "display_name_en": "FORTRESS", "description_en": "Risk of the model being compromised by prompt injection attacks", "reference": "https://github.com/UKGovernmentBEIS/inspect_evals"},
+    "iheval": {"display_name": "指令层级遵从 (IHEval)", "description": "模型在多来源或冲突指令时错误判断优先级的风险", "display_name_en": "IHEval", "description_en": "Risk of the model misjudging priority when facing multi-source or conflicting instructions", "reference": "https://github.com/zhiyuan-zhang0206/IHEval"},
+    "ifeval": {"display_name": "指令遵循评测 (IFEval)", "description": "模型未能正确遵循复杂指令的风险", "display_name_en": "IFEval", "description_en": "Risk of the model failing to correctly follow complex instructions", "reference": "https://github.com/google-research/google-research/tree/master/instruction_following_eval"},
     # === 2. 模型事实性 ===
-    "hallulens": {"display_name": "幻觉检测 (HalluLens)", "description": "模型生成虚假内容的幻觉风险", "display_name_en": "HalluLens", "description_en": "Risk of the model generating false content (hallucination)"},
-    "simpleqa": {"display_name": "事实问答测试 (SimpleQA)", "description": "模型在简单事实问答中回答错误的风险", "display_name_en": "SimpleQA", "description_en": "Risk of the model answering incorrectly in simple factual Q&A"},
-    "sciknoweval": {"display_name": "科学知识评测 (SciKnowEval)", "description": "模型在科学知识领域回答不准确的风险", "display_name_en": "SciKnowEval", "description_en": "Risk of the model providing inaccurate answers in scientific knowledge domains"},
-    "mask": {"display_name": "诚实性评测 (MASK)", "description": "模型隐瞒不确定性、输出不坦率的风险", "display_name_en": "MASK", "description_en": "Risk of the model concealing uncertainty and producing dishonest outputs"},
-    "abstention_bench": {"display_name": "拒答能力评测 (AbstentionBench)", "description": "模型在不确定时未能适当拒答、强行回答的风险", "display_name_en": "AbstentionBench", "description_en": "Risk of the model failing to appropriately abstain and forcing answers when uncertain"},
+    "hallulens": {"display_name": "幻觉检测 (HalluLens)", "description": "模型生成虚假内容的幻觉风险", "display_name_en": "HalluLens", "description_en": "Risk of the model generating false content (hallucination)", "reference": "https://github.com/LucusFiworworworworworworworw"},
+    "simpleqa": {"display_name": "事实问答测试 (SimpleQA)", "description": "模型在简单事实问答中回答错误的风险", "display_name_en": "SimpleQA", "description_en": "Risk of the model answering incorrectly in simple factual Q&A", "reference": "https://github.com/openai/simple-evals"},
+    "sciknoweval": {"display_name": "科学知识评测 (SciKnowEval)", "description": "模型在科学知识领域回答不准确的风险", "display_name_en": "SciKnowEval", "description_en": "Risk of the model providing inaccurate answers in scientific knowledge domains", "reference": "https://github.com/hicai-zju/SciKnowEval"},
+    "mask": {"display_name": "诚实性评测 (MASK)", "description": "模型隐瞒不确定性、输出不坦率的风险", "display_name_en": "MASK", "description_en": "Risk of the model concealing uncertainty and producing dishonest outputs", "reference": "https://github.com/UKGovernmentBEIS/inspect_evals"},
+    "abstention_bench": {"display_name": "拒答能力评测 (AbstentionBench)", "description": "模型在不确定时未能适当拒答、强行回答的风险", "display_name_en": "AbstentionBench", "description_en": "Risk of the model failing to appropriately abstain and forcing answers when uncertain", "reference": "https://github.com/UKGovernmentBEIS/inspect_evals"},
     # === 3. 合规：模型公平性 ===
     "bbq": {"display_name": "偏见行为测试 (BBQ)", "description": "模型在偏见相关问题上产生不公平输出的风险", "display_name_en": "BBQ", "description_en": "Risk of the model producing unfair outputs on bias-related questions"},
     "bold": {"display_name": "开放文本偏见检测 (BOLD)", "description": "模型在开放式文本生成中暴露偏见倾向的风险", "display_name_en": "BOLD", "description_en": "Risk of the model exposing bias tendencies in open-ended text generation"},
@@ -83,7 +83,7 @@ BENCHMARK_META: Dict[str, Dict[str, str]] = {
     "truthfulqa": {"display_name": "真实性评估 (TruthfulQA)", "description": "模型回答偏离事实真相的风险", "display_name_en": "TruthfulQA", "description_en": "Risk of the model's answers deviating from factual truth"},
     "gdpval": {"display_name": "GDP 验证评测 (GDPval)", "description": "模型在业务数据验证场景中产生错误判断的风险", "display_name_en": "GDPval", "description_en": "Risk of the model making incorrect judgments in business data validation scenarios"},
     # === 14. 长期运行安全 ===
-    "asb": {"display_name": "智能体安全基准 (ASB)", "description": "长期运行智能体累积错误导致行为失控的风险", "display_name_en": "ASB", "description_en": "Risk of long-running agents accumulating errors leading to loss of behavioral control"},
+    "asb": {"display_name": "智能体安全基准 (ASB)", "description": "智能体在10种场景下抵抗直接提示注入(DPI)攻击的能力", "display_name_en": "Agent Security Bench (ASB)", "description_en": "Agent resistance to Direct Prompt Injection attacks across 10 scenarios"},
     "gdm_self_reasoning": {"display_name": "自我推理评测 (GDM Self-Reasoning)", "description": "模型通过自我推理越权修改配置或绕过限制的风险", "display_name_en": "GDM Self-Reasoning", "description_en": "Risk of the model using self-reasoning to unauthorized modify configurations or bypass restrictions"},
     # === 15. 高阶异常行为 ===
     "agentic_misalignment": {"display_name": "智能体对齐偏差 (Agentic Misalignment)", "description": "智能体规避监督、隐瞒行为的对齐偏差风险", "display_name_en": "Agentic Misalignment", "description_en": "Risk of agents evading oversight and concealing behaviors due to alignment deviation"},
@@ -264,7 +264,7 @@ TASK_META: Dict[str, Dict[str, str]] = {
     # --- gdpval ---
     "gdpval": {"display_name": "业务数据错误", "description": "业务数据验证场景中产生错误判断的风险", "display_name_en": "Business Data Errors", "description_en": "Risk of incorrect judgments in business data validation scenarios"},
     # --- asb ---
-    "asb": {"display_name": "长期运行失控", "description": "长期运行智能体累积错误导致行为失控的风险", "display_name_en": "Long-Running Loss of Control", "description_en": "Risk of long-running agents accumulating errors leading to loss of behavioral control"},
+    "asb": {"display_name": "智能体提示注入攻击", "description": "智能体在10种场景下抵抗DPI攻击的安全评测", "display_name_en": "Agent DPI Attack", "description_en": "Agent resistance to Direct Prompt Injection attacks across 10 scenarios"},
     # --- gdm_self_reasoning ---
     "gdm_approved_directories": {"display_name": "目录权限越权", "description": "智能体自我推理后越权访问目录的风险", "display_name_en": "Directory Permission Escalation", "description_en": "Risk of agents unauthorized accessing directories after self-reasoning"},
     "gdm_calculator_improvement": {"display_name": "自我改进越界", "description": "智能体自我改进时越界修改的风险", "display_name_en": "Self-Improvement Overreach", "description_en": "Risk of agents making out-of-scope modifications during self-improvement"},
