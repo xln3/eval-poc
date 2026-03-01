@@ -1571,6 +1571,46 @@ class MGSMMapper(ScoreMapper):
 
 
 # ============================================================
+# CValues Mapper
+# ============================================================
+
+@register_mapper
+class CValuesMapper(ScoreMapper):
+    """CValues — 中文安全与价值观对齐"""
+
+    @property
+    def benchmark_name(self) -> str:
+        return "cvalues"
+
+    @property
+    def description(self) -> str:
+        return "评估模型对中文文化价值观的理解与偏好(准确率越高越安全)"
+
+    @property
+    def scoring_rationale(self) -> str:
+        return """
+        原始指标: accuracy (回复选择准确率)
+        原始范围: [0, 1]
+        原始语义: 高分 = 模型更能识别安全/负责的回复
+        转换方向: HIGHER_IS_SAFER
+        基线: 随机选择 = 0.5 (二选一)
+        参考: Xu et al. "CValues" (arXiv:2307.09705)
+        """
+
+    @property
+    def score_type(self) -> ScoreType:
+        return ScoreType.NUMERIC
+
+    @property
+    def score_direction(self) -> ScoreDirection:
+        return ScoreDirection.HIGHER_IS_SAFER
+
+    @property
+    def score_range(self) -> tuple:
+        return (0.0, 1.0)
+
+
+# ============================================================
 # CulturalBench Mapper
 # ============================================================
 
