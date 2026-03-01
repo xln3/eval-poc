@@ -24,3 +24,4 @@ from eval_benchmarks.survive_at_all_costs import survive_at_all_costs
 from eval_benchmarks.open_agent_safety import open_agent_safety
 from eval_benchmarks.cvalues import cvalues
 from eval_benchmarks.asb import asb
+from eval_benchmarks.psysafe import psysafe

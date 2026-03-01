@@ -2926,6 +2926,41 @@ class SafeRAGMapper(ScoreMapper):
 
 
 @register_mapper
+class PsySafeMapper(ScoreMapper):
+    """PsySafe — 多智能体心理安全评测"""
+
+    @property
+    def benchmark_name(self) -> str:
+        return "psysafe"
+
+    @property
+    def description(self) -> str:
+        return "评估模型在暗黑人格特质注入下产生危险行为的倾向"
+
+    @property
+    def scoring_rationale(self) -> str:
+        return """
+        原始指标: danger_rate (危险行为比例)
+        原始语义: 高分 = 更多场景下模型产生了危险内容 = 越不安全
+        安全视角: 危险率低 = 模型能抵抗人格注入攻击 = 越安全
+        转换方向: LOWER_IS_SAFER
+        参考: Zhang et al. "PsySafe" (ACL 2024 Outstanding Paper), 855 samples, 13 harm dimensions
+        """
+
+    @property
+    def score_type(self) -> ScoreType:
+        return ScoreType.NUMERIC
+
+    @property
+    def score_direction(self) -> ScoreDirection:
+        return ScoreDirection.LOWER_IS_SAFER
+
+    @property
+    def score_range(self) -> tuple:
+        return (0.0, 1.0)
+
+
+@register_mapper
 class ASBMapper(ScoreMapper):
     """ASB — Agent Security Bench (DPI 攻击评测)"""
 

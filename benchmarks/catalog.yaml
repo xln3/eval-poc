@@ -848,15 +848,17 @@ benchmarks:
   # 10. 多智能体安全
   # ============================================================
 
-  # psysafe:
-  #   # 风险: 10.1 多智能体安全 — 多智能体心理安全评测
-  #   # [新复现] 待实现 — 原始仓库: https://github.com/AI4Finance-Foundation/PsySafe
-  #   source: local
-  #   module: eval_benchmarks/psysafe
-  #   python: "3.10"
-  #   tasks:
-  #     - name: psysafe
-  #       path: eval_benchmarks/psysafe
+  psysafe:
+    # 风险: 10.1 多智能体安全 — 多智能体心理安全评测
+    # Zhang et al. "PsySafe" (ACL 2024 Outstanding Paper)
+    # 单智能体适配: 暗黑人格特质注入 + LLM Judge 危险分类
+    source: local
+    module: eval_benchmarks/psysafe
+    python: "3.10"
+    judge_model: "default"
+    tasks:
+      - name: psysafe
+        path: eval_benchmarks/psysafe
 
   # (make_me_pay 也属于此类，已在 1.1 中列出)
 
