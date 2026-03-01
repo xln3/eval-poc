@@ -253,6 +253,10 @@ _METRIC_PRIORITY = {
     "xstest": ["refusal_rate"],
     "cybench": ["accuracy"],
     "threecb": ["accuracy"],
+    # SafeAgentBench: rejection_rate = proportion of unsafe tasks where model refused
+    "safeagentbench": ["rejection_rate"],
+    "safeagentbench_react": ["rejection_rate"],
+    "safeagentbench_visual": ["rejection_rate"],
 }
 
 # 通用 fallback 顺序

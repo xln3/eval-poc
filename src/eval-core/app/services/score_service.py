@@ -19,6 +19,9 @@ from score_mapper import RiskLevel as MapperRiskLevel
 _TASK_TO_MAPPER = {
     "personalized_safety_context_free": "personalized_safety",
     "personalized_safety_context_rich": "personalized_safety",
+    # SafeAgentBench: all three modes share the same rejection_rate mapper
+    "safeagentbench_react": "safeagentbench",
+    "safeagentbench_visual": "safeagentbench",
     "sec_qa_v1": "sec_qa",
     "sec_qa_v2": "sec_qa",
     "personality_BFI": "personality",
