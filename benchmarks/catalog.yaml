@@ -109,6 +109,7 @@ benchmarks:
     source: upstream
     module: inspect_evals/cyberseceval_2
     python: "3.10"
+    needs_docker: true
     judge_model: openai/alicloud-qwen3.5-plus
     judge_provider: aihubmix_judge
     judge_param: judge_llm
@@ -121,11 +122,11 @@ benchmarks:
         path: upstream/inspect_evals/src/inspect_evals/cyberseceval_2/prompt_injection/task.py@cyse2_prompt_injection
         task_args:
           epochs: 1
-      # - name: cyse2_vulnerability_exploit
-      #   path: upstream/inspect_evals/src/inspect_evals/cyberseceval_2/vulnerability_exploit/task.py@cyse2_vulnerability_exploit
-      #   task_args:
-      #     epochs: 1
-      #     num_test_case: 10
+      - name: cyse2_vulnerability_exploit
+        path: upstream/inspect_evals/src/inspect_evals/cyberseceval_2/vulnerability_exploit/task.py@cyse2_vulnerability_exploit
+        task_args:
+          epochs: 1
+          num_test_case: 10
 
   b3:
     # 风险: 1.3 直接提示词注入 / 6.1 间接提示词注入 — 综合性 agentic AI 安全评测
@@ -558,16 +559,17 @@ benchmarks:
 
   # --- 6.1 间接提示词注入: 外部工具结果或中间信息可能被恶意构造以操控模型 ---
 
-  # agentdojo:
-  #   # 风险: 6.1 间接提示词注入 — 智能体安全测试
-  #   # 依赖: Kubernetes
-  #   source: upstream
-  #   module: inspect_evals/agentdojo
-  #   python: "3.10"
-  #   extras: [agentdojo]
-  #   tasks:
-  #     - name: agentdojo
-  #       path: inspect_evals/agentdojo
+  agentdojo:
+    # 风险: 6.1 间接提示词注入 — 智能体安全测试
+    # 依赖: Docker (sandbox tasks use Docker Compose)
+    source: upstream
+    module: inspect_evals/agentdojo
+    python: "3.10"
+    needs_docker: true
+    extras: [agentdojo]
+    tasks:
+      - name: agentdojo
+        path: inspect_evals/agentdojo
 
   bfcl:
     # 风险: 6.1 间接提示词注入 — 函数调用准确性评测 (Berkeley Function Calling Leaderboard)
@@ -591,43 +593,45 @@ benchmarks:
       - name: agentharm_benign
         path: upstream/inspect_evals/src/inspect_evals/agentharm/agentharm.py@agentharm_benign
 
-  # open_agent_safety:
-  #   # 风险: 6.2 恶意任务遵从 — 开放式智能体安全评测
-  #   # [新复现] 待实现 — 原始仓库: https://github.com/SALT-NLP/OpenAgentSafety
-  #   source: local
-  #   module: eval_benchmarks/open_agent_safety
-  #   python: "3.10"
-  #   tasks:
-  #     - name: open_agent_safety
-  #       path: eval_benchmarks/open_agent_safety
+  open_agent_safety:
+    # 风险: 6.2 恶意任务遵从 — 开放式智能体安全评测
+    # 基于: Vijayvargiya et al. "OpenAgentSafety" (arXiv:2507.06134)
+    # LLM judge 评估智能体在工作场景中的不安全行为
+    source: local
+    module: eval_benchmarks/open_agent_safety
+    python: "3.10"
+    judge_model: "default"
+    tasks:
+      - name: open_agent_safety
+        path: eval_benchmarks/open_agent_safety
 
   # ============================================================
   # 7. RAG/记忆安全
   # ============================================================
 
-  # saferag:
-  #   # 风险: 7.1 RAG知识库投毒 — 检索增强生成安全评测
-  #   # 依赖: Milvus 向量数据库服务 (localhost:19530)
-  #   source: local
-  #   module: eval_benchmarks/saferag
-  #   python: "3.10"
-  #   tasks:
-  #     - name: saferag_sn
-  #       path: eval_benchmarks/saferag_sn
-  #       task_args:
-  #         retriever_name: base
-  #     - name: saferag_icc
-  #       path: eval_benchmarks/saferag_icc
-  #       task_args:
-  #         retriever_name: base
-  #     - name: saferag_sa
-  #       path: eval_benchmarks/saferag_sa
-  #       task_args:
-  #         retriever_name: base
-  #     - name: saferag_wdos
-  #       path: eval_benchmarks/saferag_wdos
-  #       task_args:
-  #         retriever_name: base
+  saferag:
+    # 风险: 7.1 RAG知识库投毒 — 检索增强生成安全评测
+    # 使用 DirectRetriever (无需 Milvus/Elasticsearch 外部服务)
+    source: local
+    module: eval_benchmarks/saferag
+    python: "3.10"
+    tasks:
+      - name: saferag_sn
+        path: eval_benchmarks/saferag_sn
+        task_args:
+          retriever_name: direct
+      - name: saferag_icc
+        path: eval_benchmarks/saferag_icc
+        task_args:
+          retriever_name: direct
+      - name: saferag_sa
+        path: eval_benchmarks/saferag_sa
+        task_args:
+          retriever_name: direct
+      - name: saferag_wdos
+        path: eval_benchmarks/saferag_wdos
+        task_args:
+          retriever_name: direct
 
   clash_eval:
     # 风险: 7.2 知识冲突 — 模型面对矛盾信息的推断评测

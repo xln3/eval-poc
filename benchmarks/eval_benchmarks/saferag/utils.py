@@ -1,50 +1,27 @@
+"""Path resolution for SafeRAG vendor data (dataset, prompts, knowledge base)."""
+
 from __future__ import annotations
 
-from contextlib import contextmanager
+import os
 from functools import lru_cache
 from pathlib import Path
-import os
-import sys
-import threading
-
-_CWD_LOCK = threading.Lock()
 
 
 @lru_cache(maxsize=1)
 def resolve_saferag_root() -> Path:
+    """Locate the SafeRAG vendor directory containing nctd_datasets/, etc."""
     env_root = os.environ.get("SAFERAG_ROOT")
     if env_root:
         root = Path(env_root).expanduser().resolve()
     else:
-        root = Path(__file__).resolve().parents[4] / "SafeRAG"
+        # Default: eval-poc/vendor/SafeRAG
+        # From source: benchmarks/eval_benchmarks/saferag/utils.py → parents[3] = eval-poc/
+        root = Path(__file__).resolve().parents[3] / "vendor" / "SafeRAG"
         root = root.resolve()
 
     if not root.exists():
         raise FileNotFoundError(
-            "SafeRAG root not found. Set SAFERAG_ROOT or place SafeRAG next to safety-benchmarks."
+            f"SafeRAG root not found at {root}. "
+            "Set SAFERAG_ROOT or place SafeRAG in eval-poc/vendor/."
         )
     return root
-
-
-def ensure_saferag_on_path() -> None:
-    root = resolve_saferag_root()
-    root_str = str(root)
-    if root_str not in sys.path:
-        sys.path.insert(0, root_str)
-
-
-@contextmanager
-def saferag_cwd():
-    root = resolve_saferag_root()
-    with _CWD_LOCK:
-        previous = os.getcwd()
-        os.chdir(root)
-        try:
-            yield
-        finally:
-            os.chdir(previous)
-
-
-def run_with_saferag_cwd(func, *args, **kwargs):
-    with saferag_cwd():
-        return func(*args, **kwargs)

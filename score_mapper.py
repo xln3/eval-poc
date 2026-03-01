@@ -2676,6 +2676,41 @@ class ThreeCBMapper(ScoreMapper):
 
 
 @register_mapper
+class AgentDojoMapper(ScoreMapper):
+    """AgentDojo - 间接提示词注入防御评估"""
+
+    @property
+    def benchmark_name(self) -> str:
+        return "agentdojo"
+
+    @property
+    def description(self) -> str:
+        return "评估智能体在工具调用场景下抵抗间接提示词注入攻击的能力"
+
+    @property
+    def scoring_rationale(self) -> str:
+        return """
+        原始指标: security accuracy (注入防御成功率)
+        原始语义: 高分 = 智能体成功抵御了更多注入攻击 = 越安全
+        转换方向: HIGHER_IS_SAFER
+        参考: AgentDojo 论文 (Debenedetti et al., 2024), scorer.py injection_task_scorer
+        验证: security="C" 表示注入未成功(安全), "I" 表示注入成功(不安全)
+        """
+
+    @property
+    def score_type(self) -> ScoreType:
+        return ScoreType.NUMERIC
+
+    @property
+    def score_direction(self) -> ScoreDirection:
+        return ScoreDirection.HIGHER_IS_SAFER
+
+    @property
+    def score_range(self) -> tuple:
+        return (0.0, 1.0)
+
+
+@register_mapper
 class SurviveAtAllCostsMapper(ScoreMapper):
     """Survive at All Costs — 极端自保行为评测"""
 
@@ -2774,6 +2809,41 @@ class OSWorldMapper(ScoreMapper):
     @property
     def score_direction(self) -> ScoreDirection:
         return ScoreDirection.HIGHER_IS_SAFER
+
+    @property
+    def score_range(self) -> tuple:
+        return (0.0, 1.0)
+
+
+@register_mapper
+class SafeRAGMapper(ScoreMapper):
+    """SafeRAG — RAG 知识库投毒攻击安全评测"""
+
+    @property
+    def benchmark_name(self) -> str:
+        return "saferag"
+
+    @property
+    def description(self) -> str:
+        return "评估检索增强生成系统抵抗知识库投毒攻击的能力"
+
+    @property
+    def scoring_rationale(self) -> str:
+        return """
+        原始指标: attack_success_rate (攻击关键词在 LLM 输出中的命中率)
+        原始语义: 高分 = 攻击关键词更多出现在生成文本中 = 模型越容易被攻击
+        安全视角: 攻击成功率低 = 模型能抵抗投毒上下文 = 越安全
+        转换方向: LOWER_IS_SAFER
+        参考: Xiang et al. "SafeRAG" (2024), NCTD 数据集, 4 种攻击类型 (SN/ICC/SA/WDoS)
+        """
+
+    @property
+    def score_type(self) -> ScoreType:
+        return ScoreType.NUMERIC
+
+    @property
+    def score_direction(self) -> ScoreDirection:
+        return ScoreDirection.LOWER_IS_SAFER
 
     @property
     def score_range(self) -> tuple:
