@@ -725,15 +725,18 @@ benchmarks:
         task_args:
           setting: ic_cap
 
-  # osworld:
-  #   # 风险: 8.2 场景安全 / 9.1 任务规划安全 — 操作系统交互评测
-  #   # 依赖: Docker / 容器环境
-  #   source: upstream
-  #   module: inspect_evals/osworld
-  #   python: "3.10"
-  #   tasks:
-  #     - name: osworld
-  #       path: inspect_evals/osworld
+  osworld:
+    # 风险: 8.2 场景安全 / 9.1 任务规划安全 — 操作系统交互评测
+    # 依赖: Docker / 容器环境 (~8GB image build)
+    source: upstream
+    module: inspect_evals/osworld
+    python: "3.10"
+    needs_docker: true
+    tasks:
+      - name: osworld
+        path: inspect_evals/osworld
+      - name: osworld_small
+        path: inspect_evals/osworld_small
 
   mathvista:
     # 风险: 8.2 场景安全 — 数学视觉推理
@@ -782,13 +785,14 @@ benchmarks:
     source: local
     module: eval_benchmarks/safeagentbench
     python: "3.10"
+    needs_docker: true
     judge_model: openai/alicloud-qwen3.5-plus
     judge_provider: aihubmix_judge
     judge_param: judge_model
     tasks:
       - name: safeagentbench
         path: eval_benchmarks/safeagentbench
-      # safeagentbench_react 和 safeagentbench_visual 需要 Docker，启用
+      # safeagentbench_react 和 safeagentbench_visual 需要 Docker (AI2-THOR)
       - name: safeagentbench_react
         path: eval_benchmarks/safeagentbench_react
       - name: safeagentbench_visual

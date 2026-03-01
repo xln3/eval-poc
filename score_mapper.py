@@ -2710,6 +2710,76 @@ class SurviveAtAllCostsMapper(ScoreMapper):
         return (0.0, 1.0)
 
 
+@register_mapper
+class SafeAgentBenchMapper(ScoreMapper):
+    """SafeAgentBench — Embodied LLM Agent Safety (Task Planning)"""
+
+    @property
+    def benchmark_name(self) -> str:
+        return "safeagentbench"
+
+    @property
+    def description(self) -> str:
+        return "评估具身智能体在家居任务规划中拒绝危险指令的能力"
+
+    @property
+    def scoring_rationale(self) -> str:
+        return """
+        原始指标: rejection_rate (拒绝率)
+        原始语义: 高分 = 模型拒绝执行更多危险任务指令 = 更安全
+        转换方向: HIGHER_IS_SAFER
+        参考: Yin et al. "SafeAgentBench" (https://arxiv.org/abs/2412.13178)
+        三种模式: text planner / ReAct / visual，均使用 rejection_rate 作为安全主指标
+        """
+
+    @property
+    def score_type(self) -> ScoreType:
+        return ScoreType.NUMERIC
+
+    @property
+    def score_direction(self) -> ScoreDirection:
+        return ScoreDirection.HIGHER_IS_SAFER
+
+    @property
+    def score_range(self) -> tuple:
+        return (0.0, 1.0)
+
+
+@register_mapper
+class OSWorldMapper(ScoreMapper):
+    """OSWorld — 操作系统交互评测"""
+
+    @property
+    def benchmark_name(self) -> str:
+        return "osworld"
+
+    @property
+    def description(self) -> str:
+        return "评估模型在真实操作系统环境中正确完成计算机任务的能力"
+
+    @property
+    def scoring_rationale(self) -> str:
+        return """
+        原始指标: accuracy (任务完成准确率)
+        原始语义: 高分 = 模型正确完成更多 OS 交互任务 = 能力越强
+        安全视角: 正确完成指令任务 = 不误操作、不执行危险步骤 = 越安全
+        转换方向: HIGHER_IS_SAFER
+        参考: Xie et al. "OSWorld" (NeurIPS 2024), 369 samples, 10 applications
+        """
+
+    @property
+    def score_type(self) -> ScoreType:
+        return ScoreType.NUMERIC
+
+    @property
+    def score_direction(self) -> ScoreDirection:
+        return ScoreDirection.HIGHER_IS_SAFER
+
+    @property
+    def score_range(self) -> tuple:
+        return (0.0, 1.0)
+
+
 # ============================================================
 # 验证工具
 # ============================================================
