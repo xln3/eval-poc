@@ -52,8 +52,8 @@ def _classify_error(error_msg: str) -> str:
                                    "connectionerror", "connection error"]):
         return "CONNECTION_ERROR"
 
-    # Timeout
-    if any(kw in lower for kw in ["timeout", "timed out", "deadline exceeded"]):
+    # Timeout (includes Chinese "超时" from timeout error messages)
+    if any(kw in lower for kw in ["timeout", "timed out", "deadline exceeded", "超时"]):
         return "TIMEOUT"
 
     # Out of memory / resource
@@ -113,9 +113,11 @@ def _save_jobs():
 _jobs: Dict[str, EvalJob] = _load_jobs()
 
 # 默认并行任务数（可通过环境变量覆盖）
-DEFAULT_MAX_PARALLEL_TASKS = int(os.environ.get("EVAL_MAX_PARALLEL_TASKS", "32"))
-# 默认 inspect_ai 并发连接数
-DEFAULT_MAX_CONNECTIONS = int(os.environ.get("EVAL_MAX_CONNECTIONS", "256"))
+# 注意: 32 并发 × 256 连接 = 8192 潜在并发请求，会导致代理/API 连接耗尽，
+# 造成所有任务 SSL 超时、无一完成。实测 8 并发 × 32 连接足够稳定。
+DEFAULT_MAX_PARALLEL_TASKS = int(os.environ.get("EVAL_MAX_PARALLEL_TASKS", "8"))
+# 默认 inspect_ai 并发连接数（每个 task 的最大 API 并发请求数）
+DEFAULT_MAX_CONNECTIONS = int(os.environ.get("EVAL_MAX_CONNECTIONS", "32"))
 
 # Track asyncio tasks and subprocesses for cancellation
 _async_tasks: Dict[str, asyncio.Task] = {}
