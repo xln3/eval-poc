@@ -140,10 +140,11 @@ def get_results_for_job(model_id: str, task_names: List[str],
                 except Exception:
                     continue
                 # Allow 60s buffer before start (clock skew)
+                # Guard against overflow when sentinel values are used
                 from datetime import timedelta
-                if t_eval < (t_start - timedelta(seconds=60)):
+                if t_start != dt.min and t_eval < (t_start - timedelta(seconds=60)):
                     continue
-                if t_eval > (t_end + timedelta(seconds=60)):
+                if t_end != dt.max and t_eval > (t_end + timedelta(seconds=60)):
                     continue
 
                 # Dedup: keep the one with most samples

@@ -182,7 +182,9 @@ def _find_eval_file_for_job(model: str, task: str, start_time: str, end_time: Op
                         header = json.loads(zf.read("header.json"))
                     ts = header.get("eval", {}).get("created", "")
                     t_eval = _parse_to_utc(ts)
-                    if t_eval >= (t_start - timedelta(seconds=60)) and t_eval <= (t_end + timedelta(seconds=60)):
+                    in_window = (t_start == dt.min or t_eval >= (t_start - timedelta(seconds=60))) and \
+                               (t_end == dt.max or t_eval <= (t_end + timedelta(seconds=60)))
+                    if in_window:
                         if best_time is None or t_eval > best_time:
                             best_file = str(eval_file)
                             best_time = t_eval

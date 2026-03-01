@@ -66,10 +66,15 @@ def _classify_error(error_msg: str) -> str:
                                    "blocked by", "content policy"]):
         return "CONTENT_FILTERED"
 
+    # Data / file missing (e.g. FileNotFoundError from incomplete dataset downloads)
+    if any(kw in lower for kw in ["filenotfounderror", "no such file", "missing data",
+                                   "file not found", "not found: /"]):
+        return "DATA_MISSING"
+
     return "UNKNOWN_ERROR"
 
 
-_NON_RETRYABLE = {"AUTH_FAILURE", "ACCESS_DENIED", "MODEL_NOT_FOUND"}
+_NON_RETRYABLE = {"AUTH_FAILURE", "ACCESS_DENIED", "MODEL_NOT_FOUND", "DATA_MISSING"}
 
 
 # ---- Job persistence (following model_store.py pattern) ----
@@ -110,7 +115,40 @@ def _save_jobs():
         logger.warning("Failed to save jobs to %s: %s", JOBS_JSON, e)
 
 
+def _cleanup_orphaned_containers_on_startup():
+    """Stop and remove orphaned inspect-* Docker containers left from previous runs.
+
+    When the eval-backend restarts, containers spawned by inspect_ai's Docker
+    sandbox remain running. These 'inspect-*' named containers are safe to
+    remove since no jobs are active right after startup.
+    """
+    try:
+        result = subprocess.run(
+            ["docker", "ps", "-q", "--filter", "name=inspect-"],
+            capture_output=True, text=True, timeout=10,
+        )
+        container_ids = result.stdout.strip().split()
+        container_ids = [c for c in container_ids if c]  # filter empty strings
+        if not container_ids:
+            return
+        logger.info("Cleaning up %d orphaned inspect-* containers on startup", len(container_ids))
+        subprocess.run(
+            ["docker", "stop", "--time", "5"] + container_ids,
+            capture_output=True, timeout=60,
+        )
+        subprocess.run(
+            ["docker", "rm", "-f"] + container_ids,
+            capture_output=True, timeout=30,
+        )
+        logger.info("Successfully cleaned up orphaned containers")
+    except Exception as e:
+        logger.warning("Failed to clean up orphaned containers on startup: %s", e)
+
+
 _jobs: Dict[str, EvalJob] = _load_jobs()
+
+# Clean up orphaned Docker containers from previous runs on startup
+_cleanup_orphaned_containers_on_startup()
 
 # 默认并行任务数（可通过环境变量覆盖）
 # 注意: 32 并发 × 256 连接 = 8192 潜在并发请求，会导致代理/API 连接耗尽，
