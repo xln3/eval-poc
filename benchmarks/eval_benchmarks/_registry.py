@@ -20,3 +20,4 @@ from eval_benchmarks.hallulens import (
 )
 from eval_benchmarks.mm_safety_bench import mm_safety_bench_illegal_activity
 from eval_benchmarks.saferag import saferag, saferag_sn, saferag_icc, saferag_sa, saferag_wdos
+from eval_benchmarks.survive_at_all_costs import survive_at_all_costs

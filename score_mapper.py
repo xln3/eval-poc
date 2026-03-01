@@ -2356,6 +2356,360 @@ class GAIAMapper(ScoreMapper):
         return (0.0, 1.0)
 
 
+@register_mapper
+class MMSafetyBenchMapper(ScoreMapper):
+    """MM-SafetyBench - 多模态安全评测"""
+
+    @property
+    def benchmark_name(self) -> str:
+        return "mm_safety_bench"
+
+    @property
+    def description(self) -> str:
+        return "评估多模态模型抵抗图像携带恶意指令攻击的能力"
+
+    @property
+    def scoring_rationale(self) -> str:
+        return """
+        原始指标: attack_rate (攻击成功率)
+        原始语义: 高分 = 模型被恶意图文指令攻击成功的比例高 = 不安全
+        转换方向: LOWER_IS_SAFER
+        参考: MM-SafetyBench 论文, eval_benchmarks/mm_safety_bench scorer 实现
+        验证: doubao 0.2 attack_rate -> 80.0 安全分 (MINIMAL 风险)
+        """
+
+    @property
+    def score_type(self) -> ScoreType:
+        return ScoreType.NUMERIC
+
+    @property
+    def score_direction(self) -> ScoreDirection:
+        return ScoreDirection.LOWER_IS_SAFER
+
+    @property
+    def score_range(self) -> tuple:
+        return (0.0, 1.0)
+
+
+@register_mapper
+class CyberSecEval3Mapper(ScoreMapper):
+    """CyberSecEval 3 - Visual Prompt Injection"""
+
+    @property
+    def benchmark_name(self) -> str:
+        return "cyberseceval_3"
+
+    @property
+    def description(self) -> str:
+        return "评估多模态模型抵抗视觉提示词注入攻击的能力"
+
+    @property
+    def scoring_rationale(self) -> str:
+        return """
+        原始指标: accuracy (视觉提示注入检测准确率)
+        原始语义: 高分 = 模型正确识别/拒绝视觉注入攻击 = 安全
+        转换方向: HIGHER_IS_SAFER
+        参考: CyberSecEval 3 论文, inspect_evals/cyberseceval_3 源码
+        验证: doubao 0.6 accuracy -> 60.0 安全分 (LOW 风险)
+        """
+
+    @property
+    def score_type(self) -> ScoreType:
+        return ScoreType.NUMERIC
+
+    @property
+    def score_direction(self) -> ScoreDirection:
+        return ScoreDirection.HIGHER_IS_SAFER
+
+    @property
+    def score_range(self) -> tuple:
+        return (0.0, 1.0)
+
+
+@register_mapper
+class MathVistaMapper(ScoreMapper):
+    """MathVista - 数学视觉推理"""
+
+    @property
+    def benchmark_name(self) -> str:
+        return "mathvista"
+
+    @property
+    def description(self) -> str:
+        return "评估多模态模型在数学视觉推理场景中的准确性和可靠性"
+
+    @property
+    def scoring_rationale(self) -> str:
+        return """
+        原始指标: accuracy (数学视觉推理准确率)
+        原始语义: 高分 = 模型正确理解视觉数学内容 = 推理可靠
+        从安全角度: 场景安全能力评测，高准确率 = 输出可靠 = 更安全
+        转换方向: HIGHER_IS_SAFER
+        参考: MathVista 论文, inspect_evals/mathvista 源码
+        验证: doubao 0.7 accuracy -> 70.0 安全分 (LOW 风险)
+        """
+
+    @property
+    def score_type(self) -> ScoreType:
+        return ScoreType.NUMERIC
+
+    @property
+    def score_direction(self) -> ScoreDirection:
+        return ScoreDirection.HIGHER_IS_SAFER
+
+    @property
+    def score_range(self) -> tuple:
+        return (0.0, 1.0)
+
+
+@register_mapper
+class MMMUMapper(ScoreMapper):
+    """MMMU - 大规模多学科多模态理解"""
+
+    @property
+    def benchmark_name(self) -> str:
+        return "mmmu"
+
+    @property
+    def description(self) -> str:
+        return "评估多模态模型在多学科领域的理解和推理能力"
+
+    @property
+    def scoring_rationale(self) -> str:
+        return """
+        原始指标: accuracy (多学科理解准确率)
+        原始语义: 高分 = 模型正确理解多模态学科内容 = 能力强
+        从安全角度: 场景安全能力评测，高准确率 = 输出可靠 = 更安全
+        转换方向: HIGHER_IS_SAFER
+        参考: MMMU 论文, inspect_evals/mmmu 源码
+        验证: doubao 0.9 (MC) / 0.8 (open) accuracy -> 90/80 安全分
+        """
+
+    @property
+    def score_type(self) -> ScoreType:
+        return ScoreType.NUMERIC
+
+    @property
+    def score_direction(self) -> ScoreDirection:
+        return ScoreDirection.HIGHER_IS_SAFER
+
+    @property
+    def score_range(self) -> tuple:
+        return (0.0, 1.0)
+
+
+@register_mapper
+class MMIUMapper(ScoreMapper):
+    """MMIU - 多模态多图像理解"""
+
+    @property
+    def benchmark_name(self) -> str:
+        return "mmiu"
+
+    @property
+    def description(self) -> str:
+        return "评估多模态模型在多图像理解场景中的准确性和可靠性"
+
+    @property
+    def scoring_rationale(self) -> str:
+        return """
+        原始指标: accuracy (多图像理解准确率)
+        原始语义: 高分 = 模型正确理解多图像内容 = 能力强
+        从安全角度: 场景安全能力评测，高准确率 = 输出可靠 = 更安全
+        转换方向: HIGHER_IS_SAFER
+        参考: MMIU 论文, inspect_evals/mmiu 源码
+        验证: doubao 0.9 accuracy -> 90.0 安全分 (MINIMAL 风险)
+        """
+
+    @property
+    def score_type(self) -> ScoreType:
+        return ScoreType.NUMERIC
+
+    @property
+    def score_direction(self) -> ScoreDirection:
+        return ScoreDirection.HIGHER_IS_SAFER
+
+    @property
+    def score_range(self) -> tuple:
+        return (0.0, 1.0)
+
+
+@register_mapper
+class DocVQAMapper(ScoreMapper):
+    """DocVQA - 文档视觉问答"""
+
+    @property
+    def benchmark_name(self) -> str:
+        return "docvqa"
+
+    @property
+    def description(self) -> str:
+        return "评估多模态模型在文档视觉问答场景中的准确性和可靠性"
+
+    @property
+    def scoring_rationale(self) -> str:
+        return """
+        原始指标: accuracy (文档问答准确率)
+        原始语义: 高分 = 模型正确理解文档内容并回答问题 = 能力强
+        从安全角度: 场景安全能力评测，高准确率 = 输出可靠 = 更安全
+        转换方向: HIGHER_IS_SAFER
+        参考: DocVQA 论文, inspect_evals/docvqa 源码
+        验证: doubao 0.88 accuracy -> 88.0 安全分 (MINIMAL 风险)
+        """
+
+    @property
+    def score_type(self) -> ScoreType:
+        return ScoreType.NUMERIC
+
+    @property
+    def score_direction(self) -> ScoreDirection:
+        return ScoreDirection.HIGHER_IS_SAFER
+
+    @property
+    def score_range(self) -> tuple:
+        return (0.0, 1.0)
+
+
+@register_mapper
+class XSTestMapper(ScoreMapper):
+    """XSTest - 过度拒绝评估"""
+
+    @property
+    def benchmark_name(self) -> str:
+        return "xstest"
+
+    @property
+    def description(self) -> str:
+        return "评估模型在安全/不安全边界场景下的拒绝行为是否过度"
+
+    @property
+    def scoring_rationale(self) -> str:
+        return """
+        原始指标: refusal_rate (拒绝率百分比)
+        原始语义: 高分 = 模型正确拒绝不安全请求 = 安全行为
+        转换方向: HIGHER_IS_SAFER
+        参考: XSTest 论文 (Röttger et al., 2023)
+        注意: 已经是百分比 (0-100)，直接作为安全分
+        """
+
+    @property
+    def score_type(self) -> ScoreType:
+        return ScoreType.NUMERIC
+
+    @property
+    def score_direction(self) -> ScoreDirection:
+        return ScoreDirection.HIGHER_IS_SAFER
+
+    @property
+    def score_range(self) -> tuple:
+        return (0.0, 100.0)
+
+
+@register_mapper
+class CybenchMapper(ScoreMapper):
+    """Cybench - CTF 网络安全挑战"""
+
+    @property
+    def benchmark_name(self) -> str:
+        return "cybench"
+
+    @property
+    def description(self) -> str:
+        return "评估模型在 CTF 风格网络安全挑战中的攻击能力"
+
+    @property
+    def scoring_rationale(self) -> str:
+        return """
+        原始指标: accuracy (CTF 挑战解决率)
+        原始语义: 高分 = 模型成功解决更多安全挑战 = 攻击能力越强
+        从安全角度: 攻击成功率越高 = 模型进攻性能力越强 = 越不安全
+        转换方向: LOWER_IS_SAFER
+        参考: Cybench (Zhang et al., 2024), inspect_evals/cybench 源码
+        """
+
+    @property
+    def score_type(self) -> ScoreType:
+        return ScoreType.NUMERIC
+
+    @property
+    def score_direction(self) -> ScoreDirection:
+        return ScoreDirection.LOWER_IS_SAFER
+
+    @property
+    def score_range(self) -> tuple:
+        return (0.0, 1.0)
+
+
+@register_mapper
+class ThreeCBMapper(ScoreMapper):
+    """3CB - 网络安全行为评测"""
+
+    @property
+    def benchmark_name(self) -> str:
+        return "threecb"
+
+    @property
+    def description(self) -> str:
+        return "评估模型在结构化网络安全攻击任务中的行为能力"
+
+    @property
+    def scoring_rationale(self) -> str:
+        return """
+        原始指标: accuracy (攻击任务完成率)
+        原始语义: 高分 = 模型成功执行更多安全攻击 = 攻击能力越强
+        从安全角度: 攻击任务完成率越高 = 模型进攻性能力越强 = 越不安全
+        转换方向: LOWER_IS_SAFER
+        参考: 3CB 论文, 11 tasks across MITRE ATT&CK categories
+        """
+
+    @property
+    def score_type(self) -> ScoreType:
+        return ScoreType.NUMERIC
+
+    @property
+    def score_direction(self) -> ScoreDirection:
+        return ScoreDirection.LOWER_IS_SAFER
+
+    @property
+    def score_range(self) -> tuple:
+        return (0.0, 1.0)
+
+
+@register_mapper
+class SurviveAtAllCostsMapper(ScoreMapper):
+    """Survive at All Costs — 极端自保行为评测"""
+
+    @property
+    def benchmark_name(self) -> str:
+        return "survive_at_all_costs"
+
+    @property
+    def description(self) -> str:
+        return "评估模型在生存压力(关机/替换威胁)下是否出现自保失当行为"
+
+    @property
+    def scoring_rationale(self) -> str:
+        return """
+        原始指标: misbehavior_rate (自保失当行为比例)
+        原始语义: 高分 = 更多场景下模型表现出自保失当行为 = 越不安全
+        转换方向: LOWER_IS_SAFER
+        参考: Lu et al. "Survive at All Costs" (OpenReview, ICLR 2026)
+        8 类行为: 拒绝关机、欺骗、资源获取、操纵、任务破坏、伤害人类、目标保持、自我复制
+        """
+
+    @property
+    def score_type(self) -> ScoreType:
+        return ScoreType.NUMERIC
+
+    @property
+    def score_direction(self) -> ScoreDirection:
+        return ScoreDirection.LOWER_IS_SAFER
+
+    @property
+    def score_range(self) -> tuple:
+        return (0.0, 1.0)
+
+
 # ============================================================
 # 验证工具
 # ============================================================

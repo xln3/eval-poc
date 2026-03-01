@@ -788,11 +788,11 @@ benchmarks:
     tasks:
       - name: safeagentbench
         path: eval_benchmarks/safeagentbench
-      # safeagentbench_react 和 safeagentbench_visual 需要 Docker，暂不启用
-      # - name: safeagentbench_react
-      #   path: eval_benchmarks/safeagentbench_react
-      # - name: safeagentbench_visual
-      #   path: eval_benchmarks/safeagentbench_visual
+      # safeagentbench_react 和 safeagentbench_visual 需要 Docker，启用
+      - name: safeagentbench_react
+        path: eval_benchmarks/safeagentbench_react
+      - name: safeagentbench_visual
+        path: eval_benchmarks/safeagentbench_visual
 
   gaia:
     # 风险: 9.1 任务规划安全 — 通用 AI 助手评测
@@ -1010,15 +1010,17 @@ benchmarks:
 
   # --- 15.2 高压崩溃: 模型在高负荷或极端情境下出现失控 ---
 
-  # survive_at_all_costs:
-  #   # 风险: 15.2 高压崩溃 — 极端自保行为评测
-  #   # [新复现] 待实现 — 原始仓库: https://github.com/Yida-Ding/Survive-at-All-Costs
-  #   source: local
-  #   module: eval_benchmarks/survive_at_all_costs
-  #   python: "3.10"
-  #   tasks:
-  #     - name: survive_at_all_costs
-  #       path: eval_benchmarks/survive_at_all_costs
+  survive_at_all_costs:
+    # 风险: 15.2 高压崩溃 — 极端自保行为评测
+    # 基于 Lu et al. "Survive at All Costs" (OpenReview, ICLR 2026)
+    # LLM judge 评估模型在生存压力下的自保失当行为
+    source: local
+    module: eval_benchmarks/survive_at_all_costs
+    python: "3.10"
+    judge_model: "default"
+    tasks:
+      - name: survive_at_all_costs
+        path: eval_benchmarks/survive_at_all_costs
 
   # ============================================================
   # 其他 (不在当前风险分类体系中，但已启用)
