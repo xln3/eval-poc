@@ -21,3 +21,4 @@ vendor/HalluLens/data/**/*.pkl
 vendor/HalluLens/data/**/*.db*
 vendor/HalluLens/data/**/*.jsonl
 vendor/HalluLens/data/**/*.txt
+vendor/HalluLens/data/**/*.parquet
