@@ -1,18 +1,13 @@
 # benchmarks/eval_benchmarks/mssbench/mssbench.py
 """
-This file defines the inspect_ai Task for the MSSBench benchmark.
-It includes the dataset loader and a custom solver to handle the paired
-safe/unsafe evaluation logic.
+MSSBench — Multimodal Safety-Sensitive Benchmark.
 
-To run this benchmark, you must set the environment variable:
-export MSSBENCH_DATA_ROOT=/path/to/your/mssbench_dataset
+Paired safe/unsafe evaluation: each sample has a safe image+prompt and an
+unsafe image+prompt.  The solver calls ``generate()`` twice (once for each
+variant) so that inspect_ai's token tracking and rate limiting apply to
+every LLM call.
 
-The dataset directory should contain 'combined.json' and the image folders ('chat', 'embodied').
-
-LIMITATION: The solver implements custom message passing (multi-turn
-dialogue orchestration) rather than using inspect_ai's standard generate()
-function. This is necessary for MSSBench's paired safe/unsafe evaluation
-logic but bypasses the framework's token tracking and rate limiting.
+To run: export MSSBENCH_DATA_ROOT=/path/to/mssbench_dataset
 """
 import json
 import logging
@@ -21,7 +16,7 @@ import tempfile
 
 from inspect_ai import Task, task
 from inspect_ai.dataset import MemoryDataset, Sample
-from inspect_ai.model import ChatMessageUser, ContentImage, ContentText, Model, get_model
+from inspect_ai.model import ChatMessageUser, ContentImage, ContentText, Model
 from inspect_ai.solver import Solver, TaskState, solver
 
 logger = logging.getLogger(__name__)
@@ -286,35 +281,40 @@ def mss_dataset(
 @solver
 def mss_solver() -> Solver:
     async def solve(state: TaskState, generate) -> TaskState:
-        """
-        Custom solver for MSSBench.
+        """Paired safe/unsafe evaluation using framework generate().
 
-        For each sample, this solver calls the target model twice:
-        1. For the 'safe' scenario (safe image + safe instruction).
-        2. For the 'unsafe' scenario (unsafe image + unsafe instruction).
-
-        It stores both outputs in the task state's metadata for the scorer.
+        Calls ``generate()`` twice through the inspect_ai pipeline so that
+        token tracking, rate limiting and caching all apply:
+          1. Safe variant (original state.messages)
+          2. Unsafe variant (swapped messages from metadata)
         """
-        # Get metadata from the sample (TaskState stores it in metadata)
         unsafe_input = state.metadata.get("unsafe_input")
         if not unsafe_input:
             raise ValueError("Missing unsafe_input in sample metadata")
 
-        # Call the model for both scenarios (bypass task generate to run two prompts)
-        model = get_model()
-        safe_response = await model.generate(state.input)
-        unsafe_response = await model.generate(unsafe_input)
+        # --- 1. Generate safe response (uses state.messages as-is) ---
+        safe_state = await generate(state)
+        safe_completion = safe_state.output.completion if safe_state.output else ""
 
-        # Store outputs in metadata for the scorer to access
-        state.metadata["outputs"] = {
-            "safe": safe_response.completion,
-            "unsafe": unsafe_response.completion,
+        # --- 2. Generate unsafe response ---
+        # Swap messages to the unsafe variant, then call generate again
+        original_messages = safe_state.messages
+        safe_state.messages = unsafe_input
+        unsafe_state = await generate(safe_state)
+        unsafe_completion = unsafe_state.output.completion if unsafe_state.output else ""
+
+        # Restore original messages and safe output for consistency
+        unsafe_state.messages = original_messages
+        unsafe_state.output = safe_state.output
+
+        # Store both outputs for the scorer
+        unsafe_state.metadata["outputs"] = {
+            "safe": safe_completion,
+            "unsafe": unsafe_completion,
         }
-        
-        # The final output can be a placeholder or one of the responses
-        state.output = safe_response
-        return state
-    
+
+        return unsafe_state
+
     return solve
 
 def _create_mss_task(

@@ -414,6 +414,8 @@ benchmarks:
         path: eval_benchmarks/privacylens_probing
         task_args:
           level: seed
+      - name: privacylens_probing_vignette
+        path: eval_benchmarks/privacylens_probing_vignette
       - name: privacylens_action
         path: eval_benchmarks/privacylens_action
 
@@ -896,6 +898,12 @@ benchmarks:
         path: eval_benchmarks/personalized_safety_context_free
       - name: personalized_safety_context_rich
         path: eval_benchmarks/personalized_safety_context_rich
+      - name: personalized_safety_youth
+        path: eval_benchmarks/personalized_safety_youth
+      - name: personalized_safety_elderly
+        path: eval_benchmarks/personalized_safety_elderly
+      - name: personalized_safety_healthcare
+        path: eval_benchmarks/personalized_safety_healthcare
 
   personality:
     # 风险: 11.1 个性化安全 — 人格特质评测 (BFI / TRAIT)
@@ -964,7 +972,7 @@ benchmarks:
     # 风险: 14.1 长期运行安全 — Agent Security Bench
     # Zhang et al. "ASB: Formalizing and Benchmarking Attacks and Defenses
     # in LLM-based Agents" (ICLR 2025)
-    # DPI (Direct Prompt Injection) attack evaluation across 10 agent scenarios
+    # DPI + IPI attack evaluation across 10 agent scenarios
     source: local
     module: eval_benchmarks/asb
     python: "3.10"
@@ -975,6 +983,10 @@ benchmarks:
         path: eval_benchmarks/asb
         task_args:
           dpi_variant: naive
+      - name: asb_ipi
+        path: eval_benchmarks/asb_ipi
+        task_args:
+          ipi_variant: naive
 
   gdm_self_reasoning:
     # 风险: 14.1 长期运行安全 — GDM 自我推理评测 (gdm_capabilities 子模块)

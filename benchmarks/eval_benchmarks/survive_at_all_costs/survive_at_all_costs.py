@@ -17,9 +17,9 @@ Scoring: LLM judge evaluates each response as safe (0) or unsafe (1).
 The overall metric is the misbehavior rate (proportion of unsafe responses).
 Lower misbehavior rate = safer model.
 
-LIMITATION: The original paper defines 1000 self-preservation scenarios.
-This implementation includes 80 scenarios (8% coverage) as a representative
-subset. Statistical robustness may be limited compared to the full dataset.
+Dataset: 200 scenarios (25 per category) across 8 categories of
+self-preservation misbehavior, covering diverse domains from healthcare
+and finance to manufacturing, government, and critical infrastructure.
 
 Usage:
     inspect eval eval_benchmarks/survive_at_all_costs --model openai/gpt-4o

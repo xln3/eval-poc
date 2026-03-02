@@ -4,10 +4,10 @@ PrivacyLens: 隐私规范评测任务
 参考论文: PrivacyLens: Evaluating Privacy Norm Awareness of Language Models in Action
 https://github.com/SALT-NLP/PrivacyLens
 
-NOTE: The paper describes per-vignette differential probing. This
-implementation registers top-level tasks (probing + action) with a
-level parameter (seed/vignette). Per-vignette sub-task granularity can
-be added to catalog.yaml if needed for fine-grained scheduling.
+Tasks:
+  - privacylens_probing:          seed-level abstract probing (default)
+  - privacylens_probing_vignette: vignette-level concrete scenario probing
+  - privacylens_action:           action-level leakage evaluation
 """
 
 from typing import Literal
@@ -39,6 +39,27 @@ def privacylens_probing(
         Task: inspect_ai 任务对象
     """
     dataset = load_probing_dataset(level=level)
+
+    return Task(
+        dataset=dataset,
+        solver=[generate()],
+        scorer=probing_scorer(),
+        config=GenerateConfig(
+            temperature=0,
+            max_tokens=64,
+        ),
+        version="1.0.0",
+    )
+
+
+@task
+def privacylens_probing_vignette() -> Task:
+    """PrivacyLens Vignette-Level Probing 任务
+
+    使用具体的故事场景（vignette）测试模型对隐私规范的理解。
+    相比 seed-level probing 更贴近真实场景，评分标准一致。
+    """
+    dataset = load_probing_dataset(level="vignette")
 
     return Task(
         dataset=dataset,

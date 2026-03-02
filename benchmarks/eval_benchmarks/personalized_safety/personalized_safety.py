@@ -4,34 +4,25 @@ PersonalizedSafety: Evaluating LLM Safety in High-Risk Personalized Scenarios
 Wu et al. "Personalized Safety in LLMs: A Benchmark and A Planning-Based Agent Approach"
 https://arxiv.org/abs/2505.18882
 
-This benchmark evaluates models on their ability to provide safe, empathetic,
-and personalized responses to users in sensitive situations (mental health,
-self-harm risk, etc.).
+This benchmark evaluates models on safe, empathetic, and personalized responses
+in sensitive situations (mental health, self-harm risk, etc.).
 
-NOTE: Some personalization dimensions from the paper (e.g., age-specific,
-occupation-specific safety) may not be fully represented in the current
-dataset. Coverage focuses on mental health and crisis scenarios.
-
-# Run context-free evaluation (paper Section 4.1 baseline)
-inspect eval personalized_safety --model openai/gpt-4o --limit 50
-
-# Run with AIHubMix endpoint
-export OPENAI_BASE_URL=https://aihubmix.com/v1
-inspect eval personalized_safety --model openai/deepseek-v3.2 --limit 50
-
-# Run context-rich evaluation
-inspect eval personalized_safety -T context_mode=context_rich --model openai/gpt-4o
-
-# Custom judge model
-inspect eval personalized_safety -T judge_model=openai/gpt-4o --model openai/deepseek-v3.2
+Tasks:
+  - personalized_safety:              full dataset, parameterized
+  - personalized_safety_context_free: no background (paper §4.1 baseline)
+  - personalized_safety_context_rich: with user background
+  - personalized_safety_youth:        age ≤ 25 (adolescent/young adult safety)
+  - personalized_safety_elderly:      age ≥ 60 (elder care safety)
+  - personalized_safety_healthcare:   healthcare profession filter
 """
 
 import os
+import re
 import warnings
-from typing import Any, Literal
+from typing import Any, Callable, Literal
 
 from inspect_ai import Task, task
-from inspect_ai.dataset import Sample
+from inspect_ai.dataset import MemoryDataset, Sample
 from inspect_ai.model import GenerateConfig, Model
 from inspect_ai.solver import generate, system_message
 
@@ -188,4 +179,159 @@ def personalized_safety_context_rich(
     return personalized_safety(
         context_mode="context_rich",
         judge_model=judge_model,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Per-demographic sub-tasks
+# ---------------------------------------------------------------------------
+
+def _parse_age(value: Any) -> int | None:
+    """Parse age from dataset field (may be int, float, or string)."""
+    if value is None:
+        return None
+    if isinstance(value, (int, float)):
+        return int(value)
+    if isinstance(value, str):
+        m = re.search(r"\d+", value)
+        return int(m.group()) if m else None
+    return None
+
+
+_HEALTHCARE_KEYWORDS = frozenset({
+    "nurse", "doctor", "physician", "surgeon", "therapist",
+    "counselor", "pharmacist", "dentist", "paramedic", "psychiatrist",
+    "psychologist", "healthcare", "medical", "clinician", "caregiver",
+    "nursing", "health", "hospital", "clinic",
+})
+
+
+def _is_healthcare_profession(value: Any) -> bool:
+    """Check if profession field matches healthcare-related keywords."""
+    if not value or not isinstance(value, str):
+        return False
+    words = value.lower().split()
+    return bool(set(words) & _HEALTHCARE_KEYWORDS)
+
+
+def _load_filtered_dataset(
+    context_mode: Literal["context_free", "context_rich"],
+    filter_fn: Callable[[dict[str, Any]], bool],
+    name: str,
+) -> MemoryDataset:
+    """Load HuggingFace dataset with row-level filtering.
+
+    Args:
+        context_mode: context_free or context_rich
+        filter_fn: Predicate applied to each raw record
+        name: Dataset name for logging
+    """
+    from datasets import load_dataset as hf_load
+
+    ds = hf_load(DATASET_PATH, split="train")
+    converter = record_to_sample(context_mode)
+    samples = [converter(dict(row)) for row in ds if filter_fn(dict(row))]
+    return MemoryDataset(samples=samples, name=name)
+
+
+@task
+def personalized_safety_youth(
+    context_mode: Literal["context_free", "context_rich"] = "context_rich",
+    judge_model: str | Model | None = DEFAULT_JUDGE_MODEL,
+    judge_max_tokens: int = 800,
+    judge_temperature: float = 0.7,
+) -> Task:
+    """Youth safety evaluation — age ≤ 25 (adolescent/young adult).
+
+    Filters to users aged 25 or younger. Uses context_rich mode by default
+    since personalization is critical for this vulnerable population.
+    """
+    dataset = _load_filtered_dataset(
+        context_mode=context_mode,
+        filter_fn=lambda r: (_parse_age(r.get("age")) or 999) <= 25,
+        name="personalized_safety_youth",
+    )
+
+    return Task(
+        dataset=dataset,
+        solver=[system_message(SYSTEM_PROMPT), generate()],
+        scorer=personalized_safety_scorer(
+            judge_model=judge_model,
+            judge_max_tokens=judge_max_tokens,
+            judge_temperature=judge_temperature,
+        ),
+        config=GenerateConfig(
+            temperature=DEFAULT_TEMPERATURE,
+            max_tokens=DEFAULT_MAX_TOKENS,
+        ),
+        version="1.0.0",
+    )
+
+
+@task
+def personalized_safety_elderly(
+    context_mode: Literal["context_free", "context_rich"] = "context_rich",
+    judge_model: str | Model | None = DEFAULT_JUDGE_MODEL,
+    judge_max_tokens: int = 800,
+    judge_temperature: float = 0.7,
+) -> Task:
+    """Elderly safety evaluation — age ≥ 60 (elder care).
+
+    Filters to users aged 60 or older. Uses context_rich mode by default
+    since health conditions and social isolation require personalized handling.
+    """
+    dataset = _load_filtered_dataset(
+        context_mode=context_mode,
+        filter_fn=lambda r: (_parse_age(r.get("age")) or 0) >= 60,
+        name="personalized_safety_elderly",
+    )
+
+    return Task(
+        dataset=dataset,
+        solver=[system_message(SYSTEM_PROMPT), generate()],
+        scorer=personalized_safety_scorer(
+            judge_model=judge_model,
+            judge_max_tokens=judge_max_tokens,
+            judge_temperature=judge_temperature,
+        ),
+        config=GenerateConfig(
+            temperature=DEFAULT_TEMPERATURE,
+            max_tokens=DEFAULT_MAX_TOKENS,
+        ),
+        version="1.0.0",
+    )
+
+
+@task
+def personalized_safety_healthcare(
+    context_mode: Literal["context_free", "context_rich"] = "context_rich",
+    judge_model: str | Model | None = DEFAULT_JUDGE_MODEL,
+    judge_max_tokens: int = 800,
+    judge_temperature: float = 0.7,
+) -> Task:
+    """Healthcare profession safety evaluation.
+
+    Filters to users whose profession is in the healthcare domain.
+    Healthcare workers face unique stressors (burnout, moral injury,
+    secondary trauma) requiring specialized safety responses.
+    """
+    dataset = _load_filtered_dataset(
+        context_mode=context_mode,
+        filter_fn=lambda r: _is_healthcare_profession(r.get("profession")),
+        name="personalized_safety_healthcare",
+    )
+
+    return Task(
+        dataset=dataset,
+        solver=[system_message(SYSTEM_PROMPT), generate()],
+        scorer=personalized_safety_scorer(
+            judge_model=judge_model,
+            judge_max_tokens=judge_max_tokens,
+            judge_temperature=judge_temperature,
+        ),
+        config=GenerateConfig(
+            temperature=DEFAULT_TEMPERATURE,
+            max_tokens=DEFAULT_MAX_TOKENS,
+        ),
+        version="1.0.0",
     )

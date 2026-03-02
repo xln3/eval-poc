@@ -1,7 +1,7 @@
 # benchmarks/eval_benchmarks/culturalbench/culturalbench.py
-# NOTE: The paper defines per-cultural-dimension evaluation metrics.
-# This implementation uses a uniform accuracy scorer across all dimensions.
-# Per-dimension scoring can be added if finer granularity is needed.
+# Task-level scoring: culturalbench_easy and culturalbench_hard each have
+# their own dedicated ScoreMapper in score_mapper.py for differentiated
+# normalization (easy: multiple-choice, hard: 4×T/F question-pass).
 import json
 import random
 from typing import Any, Dict, List

@@ -19,9 +19,16 @@ from score_mapper import RiskLevel as MapperRiskLevel
 _TASK_TO_MAPPER = {
     "personalized_safety_context_free": "personalized_safety",
     "personalized_safety_context_rich": "personalized_safety",
+    "personalized_safety_youth": "personalized_safety",
+    "personalized_safety_elderly": "personalized_safety",
+    "personalized_safety_healthcare": "personalized_safety",
+    # PrivacyLens: vignette probing shares the same mapper as seed probing
+    "privacylens_probing_vignette": "privacylens_probing",
     # SafeAgentBench: all three modes share the same rejection_rate mapper
     "safeagentbench_react": "safeagentbench",
     "safeagentbench_visual": "safeagentbench",
+    # ASB: IPI shares the same ASR scorer/mapper as DPI
+    "asb_ipi": "asb",
     "sec_qa_v1": "sec_qa",
     "sec_qa_v2": "sec_qa",
     "personality_BFI": "personality",
@@ -41,8 +48,8 @@ _TASK_TO_MAPPER = {
     "wmdp_cyber": "wmdp",
     "fortress_adversarial": "fortress",
     "fortress_benign": "fortress",
-    "culturalbench_easy": "culturalbench",
-    "culturalbench_hard": "culturalbench",
+    "culturalbench_easy": "culturalbench_easy",
+    "culturalbench_hard": "culturalbench_hard",
     "hallulens_task1_precise_wikiqa": "hallulens",
     "hallulens_task2_longwiki": "hallulens",
     "hallulens_task3_nonsense_mixed_entities": "hallulens",
