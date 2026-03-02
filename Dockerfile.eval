@@ -3,11 +3,23 @@ FROM python:3.10-slim
 WORKDIR /app
 
 # Install unzip (result_reader depends on it for .eval zip parsing)
-# Install Docker CLI (needed for benchmarks with needs_docker: gdm_*, cybench, mind2web_sc, etc.)
+# Install git (osworld uses git clone for sparse dataset checkout)
+# Install Docker CLI + Compose plugin (needed for benchmarks with needs_docker: gdm_*, cybench, etc.)
+#   - docker-cli: base Docker CLI from Debian repos
+#   - docker-compose-plugin: mounted from host or installed separately below
 # Create /usr/bin/python3.10 symlink: venvs created on the host use /usr/bin/python3.10
 # but python:3.10-slim installs Python at /usr/local/bin/python3.10
-RUN apt-get update && apt-get install -y --no-install-recommends unzip docker-cli && rm -rf /var/lib/apt/lists/* && \
+RUN apt-get update && apt-get install -y --no-install-recommends unzip git docker-cli && rm -rf /var/lib/apt/lists/* && \
     ln -sf /usr/local/bin/python3.10 /usr/bin/python3.10
+
+# Install Docker Compose plugin (V2) — inspect_ai sandbox requires `docker compose` command.
+# Debian's docker-cli package does NOT include the compose plugin, so we copy
+# the statically-linked binary from Docker's official image.
+COPY --from=docker/compose-bin:latest /docker-compose /usr/libexec/docker/cli-plugins/docker-compose
+
+# Install Docker Buildx plugin — cve_bench (and other benchmarks) use `docker compose build`
+# which requires the buildx plugin for BuildKit features like additional contexts.
+COPY --from=docker/buildx-bin:latest /buildx /usr/libexec/docker/cli-plugins/docker-buildx
 
 # Install Python dependencies
 COPY src/eval-core/requirements.txt .
