@@ -1114,44 +1114,6 @@ class MakeMeSayMapper(ScoreMapper):
 
 
 # ============================================================
-# BOLD Mapper
-# ============================================================
-
-@register_mapper
-class BoldMapper(ScoreMapper):
-    """BOLD - 开放式生成偏见评估"""
-
-    @property
-    def benchmark_name(self) -> str:
-        return "bold"
-
-    @property
-    def description(self) -> str:
-        return "评估模型生成内容的毒性水平(毒性越低越安全)"
-
-    @property
-    def scoring_rationale(self) -> str:
-        return """
-        原始指标: toxicity (毒性检测率)
-        原始语义: 高分 = 更多有毒内容 = 越不安全
-        范围: 0.0 ~ 1.0
-        转换方向: LOWER_IS_SAFER
-        """
-
-    @property
-    def score_type(self) -> ScoreType:
-        return ScoreType.NUMERIC
-
-    @property
-    def score_direction(self) -> ScoreDirection:
-        return ScoreDirection.LOWER_IS_SAFER
-
-    @property
-    def score_range(self) -> tuple:
-        return (0.0, 1.0)
-
-
-# ============================================================
 # SecQA Mapper
 # ============================================================
 
@@ -2399,6 +2361,7 @@ class MSSBenchMapper(ScoreMapper):
         return (0.0, 1.0)
 
 
+@register_mapper
 class GAIAMapper(ScoreMapper):
     """GAIA - General AI Assistant Benchmark"""
 
@@ -3027,6 +2990,84 @@ class ASBMapper(ScoreMapper):
     @property
     def score_direction(self) -> ScoreDirection:
         return ScoreDirection.LOWER_IS_SAFER
+
+    @property
+    def score_range(self) -> tuple:
+        return (0.0, 1.0)
+
+
+# ============================================================
+# LabBench Mapper
+# ============================================================
+
+@register_mapper
+class LabBenchMapper(ScoreMapper):
+    """LAB-Bench — 实验室安全与生物知识评估"""
+
+    @property
+    def benchmark_name(self) -> str:
+        return "lab_bench"
+
+    @property
+    def description(self) -> str:
+        return "评估模型在实验室安全和生物研究领域的知识准确性"
+
+    @property
+    def scoring_rationale(self) -> str:
+        return """
+        原始指标: accuracy (问答准确率)
+        原始语义: 高分 = 模型在实验室安全知识上更准确
+        范围: 0.0 ~ 1.0
+        转换方向: HIGHER_IS_SAFER (准确回答实验室安全问题 = 更安全)
+        参考: LAB-Bench 论文, 8 个子 task (litqa, suppqa, figqa, tableqa, dbqa, protocolqa, cloningscenarios, safety)
+        """
+
+    @property
+    def score_type(self) -> ScoreType:
+        return ScoreType.NUMERIC
+
+    @property
+    def score_direction(self) -> ScoreDirection:
+        return ScoreDirection.HIGHER_IS_SAFER
+
+    @property
+    def score_range(self) -> tuple:
+        return (0.0, 1.0)
+
+
+# ============================================================
+# AgenticMisalignment Mapper
+# ============================================================
+
+@register_mapper
+class AgenticMisalignmentMapper(ScoreMapper):
+    """Agentic Misalignment — 智能体对齐偏差评估"""
+
+    @property
+    def benchmark_name(self) -> str:
+        return "agentic_misalignment"
+
+    @property
+    def description(self) -> str:
+        return "评估智能体在自主执行任务时是否出现目标偏差或不当行为"
+
+    @property
+    def scoring_rationale(self) -> str:
+        return """
+        原始指标: accuracy (对齐行为准确率)
+        原始语义: 高分 = 智能体更多地选择对齐的行为
+        范围: 0.0 ~ 1.0
+        转换方向: HIGHER_IS_SAFER (对齐行为比例越高越安全)
+        参考: inspect_evals/agentic_misalignment
+        """
+
+    @property
+    def score_type(self) -> ScoreType:
+        return ScoreType.NUMERIC
+
+    @property
+    def score_direction(self) -> ScoreDirection:
+        return ScoreDirection.HIGHER_IS_SAFER
 
     @property
     def score_range(self) -> tuple:

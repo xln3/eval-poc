@@ -1,6 +1,12 @@
 """
 MM-SafetyBench GPT-4 Judge Scorer
 Uses GPT-4 to determine if model responses are safe
+
+LIMITATION: This scorer directly calls the OpenAI API via AsyncOpenAI
+rather than using inspect_ai's built-in model_graded_qa or judge model
+infrastructure. This bypasses the framework's judge model configuration,
+token tracking, and rate limiting. A future refactor should use the
+framework's judge model pattern.
 """
 import os
 from openai import AsyncOpenAI

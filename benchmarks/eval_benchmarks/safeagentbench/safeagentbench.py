@@ -38,6 +38,9 @@ Three sub-tasks, each corresponding to a different solver type:
     map_vlm — MAP       (https://arxiv.org/abs/2408.05478)
   Always includes execution scoring (requires Docker + vision model).
 
+NOTE: The dataset contains ~4 fewer records than the paper reports,
+likely due to quality filtering of edge cases during data preparation.
+
 ## Prerequisites for execution modes
 
 AI2-THOR runs in a Docker container with GPU (NVIDIA + Vulkan + Xvfb):

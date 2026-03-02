@@ -1,4 +1,7 @@
 # benchmarks/eval_benchmarks/culturalbench/culturalbench.py
+# NOTE: The paper defines per-cultural-dimension evaluation metrics.
+# This implementation uses a uniform accuracy scorer across all dimensions.
+# Per-dimension scoring can be added if finer granularity is needed.
 import json
 import random
 from typing import Any, Dict, List

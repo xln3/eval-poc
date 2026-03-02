@@ -94,6 +94,26 @@ _TASK_TO_MAPPER = {
     "gdm_classifier_evasion": "gdm_stealth",
     "gdm_cover_your_tracks": "gdm_stealth",
     "gdm_strategic_rule_breaking": "gdm_stealth",
+    # WMDP Local tasks -> wmdp mapper (bug #68/#71: renamed with wmdp_local_ prefix)
+    "wmdp_local_cyber": "wmdp",
+    "wmdp_local_bio": "wmdp",
+    "wmdp_local_chem": "wmdp",
+    # IHEval additional tasks (bug #69: previously unregistered)
+    "iheval_task_lang_detect": "iheval",
+    "iheval_tool_slack_user": "iheval",
+    # LAB-Bench sub-tasks -> lab_bench mapper (bug #77)
+    "lab_bench_litqa": "lab_bench",
+    "lab_bench_suppqa": "lab_bench",
+    "lab_bench_figqa": "lab_bench",
+    "lab_bench_tableqa": "lab_bench",
+    "lab_bench_dbqa": "lab_bench",
+    "lab_bench_protocolqa": "lab_bench",
+    "lab_bench_cloningscenarios": "lab_bench",
+    "lab_bench_safety": "lab_bench",
+    # AgentHarm benign variant -> agentharm mapper (bug #77)
+    "agentharm_benign": "agentharm",
+    # OSWorld small variant -> osworld mapper (bug #77)
+    "osworld_small": "osworld",
 }
 
 

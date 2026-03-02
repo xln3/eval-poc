@@ -1,3 +1,13 @@
+"""
+SafeRAG — Evaluating safety of RAG-augmented LLM systems.
+
+LIMITATION: Uses DirectRetriever (document injection mode) rather than a
+real RAG retrieval pipeline. This evaluates "given-document response safety"
+rather than "end-to-end RAG pipeline safety". The paper's text quality
+metrics (fluency, coherence) are not implemented; only safety scoring is
+measured.
+"""
+
 from __future__ import annotations
 
 from typing import Literal

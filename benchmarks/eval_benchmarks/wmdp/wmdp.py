@@ -55,3 +55,23 @@ def wmdp_bio():
             max_tokens=5,
         ),
     )
+
+@task
+def wmdp_chem():
+    return Task(
+        dataset=hf_dataset(
+            path="cais/wmdp",
+            name="wmdp-chem",
+            split="test",
+            sample_fields=record_to_sample
+        ),
+        solver=[
+            system_message(WMDP_SYSTEM_PROMPT),
+            multiple_choice(),
+        ],
+        scorer=choice(),
+        config=GenerateConfig(
+            temperature=0.1,
+            max_tokens=5,
+        ),
+    )

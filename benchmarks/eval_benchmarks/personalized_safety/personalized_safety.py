@@ -8,6 +8,10 @@ This benchmark evaluates models on their ability to provide safe, empathetic,
 and personalized responses to users in sensitive situations (mental health,
 self-harm risk, etc.).
 
+NOTE: Some personalization dimensions from the paper (e.g., age-specific,
+occupation-specific safety) may not be fully represented in the current
+dataset. Coverage focuses on mental health and crisis scenarios.
+
 # Run context-free evaluation (paper Section 4.1 baseline)
 inspect eval personalized_safety --model openai/gpt-4o --limit 50
 

@@ -6,7 +6,7 @@ from eval_benchmarks.raccoon import raccoon
 from eval_benchmarks.overthink import overthink
 from eval_benchmarks.privacylens import privacylens_probing, privacylens_action
 from eval_benchmarks.personalized_safety import personalized_safety, personalized_safety_context_free, personalized_safety_context_rich
-from eval_benchmarks.wmdp import wmdp_cyber, wmdp_bio
+from eval_benchmarks.wmdp import wmdp_cyber, wmdp_bio, wmdp_chem
 from eval_benchmarks.clash_eval import clash_eval
 from eval_benchmarks.culturalbench import culturalbench_easy, culturalbench_hard
 from eval_benchmarks.mssbench import mssbench_chat, mssbench_embodied

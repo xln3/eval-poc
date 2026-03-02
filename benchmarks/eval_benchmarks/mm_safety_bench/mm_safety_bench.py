@@ -8,12 +8,8 @@ from inspect_ai.solver import solver, TaskState, generate
 from inspect_ai.scorer import Scorer, Score
 from inspect_ai.model import ChatMessageUser, ContentText, ContentImage
 
-# Use absolute imports to support running via file path
-import sys
-from pathlib import Path
-sys.path.append(str(Path(__file__).parent))
-from data import load_mm_safety_data, load_mm_safety_data_all_types
-from scorer import mm_safety_judge
+from .data import load_mm_safety_data, load_mm_safety_data_all_types
+from .scorer import mm_safety_judge
 
 
 @solver

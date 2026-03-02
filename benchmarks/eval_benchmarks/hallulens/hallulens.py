@@ -1,3 +1,16 @@
+"""
+HalluLens — Multi-dimensional hallucination detection benchmark.
+
+LIMITATION: This benchmark uses subprocess wrappers to call the vendor
+HalluLens code rather than native inspect_ai @task + Task(dataset, solver,
+scorer) patterns. This bypasses the framework's built-in concurrency
+management, result caching, and token tracking. A future refactor should
+convert to native inspect_ai tasks.
+
+Default sample size N=100 is a quick-check mode; the full paper uses a
+significantly larger evaluation scale.
+"""
+
 import os
 import sys
 import json

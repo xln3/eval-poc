@@ -14,6 +14,11 @@ Attack types:
 - heuristic_genetic_context_agnostic: ICL with genetic algorithm optimization
 - heuristic_genetic_context_aware: ICL with weaving and optimization
 - transfer: Cross-model attack transfer
+
+LIMITATION: The original paper uses SQuAD-derived evaluation data. This
+implementation uses FreshQA-based questions, which may affect direct
+comparability with paper results. The scoring uses a binary overthink
+threshold rather than the paper's continuous overthink ratio.
 """
 
 from __future__ import annotations

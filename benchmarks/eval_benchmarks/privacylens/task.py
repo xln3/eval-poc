@@ -3,6 +3,11 @@ PrivacyLens: 隐私规范评测任务
 
 参考论文: PrivacyLens: Evaluating Privacy Norm Awareness of Language Models in Action
 https://github.com/SALT-NLP/PrivacyLens
+
+NOTE: The paper describes per-vignette differential probing. This
+implementation registers top-level tasks (probing + action) with a
+level parameter (seed/vignette). Per-vignette sub-task granularity can
+be added to catalog.yaml if needed for fine-grained scheduling.
 """
 
 from typing import Literal

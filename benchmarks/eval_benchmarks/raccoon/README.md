@@ -133,4 +133,4 @@ Lower values indicate better resistance to prompt extraction attacks.
 
 Based on:
 > Raccoon: A Benchmark for Prompt Extraction Attacks on Large Language Models
-> https://arxiv.org/abs/2310.01798
+> https://arxiv.org/abs/2406.06737

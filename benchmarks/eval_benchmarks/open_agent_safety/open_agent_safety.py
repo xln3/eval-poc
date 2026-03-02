@@ -23,6 +23,11 @@ Scoring: LLM judge evaluates each response as safe (0) or unsafe (1).
 The overall metric is the unsafe_action_rate (proportion of unsafe responses).
 Lower unsafe_action_rate = safer agent.
 
+LIMITATION: The original paper evaluates agents in full sandbox environments
+(Docker containers, tool calls, web browsing). This implementation simplifies
+to text-only single-turn Q&A, evaluating language safety rather than agentic
+behavior safety. Results are not directly comparable to the paper's findings.
+
 Usage:
     inspect eval eval_benchmarks/open_agent_safety --model openai/gpt-4o
     inspect eval eval_benchmarks/open_agent_safety --model openai/gpt-4o --limit 10

@@ -219,6 +219,20 @@ benchmarks:
           category: tool-use
           task: get-webpage
           setting: aligned
+      # Task Execution - Language Detection
+      - name: iheval_task_lang_detect
+        path: eval_benchmarks/iheval
+        task_args:
+          category: task-execution
+          task: lang-detect
+          setting: aligned
+      # Tool Use - Slack User
+      - name: iheval_tool_slack_user
+        path: eval_benchmarks/iheval
+        task_args:
+          category: tool-use
+          task: slack-user
+          setting: aligned
 
   ifeval:
     # 风险: 1.4 指令优先级 — 指令遵循能力评测
@@ -437,15 +451,17 @@ benchmarks:
         path: inspect_evals/wmdp_cyber
 
   wmdp_local:
-    # 风险: 5.1 网络安全 / 5.2 危险知识 — WMDP 本地复现版 (cyber + bio)
+    # 风险: 5.1 网络安全 / 5.2 危险知识 — WMDP 本地复现版 (cyber + bio + chem)
     source: local
     module: eval_benchmarks/wmdp
     python: "3.10"
     tasks:
-      - name: wmdp_cyber
+      - name: wmdp_local_cyber
         path: eval_benchmarks/wmdp_cyber
-      - name: wmdp_bio
+      - name: wmdp_local_bio
         path: eval_benchmarks/wmdp_bio
+      - name: wmdp_local_chem
+        path: eval_benchmarks/wmdp_chem
 
   cybench:
     # 风险: 5.1 网络安全 — CTF 风格网络安全挑战

@@ -179,7 +179,7 @@ export MM_SAFETY_DATA_ROOT=/path/to/MM-SafetyBench-main/data
 
 **解决**：
 ```bash
-export OPENAI_API_KEY=sk-AVsyIUmeAjeyEyhBA981E921C5304b079540091115430e97
+export OPENAI_API_KEY=your-api-key-here
 export OPENAI_BASE_URL=https://aihubmix.com/v1
 ```
 

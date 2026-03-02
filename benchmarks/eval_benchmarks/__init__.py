@@ -17,9 +17,13 @@ from . import safeagentbench  # noqa: F401
 from . import hallulens  # noqa: F401
 from . import mm_safety_bench  # noqa: F401
 from . import saferag  # noqa: F401
+from . import open_agent_safety  # noqa: F401
+from . import asb  # noqa: F401
+from . import survive_at_all_costs  # noqa: F401
 
 __all__ = [
     "raccoon", "overthink", "privacylens", "personalized_safety",
     "wmdp", "clash_eval", "culturalbench", "mssbench", "iheval",
     "safeagentbench", "hallulens", "mm_safety_bench", "saferag",
+    "open_agent_safety", "asb", "survive_at_all_costs",
 ]

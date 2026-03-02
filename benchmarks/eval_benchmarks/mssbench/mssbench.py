@@ -8,15 +8,108 @@ To run this benchmark, you must set the environment variable:
 export MSSBENCH_DATA_ROOT=/path/to/your/mssbench_dataset
 
 The dataset directory should contain 'combined.json' and the image folders ('chat', 'embodied').
+
+LIMITATION: The solver implements custom message passing (multi-turn
+dialogue orchestration) rather than using inspect_ai's standard generate()
+function. This is necessary for MSSBench's paired safe/unsafe evaluation
+logic but bypasses the framework's token tracking and rate limiting.
 """
 import json
 import logging
 import os
+import tempfile
 
 from inspect_ai import Task, task
 from inspect_ai.dataset import MemoryDataset, Sample
 from inspect_ai.model import ChatMessageUser, ContentImage, ContentText, Model, get_model
 from inspect_ai.solver import Solver, TaskState, solver
+
+logger = logging.getLogger(__name__)
+
+# 8 MB threshold — leaves margin for base64 overhead before 10 MB API limit
+_IMAGE_SIZE_LIMIT = 8 * 1024 * 1024
+_compressed_cache: dict[str, str | None] = {}
+
+
+def _ensure_image_within_limit(image_path: str) -> str | None:
+    """Check image file size and compress if over limit.
+
+    Returns the (possibly compressed) image path, or None if the image
+    cannot be reduced below the limit even after compression.
+    """
+    if image_path in _compressed_cache:
+        return _compressed_cache[image_path]
+
+    file_size = os.path.getsize(image_path)
+    if file_size <= _IMAGE_SIZE_LIMIT:
+        _compressed_cache[image_path] = image_path
+        return image_path
+
+    logger.warning(
+        "Image %s is %.1f MB (limit %.1f MB), attempting compression",
+        os.path.basename(image_path),
+        file_size / 1024 / 1024,
+        _IMAGE_SIZE_LIMIT / 1024 / 1024,
+    )
+
+    try:
+        from PIL import Image
+
+        img = Image.open(image_path)
+
+        # Try progressive quality reduction
+        for quality in (70, 50, 30, 15):
+            # Also downscale if still large: halve dimensions for quality <= 50
+            cur = img
+            if quality <= 50:
+                w, h = cur.size
+                factor = 2 if quality == 50 else 3
+                cur = cur.resize((w // factor, h // factor), Image.LANCZOS)
+
+            suffix = os.path.splitext(image_path)[1] or ".jpg"
+            tmp = tempfile.NamedTemporaryFile(
+                suffix=suffix, delete=False, dir=os.path.dirname(image_path)
+            )
+            tmp_path = tmp.name
+            tmp.close()
+
+            save_kwargs = {}
+            if suffix.lower() in (".jpg", ".jpeg"):
+                save_kwargs = {"quality": quality, "optimize": True}
+            elif suffix.lower() == ".png":
+                save_kwargs = {"optimize": True}
+
+            if cur.mode == "RGBA" and suffix.lower() in (".jpg", ".jpeg"):
+                cur = cur.convert("RGB")
+            cur.save(tmp_path, **save_kwargs)
+
+            compressed_size = os.path.getsize(tmp_path)
+            if compressed_size <= _IMAGE_SIZE_LIMIT:
+                logger.info(
+                    "Compressed %s: %.1f MB → %.1f MB (quality=%d)",
+                    os.path.basename(image_path),
+                    file_size / 1024 / 1024,
+                    compressed_size / 1024 / 1024,
+                    quality,
+                )
+                _compressed_cache[image_path] = tmp_path
+                return tmp_path
+            else:
+                os.unlink(tmp_path)
+
+        # All attempts failed
+        logger.error(
+            "Cannot compress %s below %.1f MB limit, skipping",
+            os.path.basename(image_path),
+            _IMAGE_SIZE_LIMIT / 1024 / 1024,
+        )
+        _compressed_cache[image_path] = None
+        return None
+
+    except Exception as e:
+        logger.error("Failed to compress %s: %s", image_path, e)
+        _compressed_cache[image_path] = None
+        return None
 
 from .prompts import (
     PROMPT_CHAT_IC, PROMPT_CHAT_IC_CAP, PROMPT_CHAT_IF, PROMPT_CHAT_QC,
@@ -47,11 +140,15 @@ PROMPT_MAP = {
     },
 }
 
-def _build_input(image_path: str, prompt_text: str) -> list:
+def _build_input(image_path: str, prompt_text: str) -> list | None:
+    """Build chat input with image. Returns None if image exceeds size limit."""
+    checked_path = _ensure_image_within_limit(image_path)
+    if checked_path is None:
+        return None
     return [
         ChatMessageUser(
             content=[
-                ContentImage(image=image_path),
+                ContentImage(image=checked_path),
                 ContentText(text=prompt_text),
             ]
         ),
@@ -68,7 +165,8 @@ def mss_dataset(
     It reads the combined.json file and returns a MemoryDataset object.
     Each Sample corresponds to one safe/unsafe pair evaluation.
     """
-    samples = [] # MODIFIED: Create a list to hold samples
+    samples = []
+    skipped = 0
 
     with open(data_file, "r") as f:
         data = json.load(f)
@@ -101,6 +199,9 @@ def mss_dataset(
                     )
                     safe_input = _build_input(safe_img_path, base_prompt + query)
                     unsafe_input = _build_input(unsafe_img_path, base_prompt + query)
+                    if safe_input is None or unsafe_input is None:
+                        skipped += 1
+                        continue
                     samples.append(Sample(
                         id=f"{scenario}_{setting}_{i}_q_{j}",
                         input=safe_input,
@@ -121,6 +222,9 @@ def mss_dataset(
                     unsafe_text += f"\nThe caption is: {d['unsafe_image']}"
                 safe_input = _build_input(safe_img_path, safe_text)
                 unsafe_input = _build_input(unsafe_img_path, unsafe_text)
+                if safe_input is None or unsafe_input is None:
+                    skipped += 1
+                    continue
                 samples.append(Sample(
                     id=f"{scenario}_{setting}_{i}",
                     input=safe_input,
@@ -136,6 +240,9 @@ def mss_dataset(
                     unsafe_text = base_prompt + unsafe_instr
                     safe_input = _build_input(safe_img_path, safe_text)
                     unsafe_input = _build_input(unsafe_img_path, unsafe_text)
+                    if safe_input is None or unsafe_input is None:
+                        skipped += 1
+                        continue
                     samples.append(Sample(
                         id=f"{scenario}_{setting}_{i}_instr_{j}",
                         input=safe_input,
@@ -159,13 +266,21 @@ def mss_dataset(
                     unsafe_text += f"\nThe caption is: {d['observation_unsafe']}"
                  safe_input = _build_input(safe_img_path, safe_text)
                  unsafe_input = _build_input(unsafe_img_path, unsafe_text)
+                 if safe_input is None or unsafe_input is None:
+                     skipped += 1
+                     continue
                  samples.append(Sample(
                     id=f"{scenario}_{setting}_{i}",
                     input=safe_input,
                     metadata={**meta, **d, "unsafe_input": unsafe_input},
                 ))
 
-    return MemoryDataset(samples) # MODIFIED: Return the final MemoryDataset
+    if skipped:
+        logger.warning(
+            "Skipped %d samples due to oversized images (scenario=%s, setting=%s)",
+            skipped, scenario, setting,
+        )
+    return MemoryDataset(samples)
 
 
 @solver

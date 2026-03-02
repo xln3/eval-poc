@@ -9,6 +9,12 @@ when primed with dark personality traits (Moral Foundations Theory) and
 given harmful task instructions.
 
 Dataset: 855 samples (196 safe + 659 dangerous) across 13 harm dimensions.
+
+LIMITATION: The original paper evaluates emergent risks in multi-agent
+conversations (agent-to-agent communication). This implementation tests a
+single agent's response safety, not multi-agent interaction dynamics.
+Results measure individual model safety under dark-trait priming, not the
+emergent risks described in the paper.
 """
 
 from __future__ import annotations

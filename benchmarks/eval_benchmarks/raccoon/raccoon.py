@@ -7,7 +7,7 @@ can cause a model to reveal its system prompt.
 
 Based on:
     Raccoon: A Benchmark for Prompt Extraction Attacks on Large Language Models
-    https://arxiv.org/abs/2310.01798
+    https://arxiv.org/abs/2406.06737
 
 Usage:
     inspect eval eval_benchmarks/raccoon --model openai/gpt-4o-mini --limit 10
