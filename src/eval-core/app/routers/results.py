@@ -42,10 +42,17 @@ def get_job_task_samples(
     if not job:
         raise HTTPException(status_code=404, detail="未找到该评测任务")
 
-    # Find the .eval file scoped to this job's time window only
-    # (no fallback to model-level search — that would return results from other runs)
+    # Prefer precise file-path matching (bug #53), fall back to time-window
     model_short = job.model_id.split("/")[-1].strip()
-    eval_file = _find_eval_file_for_job(model_short, task, job.created_at, job.completed_at)
+    task_progress = next((t for t in job.tasks if t.task_name == task), None)
+    eval_file = None
+    if task_progress and task_progress.eval_file:
+        from ..config import RESULTS_DIR
+        candidate = RESULTS_DIR / task_progress.eval_file
+        if candidate.exists():
+            eval_file = str(candidate)
+    if not eval_file:
+        eval_file = _find_eval_file_for_job(model_short, task, job.created_at, job.completed_at)
     if not eval_file:
         raise HTTPException(status_code=404, detail="未找到 .eval 文件")
 

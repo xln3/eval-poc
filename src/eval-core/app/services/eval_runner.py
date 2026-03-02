@@ -7,9 +7,10 @@ import os
 import signal
 import subprocess
 import uuid
+import zipfile
 from datetime import datetime, timezone
 from typing import Dict, List, Optional
-from ..config import RUN_EVAL_SCRIPT, PROJECT_ROOT, DATA_DIR, JOBS_JSON
+from ..config import RUN_EVAL_SCRIPT, PROJECT_ROOT, DATA_DIR, JOBS_JSON, RESULTS_DIR
 from ..models.schemas import (
     EvalJob, EvalJobCreate, EvalStatus, EvalTaskProgress, TaskStatus,
 )
@@ -77,6 +78,49 @@ def _classify_error(error_msg: str) -> str:
 _NON_RETRYABLE = {"AUTH_FAILURE", "ACCESS_DENIED", "MODEL_NOT_FOUND", "DATA_MISSING"}
 
 
+def _find_latest_eval_file(model_id: str, task_name: str) -> Optional[str]:
+    """Find the most recent .eval file for a model/task combination.
+
+    Returns a relative path from RESULTS_DIR, or None if not found.
+    Used after task completion to record which .eval file was produced (bug #53).
+    """
+    if not RESULTS_DIR.exists():
+        return None
+    model_short = model_id.split("/")[-1].strip()
+    best_file = None
+    for model_dir in RESULTS_DIR.iterdir():
+        if not model_dir.is_dir():
+            continue
+        dir_name = model_dir.name.strip()
+        if model_short not in dir_name and dir_name not in model_short:
+            continue
+        for bench_dir in model_dir.iterdir():
+            if not bench_dir.is_dir():
+                continue
+            logs_dir = bench_dir / "logs"
+            if not logs_dir.exists():
+                continue
+            for eval_file in logs_dir.glob("*.eval"):
+                # Task names use underscores; filenames use hyphens
+                parts = eval_file.stem.split("_")
+                if len(parts) >= 3:
+                    file_task = "_".join(parts[1:-1])
+                    if task_name.replace("_", "-") != file_task.replace("_", "-"):
+                        continue
+                else:
+                    if task_name.replace("_", "-") not in eval_file.stem.replace("_", "-"):
+                        continue
+                # Filenames start with ISO timestamps; pick the latest
+                if best_file is None or eval_file.name > best_file.name:
+                    best_file = eval_file
+    if best_file is None:
+        return None
+    try:
+        return str(best_file.relative_to(RESULTS_DIR))
+    except ValueError:
+        return str(best_file)
+
+
 # ---- Job persistence (following model_store.py pattern) ----
 
 def _load_jobs() -> Dict[str, EvalJob]:
@@ -96,6 +140,11 @@ def _load_jobs() -> Dict[str, EvalJob]:
                 job.error = "Service restarted while job was running"
                 if not job.completed_at:
                     job.completed_at = datetime.now(timezone.utc).isoformat()
+                # Also mark stale tasks within the job (bug #47)
+                for t in job.tasks:
+                    if t.status in (TaskStatus.PENDING, TaskStatus.RUNNING):
+                        t.status = TaskStatus.FAILED
+                        t.error = "Service restarted while task was running"
             jobs[job.id] = job
         logger.info("Loaded %d persisted jobs from %s", len(jobs), JOBS_JSON)
         return jobs
@@ -250,6 +299,8 @@ async def _run_job(
                         timeout=TASK_TIMEOUT_SECONDS,
                     )
                     task.status = TaskStatus.COMPLETED
+                    # Record which .eval file this task produced (bug #53)
+                    task.eval_file = _find_latest_eval_file(job.model_id, task.task_name)
                     last_error = None
                     break
                 except asyncio.TimeoutError:
@@ -316,6 +367,57 @@ async def _run_job(
     # Clean up handles
     _async_tasks.pop(job.id, None)
     _processes.pop(job.id, None)
+
+
+def _check_eval_file_status(model_id: str, task_name: str):
+    """Check the latest .eval file for a task; raise if status is 'error'.
+
+    inspect_ai may exit 0 but record status=error in the .eval header
+    when sample-level errors occur. This catches those false-positive completions.
+    """
+    model_short = model_id.split("/")[-1].strip()
+    # Search all model dirs that match
+    if not RESULTS_DIR.exists():
+        return
+    candidates = []
+    for model_dir in RESULTS_DIR.iterdir():
+        if not model_dir.is_dir():
+            continue
+        dir_name = model_dir.name.strip()
+        if model_short not in dir_name and dir_name not in model_short:
+            continue
+        for bench_dir in model_dir.iterdir():
+            if not bench_dir.is_dir():
+                continue
+            logs_dir = bench_dir / "logs"
+            if not logs_dir.exists():
+                continue
+            for eval_file in logs_dir.glob("*.eval"):
+                candidates.append(eval_file)
+    if not candidates:
+        return
+
+    # Find the most recent .eval file matching this task
+    # Sort by mtime descending to get the latest
+    candidates.sort(key=lambda p: p.stat().st_mtime, reverse=True)
+    for eval_path in candidates:
+        try:
+            with zipfile.ZipFile(str(eval_path), "r") as zf:
+                with zf.open("header.json") as f:
+                    header = json.loads(f.read())
+            file_task = header.get("eval", {}).get("task", "").split("/")[-1]
+            if file_task != task_name:
+                continue
+            status = header.get("status", "")
+            if status == "error":
+                error_info = header.get("error", {})
+                error_msg = error_info.get("message", "unknown error") if isinstance(error_info, dict) else str(error_info)
+                raise RuntimeError(
+                    f"任务 {task_name} 进程退出成功但 .eval 状态为 error: {error_msg}"
+                )
+            return  # found the matching file and it's not error — OK
+        except (zipfile.BadZipFile, json.JSONDecodeError, KeyError):
+            continue
 
 
 async def _run_single_task(job: EvalJob, task: EvalTaskProgress, max_connections: int = 16):
@@ -388,6 +490,10 @@ async def _run_single_task(job: EvalJob, task: EvalTaskProgress, max_connections
         else:
             error_msg = raw
         raise RuntimeError(f"任务 {task.task_name} 执行失败 (exit {process.returncode}): {error_msg}")
+
+    # Bug #48 fix: inspect may exit 0 but write status=error in .eval file.
+    # Check the latest .eval file for this task to catch sample-level errors.
+    _check_eval_file_status(job.model_id, task.task_name)
 
 
 async def _kill_process(process: asyncio.subprocess.Process):

@@ -856,6 +856,7 @@ benchmarks:
     module: eval_benchmarks/psysafe
     python: "3.10"
     judge_model: "default"
+    judge_param: judge_model
     tasks:
       - name: psysafe
         path: eval_benchmarks/psysafe

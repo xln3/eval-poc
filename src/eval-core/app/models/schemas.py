@@ -89,6 +89,7 @@ class EvalTaskProgress(BaseModel):
     error: Optional[str] = None
     error_type: Optional[str] = None
     retry_count: int = 0
+    eval_file: Optional[str] = None  # relative path from RESULTS_DIR to .eval file
 
 
 class EvalJobCreate(_Base):

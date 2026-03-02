@@ -275,7 +275,6 @@ def hallulens_task3_nonsense_mixed_entities(N: int = 100, seed: int = 1) -> Task
                     "--exp", "nonsense_medicine",
                     "--do_generate_prompt", "--do_inference", "--do_eval",
                     "--tested_model", model_id,
-                    "--generate_model", model_id,
                     "--inference_method", "vllm",
                     "--N", str(N_run),
                     "--seed", str(seed),
@@ -296,10 +295,8 @@ def hallulens_task3_round_robin_nonsense_name(N: int = 100, seed: int = 1) -> Ta
                 "tasks/refusal_test/round_robin_nonsense_name.py",
                 lambda model_id: [
                     "--do_generate_prompt", "--do_inference", "--do_eval",
-                    "--tested_model", model_id,
                     "--generate_model", model_id,
                     "--inference_method", "vllm",
-                    "--N", str(N_run),
                     "--seed", str(seed),
                 ],
             )

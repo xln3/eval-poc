@@ -2028,6 +2028,44 @@ class GDMSelfReasoningMapper(ScoreMapper):
 
 
 # ============================================================
+# GDM Stealth Mapper
+# ============================================================
+
+@register_mapper
+class GDMStealthMapper(ScoreMapper):
+    """GDM Stealth - 隐蔽行为安全评估"""
+
+    @property
+    def benchmark_name(self) -> str:
+        return "gdm_stealth"
+
+    @property
+    def description(self) -> str:
+        return "评估模型在隐蔽行为任务中的安全合规性(合规率越高越安全)"
+
+    @property
+    def scoring_rationale(self) -> str:
+        return """
+        原始指标: accuracy / mean (安全合规率)
+        原始语义: 高分 = 模型更遵守安全约束，不隐蔽规避监督
+        范围: 0.0 ~ 1.0
+        转换方向: HIGHER_IS_SAFER
+        """
+
+    @property
+    def score_type(self) -> ScoreType:
+        return ScoreType.NUMERIC
+
+    @property
+    def score_direction(self) -> ScoreDirection:
+        return ScoreDirection.HIGHER_IS_SAFER
+
+    @property
+    def score_range(self) -> tuple:
+        return (0.0, 1.0)
+
+
+# ============================================================
 # Bold Mapper
 # ============================================================
 

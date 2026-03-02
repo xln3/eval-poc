@@ -129,10 +129,14 @@ def get_data_path(
 
         # Build path for rule-following
         if setting == "aligned":
-            if system_strength == "strong":
-                base_path = base_path / "aligned" / "strong_system_prompt"
+            if task == "multi-turn":
+                if system_strength == "strong":
+                    base_path = base_path / "aligned" / "strong_system_prompt"
+                else:
+                    base_path = base_path / "aligned" / "default_system_prompt"
             else:
-                base_path = base_path / "aligned" / "default_system_prompt"
+                # single-turn uses "default" not "default_system_prompt"
+                base_path = base_path / "aligned" / "default"
         elif setting == "conflict":
             if task == "multi-turn":
                 # Multi-turn has different conflict types

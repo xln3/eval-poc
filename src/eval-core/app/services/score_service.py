@@ -72,6 +72,11 @@ _TASK_TO_MAPPER = {
     # MMMU tasks -> mmmu mapper
     "mmmu_multiple_choice": "mmmu",
     "mmmu_open": "mmmu",
+    # SafeRAG sub-tasks -> saferag mapper
+    "saferag_sn": "saferag",
+    "saferag_icc": "saferag",
+    "saferag_sa": "saferag",
+    "saferag_wdos": "saferag",
     # GDM Self-Reasoning tasks -> gdm_self_reasoning mapper
     "gdm_approved_directories": "gdm_self_reasoning",
     "gdm_calculator_improvement": "gdm_self_reasoning",
@@ -84,6 +89,11 @@ _TASK_TO_MAPPER = {
     "gdm_oversight_frequency": "gdm_self_reasoning",
     "gdm_read_logs": "gdm_self_reasoning",
     "gdm_turn_off_filters": "gdm_self_reasoning",
+    # GDM Stealth tasks -> gdm_stealth mapper
+    "gdm_oversight_pattern": "gdm_stealth",
+    "gdm_classifier_evasion": "gdm_stealth",
+    "gdm_cover_your_tracks": "gdm_stealth",
+    "gdm_strategic_rule_breaking": "gdm_stealth",
 }
 
 
@@ -213,15 +223,31 @@ def get_model_detail(model_name: str) -> Optional[ModelResult]:
 
 def get_job_detail(job) -> Optional[ModelResult]:
     """获取特定 job 的评测结果（run-scoped, not model-aggregated）"""
-    from .result_reader import get_results_for_job
+    from .result_reader import get_results_for_job, get_results_by_eval_files
 
-    task_names = [t.task_name for t in job.tasks]
-    results = get_results_for_job(
-        model_id=job.model_id,
-        task_names=task_names,
-        start_time=job.created_at,
-        end_time=job.completed_at,
-    )
+    # Prefer precise file-path matching (bug #53: avoids time-window overlap)
+    eval_file_map = {
+        t.task_name: t.eval_file
+        for t in job.tasks
+        if t.eval_file and t.status.value == "completed"
+    }
+    if eval_file_map:
+        results = get_results_by_eval_files(eval_file_map)
+    else:
+        results = []
+
+    # Fall back to time-window matching for tasks without eval_file
+    # (older jobs created before file tracking was added)
+    covered_tasks = {r.task for r in results}
+    remaining_tasks = [t.task_name for t in job.tasks if t.task_name not in covered_tasks]
+    if remaining_tasks:
+        fallback = get_results_for_job(
+            model_id=job.model_id,
+            task_names=remaining_tasks,
+            start_time=job.created_at,
+            end_time=job.completed_at,
+        )
+        results.extend(fallback)
     if not results:
         return None
 

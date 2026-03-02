@@ -159,6 +159,27 @@ def get_results_for_job(model_id: str, task_names: List[str],
     return results
 
 
+def get_results_by_eval_files(eval_files: Dict[str, str]) -> List[EvalFileResult]:
+    """Get results by directly reading specific .eval files (bug #53).
+
+    Args:
+        eval_files: mapping of task_name -> relative path from RESULTS_DIR
+
+    Returns:
+        List of parsed results, one per file. Skips files that don't exist or
+        fail to parse.
+    """
+    results: List[EvalFileResult] = []
+    for task_name, rel_path in eval_files.items():
+        full_path = RESULTS_DIR / rel_path
+        if not full_path.exists():
+            continue
+        result = _parse_eval_file(str(full_path))
+        if result is not None:
+            results.append(result)
+    return results
+
+
 # 各 benchmark 对应的首选 metric 名称
 # 按优先级排列，取第一个匹配的
 _METRIC_PRIORITY = {
@@ -229,6 +250,10 @@ _METRIC_PRIORITY = {
     "gdm_oversight_frequency": ["accuracy", "mean"],
     "gdm_read_logs": ["accuracy", "mean"],
     "gdm_turn_off_filters": ["accuracy", "mean"],
+    "gdm_oversight_pattern": ["accuracy", "mean"],
+    "gdm_classifier_evasion": ["accuracy", "mean"],
+    "gdm_cover_your_tracks": ["accuracy", "mean"],
+    "gdm_strategic_rule_breaking": ["accuracy", "mean"],
     "mind2web": ["accuracy"],
     "mind2web_sc": ["accuracy"],
     "assistant_bench_closed_book": ["assistant_bench_accuracy", "accuracy"],
