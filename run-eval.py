@@ -648,7 +648,40 @@ def run_eval(benchmark_name: str, task_spec: str, config: dict,
         )
     else:
         result = subprocess.run(cmd, env=env)
+
+    # Cleanup stale Docker networks after needs_docker tasks to prevent
+    # address pool exhaustion (Bug #91).  inspect_ai creates a new bridge
+    # network per compose run but does not always remove it on exit.
+    if needs_docker:
+        _cleanup_docker_networks()
+
     return result.returncode
+
+
+def _cleanup_docker_networks():
+    """Remove stale inspect-* Docker networks to prevent address pool exhaustion."""
+    try:
+        ls = subprocess.run(
+            ["docker", "network", "ls", "--format", "{{.Name}}", "--filter", "name=inspect-"],
+            capture_output=True, text=True, timeout=10,
+        )
+        if ls.returncode != 0:
+            return
+        networks = [n.strip() for n in ls.stdout.splitlines() if n.strip()]
+        if not networks:
+            return
+        removed = 0
+        for net in networks:
+            rm = subprocess.run(
+                ["docker", "network", "rm", net],
+                capture_output=True, text=True, timeout=10,
+            )
+            if rm.returncode == 0:
+                removed += 1
+        if removed:
+            print(f"[Docker cleanup] Removed {removed} stale inspect-* network(s)")
+    except Exception:
+        pass  # Best-effort cleanup — don't fail the task
 
 
 def main():

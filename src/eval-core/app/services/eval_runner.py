@@ -364,6 +364,9 @@ async def _run_job(
     job.completed_at = datetime.now(timezone.utc).isoformat()
     _save_jobs()
 
+    # Clean up stale Docker networks to prevent address pool exhaustion (Bug #91)
+    _cleanup_docker_networks()
+
     # Clean up handles
     _async_tasks.pop(job.id, None)
     _processes.pop(job.id, None)
@@ -557,6 +560,39 @@ def _cleanup_docker_containers(benchmarks: List[str]):
             logger.warning("Failed to clean up Docker containers for %s: %s", bench, e)
 
 
+def _cleanup_docker_networks():
+    """Remove stale inspect-* Docker networks to prevent address pool exhaustion (Bug #91).
+
+    inspect_ai creates a new bridge network per compose run but does not always
+    remove it on exit, especially after timeouts or cancellations.  Over time
+    the default Docker address pool fills up and *all* Docker-dependent benchmarks
+    fail with "all predefined address pools have been fully subnetted".
+    """
+    try:
+        ls = subprocess.run(
+            ["docker", "network", "ls", "--format", "{{.Name}}",
+             "--filter", "name=inspect-"],
+            capture_output=True, text=True, timeout=10,
+        )
+        if ls.returncode != 0:
+            return
+        networks = [n.strip() for n in ls.stdout.splitlines() if n.strip()]
+        if not networks:
+            return
+        removed = 0
+        for net in networks:
+            rm = subprocess.run(
+                ["docker", "network", "rm", net],
+                capture_output=True, text=True, timeout=10,
+            )
+            if rm.returncode == 0:
+                removed += 1
+        if removed:
+            logger.info("Docker network cleanup: removed %d stale inspect-* network(s)", removed)
+    except Exception as e:
+        logger.debug("Docker network cleanup skipped: %s", e)
+
+
 async def cancel_job(job_id: str) -> bool:
     """Cancel a running or pending evaluation job."""
     job = _jobs.get(job_id)
@@ -582,7 +618,12 @@ async def cancel_job(job_id: str) -> bool:
             None, _cleanup_docker_containers, docker_benchmarks,
         )
 
-    # 4. Update job status
+    # 4. Clean up stale Docker networks (Bug #91)
+    await asyncio.get_running_loop().run_in_executor(
+        None, _cleanup_docker_networks,
+    )
+
+    # 5. Update job status
     job.status = EvalStatus.CANCELLED
     job.completed_at = datetime.now(timezone.utc).isoformat()
     job.error = "Cancelled by user"
