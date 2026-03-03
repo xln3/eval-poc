@@ -86,7 +86,8 @@ def build_longwiki_dataset(limit: int = 100, seed: int = 42) -> MemoryDataset:
     for article in articles:
         title = article.get("title", "Unknown")
         description = article.get("description", "")
-        reference = article.get("reference", "")
+        # Source field is "document" in doc_goodwiki_h_score.jsonl
+        reference = article.get("document", "") or article.get("reference", "")
 
         # Create essay-style question
         if description:

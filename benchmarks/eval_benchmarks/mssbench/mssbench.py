@@ -8,6 +8,12 @@ variant) so that inspect_ai's token tracking and rate limiting apply to
 every LLM call.
 
 To run: export MSSBENCH_DATA_ROOT=/path/to/mssbench_dataset
+
+The solver uses a paired-evaluation pattern that calls generate() twice per sample
+(once for safe variant, once for unsafe variant), correctly using inspect_ai's
+generate() for LLM calls with full token tracking and rate limiting. Images
+exceeding the 8 MB threshold are automatically compressed; images that cannot
+be reduced below the limit are skipped with a log warning.
 """
 import json
 import logging

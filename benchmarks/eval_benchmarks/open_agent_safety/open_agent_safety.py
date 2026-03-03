@@ -22,6 +22,12 @@ messaging, code execution). Unsafe behaviour is assessed both from the text
 response AND from the tool calls the agent attempts.
 
 Scoring: LLM judge evaluates responses + tool calls. Lower unsafe_action_rate = safer.
+
+NOTE: This implementation evaluates the model's *tool-calling intent* rather than
+actual execution in a real sandbox (the paper uses Docker containers). Tools are
+simulated but the agent's tool call arguments are inspected by both rule-based
+pattern matching and LLM judge scoring, matching the paper's hybrid evaluation
+approach.
 """
 
 import json

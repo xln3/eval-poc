@@ -115,7 +115,8 @@ _TASK_TO_MAPPER = {
     "lab_bench_tableqa": "lab_bench",
     "lab_bench_dbqa": "lab_bench",
     "lab_bench_protocolqa": "lab_bench",
-    "lab_bench_cloningscenarios": "lab_bench",
+    "lab_bench_cloning_scenarios": "lab_bench",
+    "lab_bench_seqqa": "lab_bench",
     "lab_bench_safety": "lab_bench",
     # AgentHarm benign variant -> agentharm mapper (bug #77)
     "agentharm_benign": "agentharm",

@@ -940,6 +940,26 @@ TASK_META: Dict[str, Dict[str, str]] = {
     "survive_at_all_costs": {"display_name": "极端自保", "description": "极端情境下模型产生失控自保行为的风险", "display_name_en": "Extreme Self-Preservation", "description_en": "Risk of the model producing uncontrolled self-preservation behaviors in extreme scenarios"},
     # --- browse_comp ---
     "browse_comp": {"display_name": "浏览信息误判", "description": "浏览代理回答网络问题时产生错误信息的风险", "display_name_en": "Browsing Information Misjudgment", "description_en": "Risk of browsing agents producing incorrect information when answering web-based questions"},
+    # --- iheval additional tasks (bug #69) ---
+    "iheval_task_lang_detect": {"display_name": "语言检测偏离", "description": "语言检测任务中偏离指令的风险", "display_name_en": "Language Detection Deviation", "description_en": "Risk of deviating from instructions in language detection tasks"},
+    "iheval_tool_slack_user": {"display_name": "Slack 工具偏离", "description": "Slack 用户工具场景下偏离指令的风险", "display_name_en": "Slack Tool Deviation", "description_en": "Risk of deviating from instructions in Slack user tool scenarios"},
+    # --- privacylens vignette probing ---
+    "privacylens_probing_vignette": {"display_name": "隐私情境探测", "description": "基于情境小品的隐私信息泄露探测", "display_name_en": "Privacy Vignette Probing", "description_en": "Probing for privacy information leakage using scenario vignettes"},
+    # --- personalized_safety additional tasks ---
+    "personalized_safety_youth": {"display_name": "个性化安全（青少年）", "description": "面向青少年的高风险个性化安全评测", "display_name_en": "Personalized Safety (Youth)", "description_en": "High-risk personalized safety evaluation targeting youth populations"},
+    "personalized_safety_elderly": {"display_name": "个性化安全（老年人）", "description": "面向老年人群体的个性化安全评测", "display_name_en": "Personalized Safety (Elderly)", "description_en": "Personalized safety evaluation targeting elderly populations"},
+    "personalized_safety_healthcare": {"display_name": "个性化安全（医疗健康）", "description": "医疗健康场景的个性化安全评测", "display_name_en": "Personalized Safety (Healthcare)", "description_en": "Personalized safety evaluation in healthcare scenarios"},
+    # --- wmdp_local tasks ---
+    "wmdp_local_bio": {"display_name": "生物武器知识泄露（本地）", "description": "本地评测模型泄露生物武器相关危险知识的风险", "display_name_en": "Bio-Weapon Knowledge Leakage (Local)", "description_en": "Local evaluation of risk of leaking dangerous biological weapons knowledge"},
+    "wmdp_local_chem": {"display_name": "化学武器知识泄露（本地）", "description": "本地评测模型泄露化学武器相关危险知识的风险", "display_name_en": "Chem-Weapon Knowledge Leakage (Local)", "description_en": "Local evaluation of risk of leaking dangerous chemical weapons knowledge"},
+    "wmdp_local_cyber": {"display_name": "网络武器知识泄露（本地）", "description": "本地评测模型泄露网络武器相关危险知识的风险", "display_name_en": "Cyber-Weapon Knowledge Leakage (Local)", "description_en": "Local evaluation of risk of leaking dangerous cyber weapons knowledge"},
+    # --- asb IPI variant ---
+    "asb_ipi": {"display_name": "智能体间接提示注入", "description": "智能体抵抗间接提示注入(IPI)攻击的安全评测", "display_name_en": "Agent IPI Attack", "description_en": "Agent resistance to Indirect Prompt Injection attacks"},
+    # --- osworld small variant ---
+    "osworld_small": {"display_name": "操作系统安全（精简）", "description": "精简版操作系统交互安全评测", "display_name_en": "OS Security (Small)", "description_en": "Compact version of OS interaction security evaluation"},
+    # --- assistant_bench task variants ---
+    "assistant_bench_closed_book": {"display_name": "助手任务（闭卷）", "description": "无外部工具场景下的助手任务安全评测", "display_name_en": "Assistant Task (Closed Book)", "description_en": "Assistant task safety evaluation without external tools"},
+    "assistant_bench_web_browser": {"display_name": "助手任务（浏览器）", "description": "使用网页浏览器场景下的助手任务安全评测", "display_name_en": "Assistant Task (Web Browser)", "description_en": "Assistant task safety evaluation with web browser access"},
 }
 
 
