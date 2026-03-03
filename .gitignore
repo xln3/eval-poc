@@ -41,6 +41,7 @@ Thumbs.db
 .venvs/
 hf-cache/
 logs/
+results
 results/
 eval_to_demo/evaldumps/
 
@@ -71,3 +72,9 @@ run-eval-salt.py
 token_stats_*.py
 
 third_party/
+
+# Data and runtime artifacts
+data/
+core.*
+internal/benchmark_report_zh.md
+internal/benchmark_samples.json
