@@ -50,9 +50,6 @@ node_modules/
 dist/
 *.local
 
-# Cloned upstream repos (not submodules)
-upstream/cve-bench/
-
 # Claude Code config (personal)
 .claude/
 **/.claude/

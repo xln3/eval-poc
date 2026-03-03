@@ -45,7 +45,6 @@ from preflight import (
 # 项目根目录
 PROJECT_ROOT = Path(__file__).parent.resolve()
 VENVS_DIR = PROJECT_ROOT / ".venvs"
-UPSTREAM_DIR = PROJECT_ROOT / "upstream"
 LOCAL_BENCH_DIR = PROJECT_ROOT / "benchmarks" / "eval_benchmarks"
 INDEXES_DIR = PROJECT_ROOT / "benchmarks" / "indexes"
 TOOLS_DIR = PROJECT_ROOT / "benchmarks" / "tools"
@@ -119,11 +118,10 @@ def setup_benchmark_env(benchmark_name: str, config: dict, force: bool = False) 
         print(result.stderr)
         return False
 
-    # 安装 inspect_ai
+    # 安装 inspect_ai (from PyPI)
     print(f"  安装 inspect_ai...")
     result = subprocess.run(
-        ["uv", "pip", "install", "-p", str(venv_path),
-         "-e", str(UPSTREAM_DIR / "inspect_ai")],
+        ["uv", "pip", "install", "-p", str(venv_path), "inspect-ai"],
         capture_output=True,
         text=True
     )
@@ -132,23 +130,16 @@ def setup_benchmark_env(benchmark_name: str, config: dict, force: bool = False) 
         print(result.stderr)
         return False
 
-    # 检查 upstream/inspect_evals 子模块是否已初始化
-    inspect_evals_dir = UPSTREAM_DIR / "inspect_evals"
-    if not (inspect_evals_dir / "pyproject.toml").exists():
-        print(f"  错误: upstream/inspect_evals 未初始化。请运行:")
-        print(f"    git submodule update --init --recursive")
-        return False
-
-    # 始终安装 inspect_evals（所有 benchmark 都需要）
-    install_spec = str(inspect_evals_dir)
+    # 安装 inspect_evals (from PyPI)
+    install_spec = "inspect-evals"
     if extras:
         extras_str = ",".join(extras)
-        install_spec = f"{install_spec}[{extras_str}]"
+        install_spec = f"inspect-evals[{extras_str}]"
 
     extras_display = f"[{','.join(extras)}]" if extras else ""
     print(f"  安装 inspect_evals{extras_display}...")
     result = subprocess.run(
-        ["uv", "pip", "install", "-p", str(venv_path), "-e", install_spec],
+        ["uv", "pip", "install", "-p", str(venv_path), install_spec],
         capture_output=True,
         text=True
     )
@@ -435,7 +426,7 @@ def run_eval(benchmark_name: str, task_spec: str, config: dict,
              task_config: dict = None,
              no_index: bool = False, index_file: Path = None,
              api_base: str = None, api_key: str = None,
-             providers: dict = None,
+             models: dict = None,
              max_connections: int = None, max_samples: int = None) -> int:
     """运行评估"""
 
@@ -481,35 +472,28 @@ def run_eval(benchmark_name: str, task_spec: str, config: dict,
         if not env.get(env_key):
             env[env_key] = env_default
 
-    # 确定 judge model
+    # 确定 judge model (通过 models: 字典解析短名称 → 完整 inspect_ai 模型名)
+    models = models or {}
     effective_judge = judge_model or config.get("judge_model")
     if effective_judge:
-        effective_judge = normalize_model_name(effective_judge)
-
-    # 解析 model_providers
-    providers = providers or {}
-
-    # Judge provider -> 设置 JUDGE_BASE_URL / JUDGE_API_KEY 供 scorer 读取
-    judge_provider_name = config.get("judge_provider")
-    if judge_provider_name:
-        jp = providers.get(judge_provider_name, {})
-        if jp.get("base_url"):
-            env["JUDGE_BASE_URL"] = jp["base_url"]
-        jk_env = jp.get("api_key_env")
-        if jk_env:
-            jk_val = os.environ.get(jk_env, "")
-            if jk_val:
-                env["JUDGE_API_KEY"] = jk_val
-
-    # Main model provider（仅在 CLI 未显式指定 api_base 时生效）
-    model_provider_name = config.get("model_provider")
-    if model_provider_name and not api_base:
-        mp = providers.get(model_provider_name, {})
-        if mp.get("base_url"):
-            api_base = mp["base_url"]
-        mk_env = mp.get("api_key_env")
-        if mk_env and not api_key:
-            api_key = os.environ.get(mk_env)
+        model_def = models.get(effective_judge, {})
+        if model_def:
+            # 从 models: 定义构建完整模型名
+            provider = model_def.get("provider", "openai")
+            effective_judge = f"{provider}/{effective_judge}"
+            # 设置 JUDGE_BASE_URL / JUDGE_API_KEY 供 scorer 读取
+            if model_def.get("base_url"):
+                env["JUDGE_BASE_URL"] = model_def["base_url"]
+            api_key_env_name = model_def.get("api_key_env")
+            if api_key_env_name:
+                jk_val = os.environ.get(api_key_env_name, "")
+                if jk_val:
+                    env["JUDGE_API_KEY"] = jk_val
+        else:
+            # 未在 models: 中定义，回退到自动 provider 前缀
+            effective_judge = normalize_model_name(effective_judge)
+        # 始终设置 JUDGE_MODEL_NAME 供本地 scorer (读取 env var) 使用
+        env["JUDGE_MODEL_NAME"] = effective_judge.split("/", 1)[-1] if "/" in effective_judge else effective_judge
 
     # 处理索引文件
     sample_ids = None

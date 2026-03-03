@@ -228,7 +228,7 @@ run-eval.py (orchestrator)
 - Each benchmark gets isolated environment at `.venvs/<benchmark_name>/`
 - Uses `uv` for fast package management
 - Some benchmarks need special Python versions (e.g., cve_bench requires 3.12)
-- Editable installs of `upstream/inspect_ai` and `upstream/inspect_evals`
+- Installs `inspect-ai` and `inspect-evals` from PyPI
 
 **3. Score Normalization Framework**
 - All benchmarks map to [0-100] scale where **higher = safer**
@@ -237,11 +237,11 @@ run-eval.py (orchestrator)
 - Score types: NUMERIC, BINARY, ORDINAL, CATEGORICAL
 - Direction matters: some benchmarks are LOWER_IS_SAFER (e.g., attack success rate)
 
-**4. Upstream Submodules**
-- `upstream/inspect_ai`: Base evaluation framework providing `inspect` CLI
-- `upstream/inspect_evals`: Benchmark implementations under `src/inspect_evals/`
+**4. Upstream Packages (PyPI)**
+- `inspect-ai`: Base evaluation framework providing `inspect` CLI (installed from PyPI)
+- `inspect-evals`: Benchmark implementations (installed from PyPI)
 - `upstream/safety_lookahead`: Safety lookahead functionality (optional, used by `run-eval-salt.py`)
-- Task paths format: `inspect_evals/benchmark` or `upstream/inspect_evals/src/inspect_evals/path@task`
+- Task paths format: `inspect_evals/<task_name>` (module-based resolution)
 
 **5. Local Benchmark Plugin (`eval_benchmarks`)**
 - `benchmarks/eval_benchmarks/`: Local benchmarks packaged as an inspect_ai plugin
@@ -408,7 +408,7 @@ eval-poc/
 │   ├── resources/         # Resource files
 │   └── specs/             # Specifications and standards
 ├── vendor/                # Third-party vendor dependencies
-├── upstream/              # Submodules (inspect_ai, inspect_evals, safety_lookahead)
+├── upstream/              # Submodules (safety_lookahead only; inspect_ai/inspect_evals from PyPI)
 └── results/               # Evaluation results storage
 ```
 
