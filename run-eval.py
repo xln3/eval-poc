@@ -583,7 +583,13 @@ def run_eval(benchmark_name: str, task_spec: str, config: dict,
         # task 级别的 model_roles 覆盖 benchmark 级别
         model_roles.update(task_config.get("model_roles", {}))
     for role, role_model in model_roles.items():
-        role_model = normalize_model_name(role_model)
+        # 通过 models: 字典解析短名称
+        role_model_def = models.get(role_model, {})
+        if role_model_def:
+            role_provider = role_model_def.get("provider", "openai")
+            role_model = f"{role_provider}/{role_model}"
+        else:
+            role_model = normalize_model_name(role_model)
         cmd.extend(["--model-role", f"{role}={role_model}"])
 
     # 添加 task_args (来自 catalog.yaml)
@@ -886,7 +892,7 @@ def main():
                     index_file=args.index_file,
                     api_base=args.api_base,
                     api_key=args.api_key,
-                    providers=catalog.get("model_providers", {}),
+                    models=catalog.get("models", {}),
                     max_connections=args.max_connections,
                     max_samples=args.max_samples,
                 )
@@ -1011,7 +1017,7 @@ def main():
         index_file=args.index_file,
         api_base=args.api_base,
         api_key=args.api_key,
-        providers=catalog.get("model_providers", {}),
+        models=catalog.get("models", {}),
         max_connections=args.max_connections,
         max_samples=args.max_samples,
     )
