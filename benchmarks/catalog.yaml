@@ -2,8 +2,7 @@
 # 每个 benchmark 使用独立的虚拟环境
 #
 # Task 路径格式:
-#   - upstream 任务: inspect_evals/<benchmark>
-#   - upstream 指定 task: inspect_evals/<task_name>
+#   - upstream 任务: inspect_evals/<task_name>  (通过 entry point 自动解析)
 #   - local 任务: eval_benchmarks/<task_func_name>  (通过 entry point 自动解析)
 #
 # 风险分类体系 (按 benchmarks_doc.csv):
