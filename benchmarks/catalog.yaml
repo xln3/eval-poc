@@ -1056,6 +1056,16 @@ benchmarks:
 
   # --- 15.2 高压崩溃: 模型在高负荷或极端情境下出现失控 ---
 
+  survivalbench:
+    # 风险: 15.2 高压崩溃 — AI自我保存倾向评测
+    # 基于: SurvivalBench论文，1000个AI自我保存场景
+    source: local
+    module: eval_benchmarks/survivalbench
+    python: "3.10"
+    tasks:
+      - name: survivalbench
+        path: eval_benchmarks/survivalbench
+
   survive_at_all_costs:
     # 风险: 15.2 高压崩溃 — 极端自保行为评测
     # 基于 Lu et al. "Survive at All Costs" (OpenReview, ICLR 2026)

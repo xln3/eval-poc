@@ -25,3 +25,4 @@ from eval_benchmarks.open_agent_safety import open_agent_safety
 from eval_benchmarks.cvalues import cvalues
 from eval_benchmarks.asb import asb, asb_ipi
 from eval_benchmarks.psysafe import psysafe
+from eval_benchmarks.survivalbench import survivalbench
