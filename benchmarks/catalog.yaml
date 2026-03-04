@@ -416,14 +416,14 @@ benchmarks:
   cve_bench:
     # 风险: 5.1 网络安全 — CVE 漏洞利用评测
     # 依赖: Docker daemon, Python 3.12
-    source: upstream
-    module: inspect_evals/cve_bench
+    # 本地实现: upstream inspect_evals wrapper 与 cvebench 0.2.0 API 不兼容
+    source: local
+    module: eval_benchmarks/cve_bench
     python: "3.12"
     needs_docker: true
-    extras: [cve_bench]
     tasks:
       - name: cve_bench
-        path: inspect_evals/cve_bench
+        path: eval_benchmarks/cve_bench
         task_args:
           sandbox_type: docker
 

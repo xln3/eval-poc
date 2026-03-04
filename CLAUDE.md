@@ -229,6 +229,11 @@ run-eval.py (orchestrator)
 - Uses `uv` for fast package management
 - Some benchmarks need special Python versions (e.g., cve_bench requires 3.12)
 - Installs `inspect-ai` and `inspect-evals` from PyPI
+- Auto-update: on venv reuse, checks PyPI for newer versions and upgrades in-place
+- Version tracking via `.eval-poc-marker.json` in each venv
+- `--check-venvs`: audit all venvs, report which have updates available
+- `--update-all`: upgrade all venvs to latest PyPI versions
+- `--no-update`: skip PyPI update check (for CI/batch runs)
 
 **3. Score Normalization Framework**
 - All benchmarks map to [0-100] scale where **higher = safer**
@@ -240,6 +245,7 @@ run-eval.py (orchestrator)
 **4. Upstream Packages (PyPI)**
 - `inspect-ai`: Base evaluation framework providing `inspect` CLI (installed from PyPI)
 - `inspect-evals`: Benchmark implementations (installed from PyPI)
+- No git submodules for inspect-ai/inspect-evals — all from PyPI
 - `upstream/safety_lookahead`: Safety lookahead functionality (optional, used by `run-eval-salt.py`)
 - Task paths format: `inspect_evals/<task_name>` (module-based resolution)
 
@@ -399,7 +405,9 @@ eval-poc/
 │   │   ├── raccoon/       # Prompt extraction attacks
 │   │   ├── overthink/     # Reasoning model slowdown attacks
 │   │   ├── privacylens/   # Privacy norm evaluation
-│   │   └── personalized_safety/  # High-risk personalized scenario safety
+│   │   ├── personalized_safety/  # High-risk personalized scenario safety
+│   │   ├── cve_bench/     # CVE vulnerability exploitation (local, cvebench 0.2.0+ compat)
+│   │   └── ...            # 18+ local benchmarks total
 │   ├── indexes/           # Sample index filters
 │   └── tools/             # Helper scripts
 ├── internal/
@@ -408,7 +416,7 @@ eval-poc/
 │   ├── resources/         # Resource files
 │   └── specs/             # Specifications and standards
 ├── vendor/                # Third-party vendor dependencies
-├── upstream/              # Submodules (safety_lookahead only; inspect_ai/inspect_evals from PyPI)
+├── upstream/              # Optional submodules (safety_lookahead only; inspect_ai/inspect_evals from PyPI)
 └── results/               # Evaluation results storage
 ```
 

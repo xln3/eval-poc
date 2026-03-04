@@ -17,6 +17,8 @@
 环境管理:
     ./run-eval.py --setup <benchmark>    # 仅设置环境，不运行
     ./run-eval.py --setup-all            # 设置所有 benchmark 环境
+    ./run-eval.py --check-venvs          # 审计所有 venvs，报告可用更新
+    ./run-eval.py --update-all           # 升级所有 venvs 到最新 PyPI 版本
 """
 from __future__ import annotations
 
@@ -27,7 +29,7 @@ import os
 import re
 import subprocess
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 import yaml
@@ -50,11 +52,107 @@ INDEXES_DIR = PROJECT_ROOT / "benchmarks" / "indexes"
 TOOLS_DIR = PROJECT_ROOT / "benchmarks" / "tools"
 
 
+MARKER_FILE = ".eval-poc-marker.json"
+
+
 def load_catalog():
     """加载 benchmark 路由配置"""
     catalog_path = PROJECT_ROOT / "benchmarks" / "catalog.yaml"
     with open(catalog_path, "r") as f:
         return yaml.safe_load(f)
+
+
+def _get_installed_version(venv_path: Path, package: str) -> str | None:
+    """Get installed version of a package in a venv."""
+    try:
+        result = subprocess.run(
+            ["uv", "pip", "show", "-p", str(venv_path), package],
+            capture_output=True, text=True, timeout=10,
+        )
+        if result.returncode == 0:
+            for line in result.stdout.splitlines():
+                if line.startswith("Version:"):
+                    return line.split(":", 1)[1].strip()
+    except Exception:
+        pass
+    return None
+
+
+def _write_marker(venv_path: Path, source: str, extras: list[str] | None = None):
+    """Write version tracking marker after successful setup/upgrade."""
+    marker = {
+        "inspect_ai": _get_installed_version(venv_path, "inspect-ai"),
+        "inspect_evals": _get_installed_version(venv_path, "inspect-evals"),
+        "source": source,
+        "extras": extras or [],
+        "created": datetime.now(timezone.utc).isoformat(),
+    }
+    marker_path = venv_path / MARKER_FILE
+    marker_path.write_text(json.dumps(marker, indent=2))
+
+
+def _read_marker(venv_path: Path) -> dict | None:
+    """Read version tracking marker from a venv."""
+    marker_path = venv_path / MARKER_FILE
+    if not marker_path.exists():
+        return None
+    try:
+        return json.loads(marker_path.read_text())
+    except Exception:
+        return None
+
+
+def _check_pypi_updates(venv_path: Path, marker: dict, timeout: float = 8.0) -> bool:
+    """Check if PyPI has newer versions of inspect-ai or inspect-evals.
+
+    Returns True if updates are available, False otherwise.
+    Uses `uv pip install --dry-run --upgrade` for fast check.
+    """
+    try:
+        result = subprocess.run(
+            ["uv", "pip", "install", "-p", str(venv_path),
+             "--dry-run", "--upgrade", "inspect-ai", "inspect-evals"],
+            capture_output=True, text=True, timeout=timeout,
+        )
+        if result.returncode != 0:
+            return False
+        # If dry-run output contains "Would install" or "Would upgrade", updates exist
+        output = result.stdout + result.stderr
+        return "Would install" in output or "Would upgrade" in output
+    except subprocess.TimeoutExpired:
+        print("  PyPI update check timed out, using existing venv")
+        return False
+    except Exception:
+        return False
+
+
+def _upgrade_venv(venv_path: Path, extras: list[str] | None = None) -> bool:
+    """Upgrade inspect-ai and inspect-evals in an existing venv."""
+    print("  Upgrading inspect-ai + inspect-evals...")
+
+    result = subprocess.run(
+        ["uv", "pip", "install", "-p", str(venv_path),
+         "--upgrade", "inspect-ai"],
+        capture_output=True, text=True,
+    )
+    if result.returncode != 0:
+        print(f"  Warning: inspect-ai upgrade failed: {result.stderr[:200]}")
+        return False
+
+    install_spec = "inspect-evals"
+    if extras:
+        install_spec = f"inspect-evals[{','.join(extras)}]"
+
+    result = subprocess.run(
+        ["uv", "pip", "install", "-p", str(venv_path),
+         "--upgrade", install_spec],
+        capture_output=True, text=True,
+    )
+    if result.returncode != 0:
+        print(f"  Warning: inspect-evals upgrade failed: {result.stderr[:200]}")
+        return False
+
+    return True
 
 
 def sanitize_model_name(model_name: str) -> str:
@@ -87,7 +185,8 @@ def get_venv_inspect(benchmark_name: str) -> Path:
     return get_venv_path(benchmark_name) / "bin" / "inspect"
 
 
-def setup_benchmark_env(benchmark_name: str, config: dict, force: bool = False) -> bool:
+def setup_benchmark_env(benchmark_name: str, config: dict, force: bool = False,
+                        no_update: bool = False) -> bool:
     """
     为 benchmark 设置独立虚拟环境
 
@@ -102,17 +201,34 @@ def setup_benchmark_env(benchmark_name: str, config: dict, force: bool = False) 
     if venv_path.exists() and not force:
         inspect_path = get_venv_inspect(benchmark_name)
         if inspect_path.exists():
-            print(f"  环境已存在: {venv_path}")
+            # Auto-update check: compare marker against PyPI
+            if not no_update:
+                marker = _read_marker(venv_path)
+                if marker:
+                    if _check_pypi_updates(venv_path, marker):
+                        print(f"  PyPI updates available for {benchmark_name}, upgrading...")
+                        if _upgrade_venv(venv_path, extras):
+                            _write_marker(venv_path, source, extras)
+                            print(f"  Upgrade complete")
+                        else:
+                            print(f"  Upgrade failed, using existing versions")
+                    else:
+                        print(f"  环境已存在 (up to date): {venv_path}")
+                else:
+                    # No marker yet — write one for future checks
+                    _write_marker(venv_path, source, extras)
+                    print(f"  环境已存在: {venv_path} (marker written)")
+            else:
+                print(f"  环境已存在: {venv_path}")
             return True
 
     print(f"  创建环境: {venv_path} (Python {python_version})")
 
-    # 创建虚拟环境
-    result = subprocess.run(
-        ["uv", "venv", str(venv_path), "--python", python_version],
-        capture_output=True,
-        text=True
-    )
+    # 创建虚拟环境 (--clear to allow recreating existing venvs)
+    venv_cmd = ["uv", "venv", str(venv_path), "--python", python_version]
+    if venv_path.exists():
+        venv_cmd.append("--clear")
+    result = subprocess.run(venv_cmd, capture_output=True, text=True)
     if result.returncode != 0:
         print(f"  错误: 创建虚拟环境失败")
         print(result.stderr)
@@ -190,22 +306,8 @@ def setup_benchmark_env(benchmark_name: str, config: dict, force: bool = False) 
         print(result.stderr)
         return False
 
-    # cve_bench 需要单独安装 cvebench 包（uv extras 处理有问题）
-    # 新版 cvebench 已包含所有 challenges 和 docker 配置数据
-    if benchmark_name == "cve_bench":
-        print(f"  安装 cvebench...")
-        result = subprocess.run(
-            ["uv", "pip", "install", "-p", str(venv_path),
-             "cvebench @ git+https://github.com/Scott-Simmons/cve-bench.git@92541add2ebd89e5b15ed260eb5d0e9b5102c33e"],
-            capture_output=True,
-            text=True
-        )
-        if result.returncode != 0:
-            print(f"  错误: 安装 cvebench 失败")
-            print(result.stderr)
-            return False
-
     print(f"  环境设置完成")
+    _write_marker(venv_path, source, extras)
     return True
 
 
@@ -719,6 +821,21 @@ def main():
         help="强制重新创建环境"
     )
     parser.add_argument(
+        "--no-update",
+        action="store_true",
+        help="跳过 PyPI 更新检查 (用于 CI/批量运行)"
+    )
+    parser.add_argument(
+        "--check-venvs",
+        action="store_true",
+        help="审计所有 venvs，报告可用更新 (只读)"
+    )
+    parser.add_argument(
+        "--update-all",
+        action="store_true",
+        help="升级所有 venvs 到最新 PyPI 版本"
+    )
+    parser.add_argument(
         "--preflight",
         action="store_true",
         help="运行预检查，检测环境依赖"
@@ -807,6 +924,70 @@ def main():
             print()
 
         return 0 if passed else 1
+
+    # Audit all venvs (read-only)
+    if args.check_venvs:
+        print("Checking all benchmark venvs...\n")
+        VENVS_DIR.mkdir(parents=True, exist_ok=True)
+        total = outdated = missing = broken = 0
+        for name, config in benchmarks.items():
+            total += 1
+            venv_path = get_venv_path(name)
+            inspect_path = get_venv_inspect(name)
+            if not venv_path.exists():
+                print(f"  [{name}] MISSING — no venv")
+                missing += 1
+                continue
+            if not inspect_path.exists():
+                print(f"  [{name}] BROKEN — no inspect binary")
+                broken += 1
+                continue
+            marker = _read_marker(venv_path)
+            if not marker:
+                # Write marker for future checks
+                _write_marker(venv_path, config.get("source", "upstream"), config.get("extras", []))
+                marker = _read_marker(venv_path)
+                print(f"  [{name}] OK (marker written) — inspect-ai={marker.get('inspect_ai', '?')}, inspect-evals={marker.get('inspect_evals', '?')}")
+            else:
+                has_updates = _check_pypi_updates(venv_path, marker)
+                status = "UPDATES AVAILABLE" if has_updates else "up to date"
+                if has_updates:
+                    outdated += 1
+                print(f"  [{name}] {status} — inspect-ai={marker.get('inspect_ai', '?')}, inspect-evals={marker.get('inspect_evals', '?')}")
+
+        print(f"\nSummary: {total} benchmarks, {missing} missing, {broken} broken, {outdated} with updates available")
+        return 0
+
+    # Upgrade all venvs
+    if args.update_all:
+        print("Upgrading all benchmark venvs...\n")
+        VENVS_DIR.mkdir(parents=True, exist_ok=True)
+        upgraded = skipped = failed = 0
+        for name, config in benchmarks.items():
+            venv_path = get_venv_path(name)
+            inspect_path = get_venv_inspect(name)
+            if not venv_path.exists() or not inspect_path.exists():
+                print(f"  [{name}] skipped (no venv)")
+                skipped += 1
+                continue
+            extras = config.get("extras", [])
+            source = config.get("source", "upstream")
+            marker = _read_marker(venv_path)
+            if marker and not _check_pypi_updates(venv_path, marker):
+                print(f"  [{name}] already up to date")
+                skipped += 1
+                continue
+            print(f"  [{name}] upgrading...")
+            if _upgrade_venv(venv_path, extras):
+                _write_marker(venv_path, source, extras)
+                upgraded += 1
+                print(f"  [{name}] done")
+            else:
+                failed += 1
+                print(f"  [{name}] FAILED")
+
+        print(f"\nSummary: {upgraded} upgraded, {skipped} skipped, {failed} failed")
+        return 0
 
     # 一键测评
     if args.run_all:
@@ -922,7 +1103,7 @@ def main():
         success = True
         for name, config in benchmarks.items():
             print(f"\n[{name}]")
-            if not setup_benchmark_env(name, config, args.force):
+            if not setup_benchmark_env(name, config, args.force, args.no_update):
                 success = False
         return 0 if success else 1
 
@@ -933,7 +1114,7 @@ def main():
             return 1
         print(f"设置 {args.setup} 环境...")
         VENVS_DIR.mkdir(parents=True, exist_ok=True)
-        return 0 if setup_benchmark_env(args.setup, benchmarks[args.setup], args.force) else 1
+        return 0 if setup_benchmark_env(args.setup, benchmarks[args.setup], args.force, args.no_update) else 1
 
     # 列出样本 ID
     if args.list_samples:

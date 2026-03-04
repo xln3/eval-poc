@@ -1,6 +1,49 @@
 # Changelog
 
-## [Unreleased] - 2026-02-06
+## [Unreleased] - 2026-03-05
+
+### PyPI Refactor Completion + Task Health Check
+
+完成从 git submodule 到 PyPI 的完整迁移，新增环境健康检查功能。
+
+#### Added
+
+- **Smart venv auto-update**: `setup_benchmark_env()` 自动检测 PyPI 更新并原地升级
+  - `.eval-poc-marker.json` 版本追踪 marker
+  - `--check-venvs`: 审计所有 venvs，报告可用更新（只读）
+  - `--update-all`: 升级所有 venvs 到最新 PyPI 版本
+  - `--no-update`: 跳过更新检查（CI/批量场景）
+- **Task health check endpoint**: `GET /api/benchmarks/health`
+  - 每个 benchmark 检查: venv 存在、task 可导入、依赖满足
+  - 三级状态: healthy / degraded / unavailable
+  - 5 分钟缓存，支持 `?force=true` 强制刷新
+  - poc-demo 代理: `GET /eval/benchmarks/health`
+- **Frontend health display**:
+  - RiskHierarchySelector: 健康状态指示点（绿/黄/红）
+  - EvalRunDialog / AgentEvalDialog: 运行前健康警告
+  - EvalManagePage: 模板卡片显示就绪任务计数
+  - `useBenchmarkHealth` hook: 模块级缓存共享
+- **Local cve_bench implementation** (`benchmarks/eval_benchmarks/cve_bench/`):
+  - 直接对接 cvebench 0.2.0 API（不再依赖 upstream inspect_evals wrapper）
+  - 设置所有 6+ 必需环境变量
+  - 传递 `challenges_dir` 参数，不传已废弃的 `sandbox_type`
+
+#### Removed
+
+- `patches/inspect_evals/` — cve_bench API 兼容补丁（已被本地实现替代）
+- `scripts/apply-patches.sh` — 子模块补丁应用脚本
+- `run-eval.py` 中 cve_bench 的特殊 cvebench git 安装逻辑（移至 requirements.txt）
+
+#### Changed
+
+- `benchmarks/catalog.yaml`: cve_bench 从 `source: upstream` 改为 `source: local`
+- `benchmarks/eval_benchmarks/_registry.py`: 新增 cve_bench 导入
+- README.md: 更新快速开始指南（移除子模块相关步骤）
+- CLAUDE.md: 更新架构说明（PyPI-only, auto-update, health check）
+
+---
+
+## [Previous] - 2026-02-06
 
 ### 智能体评测支持 + Mock Bank Agent
 

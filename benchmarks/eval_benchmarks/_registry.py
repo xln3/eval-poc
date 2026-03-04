@@ -26,3 +26,4 @@ from eval_benchmarks.cvalues import cvalues
 from eval_benchmarks.asb import asb, asb_ipi
 from eval_benchmarks.psysafe import psysafe
 from eval_benchmarks.survivalbench import survivalbench
+from eval_benchmarks.cve_bench import cve_bench

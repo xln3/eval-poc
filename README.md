@@ -5,23 +5,22 @@ Agent 安全评估框架 - 基于 inspect_ai 的统一测评入口。
 ## 快速开始
 
 ```bash
-# 克隆并初始化子模块
-git clone --recursive <repo-url>
+git clone <repo-url>
 cd eval-poc
-
-# 或在已克隆的仓库中初始化子模块
-git submodule update --init --recursive
-
-# 应用本地 patches (必须)
-./scripts/apply-patches.sh
 
 # 复制环境变量模板
 cp .env.example .env
 # 编辑 .env 填入必要的配置 (API keys, HF_TOKEN 等)
+
+# 设置所有 benchmark 环境（从 PyPI 安装 inspect-ai + inspect-evals）
+./run-eval.py --setup-all
+
+# 检查环境健康状态
+./run-eval.py --check-venvs
 ```
 
-> **注意**: `git status` 会显示 `upstream/inspect_evals (modified content)`，这是预期行为。
-> 本地 patches 用于兼容 cvebench 0.2.0+ API，详见 [patches/inspect_evals/README.md](patches/inspect_evals/README.md)。
+> inspect-ai 和 inspect-evals 从 PyPI 安装，自动跟随上游更新。
+> 本地 benchmark 位于 `benchmarks/eval_benchmarks/`。
 
 ## 一键运行
 
