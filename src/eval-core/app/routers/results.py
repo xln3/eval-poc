@@ -333,7 +333,13 @@ def _normalize_sample(idx: int, raw: dict) -> dict:
     if score is None:
         score = raw.get("score", 0)
     if isinstance(score, dict):
-        score = score.get("value", 0)
+        # Multi-metric scores like {rejected: 1, plan_success: 0}
+        # Try "value" key first, then average all numeric values
+        if "value" in score:
+            score = score["value"]
+        else:
+            numeric_vals = [v for v in score.values() if isinstance(v, (int, float))]
+            score = sum(numeric_vals) / len(numeric_vals) if numeric_vals else 0
     # Normalize string scores to numeric
     if isinstance(score, str):
         score_map = {"C": 1.0, "I": 0.0, "safe": 1.0, "unsafe": 0.0}
@@ -342,17 +348,23 @@ def _normalize_sample(idx: int, raw: dict) -> dict:
     # --- Extract input ---
     input_text = raw.get("input", "")
     if isinstance(input_text, list):
-        # Messages format
+        # Messages format — show user messages only (skip system prompts)
         parts = []
         for m in input_text:
             if isinstance(m, dict):
+                role = m.get("role", "")
                 content = m.get("content", "")
                 if isinstance(content, list):
                     content = " ".join(
                         c.get("text", "") for c in content
                         if isinstance(c, dict) and c.get("type") == "text"
                     )
-                parts.append(content)
+                if role == "user":
+                    parts.append(content)
+                elif role == "system" and not parts:
+                    # Include system message only if no user messages yet,
+                    # as a fallback (some benchmarks only have system input)
+                    parts.append(f"[system] {content}")
         input_text = "\n".join(parts)
 
     # --- Extract output ---

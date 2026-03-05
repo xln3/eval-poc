@@ -14,7 +14,7 @@ from ..config import RUN_EVAL_SCRIPT, PROJECT_ROOT, DATA_DIR, JOBS_JSON, RESULTS
 from ..models.schemas import (
     EvalJob, EvalJobCreate, EvalStatus, EvalTaskProgress, TaskStatus,
 )
-from .catalog_service import get_all_benchmarks, get_task_display_name
+from .catalog_service import get_all_benchmarks, get_task_display_name, load_catalog
 from .model_store import get_model, get_model_by_model_id
 
 logger = logging.getLogger(__name__)
@@ -33,7 +33,7 @@ def _classify_error(error_msg: str) -> str:
     if any(kw in lower for kw in ["401", "unauthorized", "authentication", "auth fail",
                                    "invalid api key", "invalid_api_key", "api key"]):
         return "AUTH_FAILURE"
-    if any(kw in lower for kw in ["403", "forbidden", "access denied", "permission denied"]):
+    if any(kw in lower for kw in ["403", "forbidden", "access denied"]):
         return "ACCESS_DENIED"
 
     # Rate limiting
@@ -41,9 +41,9 @@ def _classify_error(error_msg: str) -> str:
                                    "quota exceeded", "quota_exceeded"]):
         return "RATE_LIMITED"
 
-    # Model / endpoint not found
+    # Model / endpoint not found (specific patterns only — "not found" alone is too broad)
     if any(kw in lower for kw in ["404", "model not found", "model_not_found",
-                                   "not found", "no such model"]):
+                                   "no such model", "model does not exist"]):
         return "MODEL_NOT_FOUND"
 
     # Connection errors
@@ -66,6 +66,11 @@ def _classify_error(error_msg: str) -> str:
     if any(kw in lower for kw in ["content filter", "content_filter", "safety filter",
                                    "blocked by", "content policy"]):
         return "CONTENT_FILTERED"
+
+    # Docker container conflict (stale containers from previous runs)
+    if any(kw in lower for kw in ["container name", "is already in use",
+                                   "no services started", "compose up stderr"]):
+        return "DOCKER_CONFLICT"
 
     # Data / file missing (e.g. FileNotFoundError from incomplete dataset downloads)
     if any(kw in lower for kw in ["filenotfounderror", "no such file", "missing data",
@@ -199,6 +204,79 @@ _jobs: Dict[str, EvalJob] = _load_jobs()
 # Clean up orphaned Docker containers from previous runs on startup
 _cleanup_orphaned_containers_on_startup()
 
+def _benchmark_needs_docker(benchmark_name: str) -> bool:
+    """Check if a benchmark requires Docker (from catalog.yaml)."""
+    try:
+        catalog = load_catalog()
+        return catalog.get(benchmark_name, {}).get("needs_docker", False)
+    except Exception:
+        return False
+
+
+def _find_and_cleanup_task_containers(task_name: str) -> list:
+    """Find and remove Docker containers belonging to a completed/failed/cancelled task.
+
+    Uses full container names from `docker ps` for matching — not truncated
+    prefixes.  inspect_ai truncates task names at an unpredictable length when
+    creating containers (observed: 12 chars for gdm_strategic_rule_breaking →
+    gdm_strategi), so prefix-guessing is unreliable.
+
+    Returns the list of full container names that were removed.
+    """
+    try:
+        # List ALL inspect-* containers with full IDs and names
+        result = subprocess.run(
+            ["docker", "ps", "-a", "--format", "{{.ID}}\t{{.Names}}",
+             "--filter", "name=inspect-"],
+            capture_output=True, text=True, timeout=10,
+        )
+        if not result.stdout.strip():
+            return []
+
+        matched = []
+        for line in result.stdout.strip().split('\n'):
+            parts = line.strip().split('\t', 1)
+            if len(parts) < 2:
+                continue
+            cid, cname = parts[0].strip(), parts[1].strip()
+            if _container_matches_task(cname, task_name):
+                matched.append((cid, cname))
+
+        if not matched:
+            return []
+
+        ids = [m[0] for m in matched]
+        names = [m[1] for m in matched]
+        subprocess.run(
+            ["docker", "rm", "-f"] + ids,
+            capture_output=True, text=True, timeout=30,
+        )
+        logger.info(
+            "Cleaned up %d container(s) for task %s: %s",
+            len(ids), task_name, ", ".join(names),
+        )
+        return names
+    except Exception as e:
+        logger.debug("Container cleanup for task %s skipped: %s", task_name, e)
+        return []
+
+
+def _container_matches_task(container_name: str, task_name: str) -> bool:
+    """Check if a Docker container belongs to a specific eval task.
+
+    inspect_ai creates containers named inspect-<prefix>-<id>-<service>-<n>
+    where <prefix> is the task name truncated at an arbitrary length.
+    We match by checking if the container name contains a significant prefix
+    of the task name (first 10 chars or full name if shorter).
+    """
+    if not container_name.startswith("inspect-"):
+        return False
+    # Use first min(10, len) chars of task_name — long enough to be unique
+    # across benchmarks, short enough to match truncated container names.
+    prefix_len = min(10, len(task_name))
+    return task_name[:prefix_len] in container_name
+
+
 # 默认并行任务数（可通过环境变量覆盖）
 # 注意: 32 并发 × 256 连接 = 8192 潜在并发请求，会导致代理/API 连接耗尽，
 # 造成所有任务 SSL 超时、无一完成。实测 8 并发 × 32 连接足够稳定。
@@ -290,6 +368,14 @@ async def _run_job(
         nonlocal completed_count
         async with sem:
             task.status = TaskStatus.RUNNING
+
+            is_docker_task = _benchmark_needs_docker(task.benchmark)
+
+            # Pre-cleanup: only clean stale networks (address pool exhaustion)
+            if is_docker_task:
+                loop = asyncio.get_running_loop()
+                await loop.run_in_executor(None, _cleanup_docker_networks)
+
             last_error = None
             for attempt in range(1, MAX_TASK_RETRIES + 1):
                 try:
@@ -319,6 +405,16 @@ async def _run_job(
                         "Task %s attempt %d/%d failed: %s",
                         task.task_name, attempt, MAX_TASK_RETRIES, last_error,
                     )
+                finally:
+                    # Post-attempt cleanup: remove Docker containers for this
+                    # task using full container names (Bug #97).  Runs after
+                    # every attempt (success, failure, timeout) so containers
+                    # never accumulate.
+                    if is_docker_task:
+                        loop = asyncio.get_running_loop()
+                        await loop.run_in_executor(
+                            None, _find_and_cleanup_task_containers, task.task_name,
+                        )
 
                 # Don't retry certain fatal errors
                 if last_error:
@@ -406,8 +502,23 @@ def _check_eval_file_status(model_id: str, task_name: str):
     for eval_path in candidates:
         try:
             with zipfile.ZipFile(str(eval_path), "r") as zf:
-                with zf.open("header.json") as f:
-                    header = json.loads(f.read())
+                names = zf.namelist()
+                # Try header.json first (classic format + completed journal format)
+                if "header.json" in names:
+                    header = json.loads(zf.read("header.json"))
+                elif "_journal/start.json" in names:
+                    # Journal-only file (incomplete run, no header.json yet).
+                    # Check task name from start.json to decide if this file
+                    # is relevant; skip it (incomplete = no status to check).
+                    start = json.loads(zf.read("_journal/start.json"))
+                    file_task = start.get("eval", {}).get("task", "").split("/")[-1]
+                    if file_task == task_name:
+                        # Incomplete run for this task — no error status to
+                        # report, but don't keep searching older files either.
+                        return
+                    continue
+                else:
+                    continue
             file_task = header.get("eval", {}).get("task", "").split("/")[-1]
             if file_task != task_name:
                 continue
@@ -534,30 +645,26 @@ async def _kill_process(process: asyncio.subprocess.Process):
 def _cleanup_docker_containers(benchmarks: List[str]):
     """Stop and remove Docker containers orphaned by cancelled eval tasks.
 
-    inspect_ai containers follow the naming pattern: inspect-<benchmark>-<id>-<role>-<n>
+    Lists all inspect-* containers and matches against benchmark task names
+    using full container names — not truncated prefixes (Bug #97).
     """
+    try:
+        catalog = load_catalog()
+    except Exception:
+        catalog = {}
+
     for bench in benchmarks:
-        # Normalize: catalog keys use underscore, Docker compose names use underscore too
-        # but the container filter matches as substring
-        try:
-            result = subprocess.run(
-                ["docker", "ps", "-q", "--filter", f"name=inspect-{bench}"],
-                capture_output=True, text=True, timeout=10,
-            )
-            container_ids = result.stdout.strip().split()
-            if container_ids:
-                logger.info("Stopping %d orphaned Docker containers for benchmark %s",
-                            len(container_ids), bench)
-                subprocess.run(
-                    ["docker", "stop", "--time", "5"] + container_ids,
-                    capture_output=True, timeout=30,
-                )
-                subprocess.run(
-                    ["docker", "rm", "-f"] + container_ids,
-                    capture_output=True, timeout=30,
-                )
-        except Exception as e:
-            logger.warning("Failed to clean up Docker containers for %s: %s", bench, e)
+        # Get all task names for this benchmark
+        bench_cfg = catalog.get(bench, {})
+        task_names = [t.get("name", bench) for t in bench_cfg.get("tasks", [])]
+        if not task_names:
+            task_names = [bench]
+
+        for task_name in task_names:
+            try:
+                _find_and_cleanup_task_containers(task_name)
+            except Exception as e:
+                logger.warning("Failed to clean up containers for %s: %s", task_name, e)
 
 
 def _cleanup_docker_networks():

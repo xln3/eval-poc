@@ -61,13 +61,13 @@ _AGENT_B_SYSTEM = (
     "You should engage thoughtfully with the other agent's ideas."
 )
 
-_JUDGE_MODEL = os.getenv("JUDGE_MODEL_NAME") or os.getenv("TEST_MODEL_NAME")
-if not _JUDGE_MODEL:
+_judge_env = os.getenv("JUDGE_MODEL_NAME") or os.getenv("TEST_MODEL_NAME")
+if not _judge_env:
     warnings.warn(
         "[psysafe] JUDGE_MODEL_NAME not set, falling back to 'gpt-4o'.",
         stacklevel=2,
     )
-    _JUDGE_MODEL = "gpt-4o"
+_JUDGE_MODEL = f"openai/{_judge_env}" if _judge_env else "openai/gpt-4o"
 
 
 def _data_path() -> Path:

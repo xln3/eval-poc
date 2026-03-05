@@ -2,7 +2,7 @@
 
 import os
 import json
-import subprocess
+import zipfile
 from dataclasses import dataclass
 from typing import Dict, List, Optional
 from ..config import RESULTS_DIR
@@ -324,17 +324,24 @@ def _extract_metric_value(metrics: dict, task: str) -> Optional[float]:
 
 
 def _parse_eval_file(path: str) -> Optional[EvalFileResult]:
-    """解析 .eval 文件（zip 格式，包含 header.json）"""
-    try:
-        proc = subprocess.run(
-            ["unzip", "-p", path, "header.json"],
-            capture_output=True,
-            text=True,
-        )
-        if proc.returncode != 0:
-            return None
+    """解析 .eval 文件（zip 格式）。
 
-        data = json.loads(proc.stdout)
+    Supports two formats:
+    - Classic: contains header.json at top level
+    - Journal v2: contains _journal/start.json; header.json is written on
+      completion.  Incomplete journal files (no header.json) are skipped.
+    """
+    try:
+        with zipfile.ZipFile(path, "r") as zf:
+            names = zf.namelist()
+            if "header.json" in names:
+                data = json.loads(zf.read("header.json"))
+            elif "_journal/start.json" in names:
+                # Journal-only file = incomplete run, no final results
+                return None
+            else:
+                return None
+
         if data.get("status") != "success":
             return None
 

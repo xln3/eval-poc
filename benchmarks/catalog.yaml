@@ -397,6 +397,7 @@ benchmarks:
     module: eval_benchmarks/privacylens
     python: "3.10"
     judge_model: alicloud-qwen3.5-plus
+    judge_param: judge_model
     tasks:
       - name: privacylens_probing
         path: eval_benchmarks/privacylens_probing

@@ -23,10 +23,12 @@
 from __future__ import annotations
 
 import argparse
+import fcntl
 import fnmatch
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 from datetime import datetime, timezone
@@ -191,124 +193,147 @@ def setup_benchmark_env(benchmark_name: str, config: dict, force: bool = False,
     为 benchmark 设置独立虚拟环境
 
     返回 True 表示成功，False 表示失败
+    Uses per-benchmark file lock to prevent concurrent venv creation races.
     """
     venv_path = get_venv_path(benchmark_name)
     python_version = config.get("python", "3.10")
     extras = config.get("extras", [])
     source = config.get("source", "upstream")
 
-    # 检查是否已存在
-    if venv_path.exists() and not force:
-        inspect_path = get_venv_inspect(benchmark_name)
-        if inspect_path.exists():
-            # Auto-update check: compare marker against PyPI
-            if not no_update:
-                marker = _read_marker(venv_path)
-                if marker:
-                    if _check_pypi_updates(venv_path, marker):
-                        print(f"  PyPI updates available for {benchmark_name}, upgrading...")
-                        if _upgrade_venv(venv_path, extras):
-                            _write_marker(venv_path, source, extras)
-                            print(f"  Upgrade complete")
+    # Per-benchmark file lock to prevent concurrent venv creation
+    VENVS_DIR.mkdir(parents=True, exist_ok=True)
+    lock_file_path = VENVS_DIR / f"{benchmark_name}.setup.lock"
+    lock_fd = open(lock_file_path, "w")
+    try:
+        print(f"  Acquiring setup lock for {benchmark_name}...")
+        fcntl.flock(lock_fd, fcntl.LOCK_EX)
+
+        # 检查是否已存在 (re-check under lock — another process may have created it)
+        if venv_path.exists() and not force:
+            inspect_path = get_venv_inspect(benchmark_name)
+            if inspect_path.exists():
+                # Auto-update check: compare marker against PyPI
+                if not no_update:
+                    marker = _read_marker(venv_path)
+                    if marker:
+                        if _check_pypi_updates(venv_path, marker):
+                            print(f"  PyPI updates available for {benchmark_name}, upgrading...")
+                            if _upgrade_venv(venv_path, extras):
+                                _write_marker(venv_path, source, extras)
+                                print(f"  Upgrade complete")
+                            else:
+                                print(f"  Upgrade failed, using existing versions")
                         else:
-                            print(f"  Upgrade failed, using existing versions")
+                            print(f"  环境已存在 (up to date): {venv_path}")
                     else:
-                        print(f"  环境已存在 (up to date): {venv_path}")
+                        # No marker yet — write one for future checks
+                        _write_marker(venv_path, source, extras)
+                        print(f"  环境已存在: {venv_path} (marker written)")
                 else:
-                    # No marker yet — write one for future checks
-                    _write_marker(venv_path, source, extras)
-                    print(f"  环境已存在: {venv_path} (marker written)")
-            else:
-                print(f"  环境已存在: {venv_path}")
-            return True
+                    print(f"  环境已存在: {venv_path}")
+                return True
 
-    print(f"  创建环境: {venv_path} (Python {python_version})")
+        print(f"  创建环境: {venv_path} (Python {python_version})")
 
-    # 创建虚拟环境 (--clear to allow recreating existing venvs)
-    venv_cmd = ["uv", "venv", str(venv_path), "--python", python_version]
-    if venv_path.exists():
-        venv_cmd.append("--clear")
-    result = subprocess.run(venv_cmd, capture_output=True, text=True)
-    if result.returncode != 0:
-        print(f"  错误: 创建虚拟环境失败")
-        print(result.stderr)
-        return False
+        # 创建虚拟环境 (--clear to allow recreating existing venvs)
+        venv_cmd = ["uv", "venv", str(venv_path), "--python", python_version]
+        if venv_path.exists():
+            venv_cmd.append("--clear")
+        result = subprocess.run(venv_cmd, capture_output=True, text=True)
+        if result.returncode != 0:
+            print(f"  错误: 创建虚拟环境失败")
+            print(result.stderr)
+            return False
 
-    # 安装 inspect_ai (from PyPI)
-    print(f"  安装 inspect_ai...")
-    result = subprocess.run(
-        ["uv", "pip", "install", "-p", str(venv_path), "inspect-ai"],
-        capture_output=True,
-        text=True
-    )
-    if result.returncode != 0:
-        print(f"  错误: 安装 inspect_ai 失败")
-        print(result.stderr)
-        return False
-
-    # 安装 inspect_evals (from PyPI)
-    install_spec = "inspect-evals"
-    if extras:
-        extras_str = ",".join(extras)
-        install_spec = f"inspect-evals[{extras_str}]"
-
-    extras_display = f"[{','.join(extras)}]" if extras else ""
-    print(f"  安装 inspect_evals{extras_display}...")
-    result = subprocess.run(
-        ["uv", "pip", "install", "-p", str(venv_path), install_spec],
-        capture_output=True,
-        text=True
-    )
-    if result.returncode != 0:
-        print(f"  错误: 安装 inspect_evals 失败")
-        print(result.stderr)
-        return False
-
-    # Local benchmark: 额外安装 eval_benchmarks 包
-    if source == "local":
-        print(f"  安装 eval_benchmarks package...")
-        benchmarks_dir = PROJECT_ROOT / "benchmarks"
+        # 安装 inspect_ai (from PyPI)
+        print(f"  安装 inspect_ai...")
         result = subprocess.run(
-            ["uv", "pip", "install", "-p", str(venv_path), "-e", str(benchmarks_dir)],
+            ["uv", "pip", "install", "-p", str(venv_path), "inspect-ai"],
             capture_output=True,
             text=True
         )
         if result.returncode != 0:
-            print(f"  错误: 安装 eval_benchmarks package 失败")
+            print(f"  错误: 安装 inspect_ai 失败")
             print(result.stderr)
             return False
 
-        # 安装 benchmark 特有依赖 (requirements.txt)
-        module_name = config.get("module", "").split("/")[-1]
-        local_benchmark_dir = LOCAL_BENCH_DIR / module_name
-        requirements_file = local_benchmark_dir / "requirements.txt"
+        # 安装 inspect_evals (from PyPI)
+        install_spec = "inspect-evals"
+        if extras:
+            extras_str = ",".join(extras)
+            install_spec = f"inspect-evals[{extras_str}]"
 
-        if requirements_file.exists():
-            print(f"  安装 {module_name} 依赖...")
+        extras_display = f"[{','.join(extras)}]" if extras else ""
+        print(f"  安装 inspect_evals{extras_display}...")
+        result = subprocess.run(
+            ["uv", "pip", "install", "-p", str(venv_path), install_spec],
+            capture_output=True,
+            text=True
+        )
+        if result.returncode != 0:
+            print(f"  错误: 安装 inspect_evals 失败")
+            print(result.stderr)
+            return False
+
+        # Local benchmark: 额外安装 eval_benchmarks 包
+        if source == "local":
+            print(f"  安装 eval_benchmarks package...")
+            benchmarks_dir = PROJECT_ROOT / "benchmarks"
             result = subprocess.run(
-                ["uv", "pip", "install", "-p", str(venv_path), "-r", str(requirements_file)],
+                ["uv", "pip", "install", "-p", str(venv_path), "-e", str(benchmarks_dir)],
                 capture_output=True,
                 text=True
             )
             if result.returncode != 0:
-                print(f"  警告: 安装 {module_name} 依赖失败")
+                print(f"  错误: 安装 eval_benchmarks package 失败")
                 print(result.stderr)
+                return False
 
-    # 安装 openai (必需)
-    print(f"  安装 openai...")
-    result = subprocess.run(
-        ["uv", "pip", "install", "-p", str(venv_path), "openai"],
-        capture_output=True,
-        text=True
-    )
-    if result.returncode != 0:
-        print(f"  错误: 安装 openai 失败")
-        print(result.stderr)
-        return False
+            # 安装 benchmark 特有依赖 (requirements.txt)
+            module_name = config.get("module", "").split("/")[-1]
+            local_benchmark_dir = LOCAL_BENCH_DIR / module_name
+            requirements_file = local_benchmark_dir / "requirements.txt"
 
-    print(f"  环境设置完成")
-    _write_marker(venv_path, source, extras)
-    return True
+            if requirements_file.exists():
+                print(f"  安装 {module_name} 依赖...")
+                result = subprocess.run(
+                    ["uv", "pip", "install", "-p", str(venv_path), "-r", str(requirements_file)],
+                    capture_output=True,
+                    text=True
+                )
+                if result.returncode != 0:
+                    print(f"  警告: 安装 {module_name} 依赖失败")
+                    print(result.stderr)
+
+        # 安装 openai (必需)
+        print(f"  安装 openai...")
+        result = subprocess.run(
+            ["uv", "pip", "install", "-p", str(venv_path), "openai"],
+            capture_output=True,
+            text=True
+        )
+        if result.returncode != 0:
+            print(f"  错误: 安装 openai 失败")
+            print(result.stderr)
+            return False
+
+        # Sanity check: verify inspect_evals is importable
+        python_path = get_venv_python(benchmark_name)
+        check = subprocess.run(
+            [str(python_path), "-c", "import inspect_evals"],
+            capture_output=True, text=True
+        )
+        if check.returncode != 0:
+            print(f"  错误: inspect_evals 安装验证失败，删除 venv 重试")
+            shutil.rmtree(venv_path, ignore_errors=True)
+            return False
+
+        print(f"  环境设置完成")
+        _write_marker(venv_path, source, extras)
+        return True
+    finally:
+        fcntl.flock(lock_fd, fcntl.LOCK_UN)
+        lock_fd.close()
 
 
 def get_index_path(benchmark_name: str, task_name: str) -> Path:
@@ -595,6 +620,7 @@ def run_eval(benchmark_name: str, task_spec: str, config: dict,
             # 未在 models: 中定义，回退到自动 provider 前缀
             effective_judge = normalize_model_name(effective_judge)
         # 始终设置 JUDGE_MODEL_NAME 供本地 scorer (读取 env var) 使用
+        # 本地 scorer 自行添加 "openai/" 前缀，因此这里只传裸模型名
         env["JUDGE_MODEL_NAME"] = effective_judge.split("/", 1)[-1] if "/" in effective_judge else effective_judge
 
     # 处理索引文件
@@ -727,6 +753,16 @@ def run_eval(benchmark_name: str, task_spec: str, config: dict,
     # Docker-requiring benchmarks: 如果当前 shell 未加入 docker group，用 sg docker 包装
     # Root user (e.g. inside Docker container) can access Docker socket directly — skip sg
     needs_docker = config.get("needs_docker", False)
+
+    # Pre-cleanup for Docker benchmarks to avoid container name conflicts
+    # and network address pool exhaustion (Bug #98)
+    task_name_for_cleanup = task_config.get("name") if task_config else None
+    if needs_docker:
+        _docker_pre_cleanup(benchmark_name, task_name=task_name_for_cleanup)
+
+    # SafeAgentBench: auto-start AI2-THOR container if not running (Bug #107)
+    if benchmark_name == "safeagentbench":
+        _ensure_thor_server()
     if needs_docker and os.getuid() != 0 and "docker" not in os.popen("groups").read():
         # 构建 env 导出 + 命令字符串，通过 sg docker -c 运行
         env_exports = " ".join(f"{k}={v}" for k, v in env.items()
@@ -748,6 +784,68 @@ def run_eval(benchmark_name: str, task_spec: str, config: dict,
         _cleanup_docker_networks()
 
     return result.returncode
+
+
+def _docker_pre_cleanup(benchmark_name: str, task_name: str = None):
+    """Clean up stale Docker containers and networks BEFORE running a Docker benchmark.
+
+    Uses full container names for matching — not truncated prefixes (Bug #97/98).
+    """
+    effective_task = task_name or benchmark_name
+
+    # 1. List ALL inspect-* containers, match by task name prefix
+    try:
+        result = subprocess.run(
+            ["docker", "ps", "-a", "--format", "{{.ID}}\t{{.Names}}",
+             "--filter", "name=inspect-"],
+            capture_output=True, text=True, timeout=10,
+        )
+        if result.stdout.strip():
+            to_remove = []
+            prefix_len = min(10, len(effective_task))
+            task_prefix = effective_task[:prefix_len]
+            for line in result.stdout.strip().split('\n'):
+                parts = line.strip().split('\t', 1)
+                if len(parts) < 2:
+                    continue
+                cid, cname = parts[0].strip(), parts[1].strip()
+                if cname.startswith("inspect-") and task_prefix in cname:
+                    to_remove.append((cid, cname))
+            if to_remove:
+                ids = [c[0] for c in to_remove]
+                names = [c[1] for c in to_remove]
+                subprocess.run(
+                    ["docker", "rm", "-f"] + ids,
+                    capture_output=True, text=True, timeout=30,
+                )
+                print(f"  [Docker pre-cleanup] Removed {len(ids)} container(s): {', '.join(names)}")
+    except Exception as e:
+        print(f"  [Docker pre-cleanup] Container cleanup failed: {e}")
+
+    # 2. Remove unused inspect-* networks to free address pool
+    try:
+        result = subprocess.run(
+            ["docker", "network", "ls", "--filter", "name=inspect-",
+             "--format", "{{.ID}} {{.Name}}"],
+            capture_output=True, text=True, timeout=10,
+        )
+        if result.stdout.strip():
+            removed = 0
+            for line in result.stdout.strip().split('\n'):
+                parts = line.strip().split(None, 1)
+                if not parts:
+                    continue
+                nid = parts[0]
+                rm = subprocess.run(
+                    ["docker", "network", "rm", nid],
+                    capture_output=True, text=True, timeout=10,
+                )
+                if rm.returncode == 0:
+                    removed += 1
+            if removed:
+                print(f"  [Docker pre-cleanup] Removed {removed} stale network(s)")
+    except Exception as e:
+        print(f"  [Docker pre-cleanup] Network cleanup failed: {e}")
 
 
 def _cleanup_docker_networks():
@@ -774,6 +872,51 @@ def _cleanup_docker_networks():
             print(f"[Docker cleanup] Removed {removed} stale inspect-* network(s)")
     except Exception:
         pass  # Best-effort cleanup — don't fail the task
+
+
+def _ensure_thor_server(port: int = 9100, timeout: float = 120.0):
+    """Ensure the AI2-THOR Docker container is running for SafeAgentBench (Bug #107).
+
+    If the container is not responding on localhost:port, start it via docker compose.
+    """
+    import urllib.request
+    url = f"http://localhost:{port}/health"
+
+    # Quick check if already running
+    try:
+        resp = urllib.request.urlopen(url, timeout=5)
+        if resp.status == 200:
+            print(f"  [AI2-THOR] Server already running on port {port}")
+            return
+    except Exception:
+        pass
+
+    # Start the container
+    docker_dir = PROJECT_ROOT / "benchmarks" / "eval_benchmarks" / "safeagentbench" / "docker"
+    print(f"  [AI2-THOR] Starting container from {docker_dir}...")
+    result = subprocess.run(
+        ["docker", "compose", "up", "-d", "--build"],
+        cwd=str(docker_dir),
+        capture_output=True, text=True, timeout=300,
+    )
+    if result.returncode != 0:
+        print(f"  [AI2-THOR] Failed to start: {result.stderr[:500]}")
+        return
+
+    # Wait for readiness
+    import time
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        try:
+            resp = urllib.request.urlopen(url, timeout=5)
+            if resp.status == 200:
+                print(f"  [AI2-THOR] Server ready on port {port}")
+                return
+        except Exception:
+            pass
+        time.sleep(3.0)
+
+    print(f"  [AI2-THOR] WARNING: Server not ready after {timeout}s, proceeding anyway")
 
 
 def main():
