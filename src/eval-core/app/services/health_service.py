@@ -29,7 +29,11 @@ def _check_venv_ready(benchmark_name: str) -> bool:
 
 
 def _check_task_discoverable(benchmark_name: str, task_path: str) -> tuple[bool, str | None]:
-    """Try to import the task in the benchmark's venv.
+    """Check if a task is discoverable via the inspect_ai registry.
+
+    Task paths like 'inspect_evals/agentharm_benign' or 'eval_benchmarks/asb_ipi'
+    are resolved through inspect_ai's @task decorator registry, NOT as direct
+    Python module imports (task functions are not submodules).
 
     Returns (discoverable, error_message).
     """
@@ -37,12 +41,13 @@ def _check_task_discoverable(benchmark_name: str, task_path: str) -> tuple[bool,
     if not python_path.exists():
         return False, "Python binary not found in venv"
 
-    # Convert task path to Python import: inspect_evals/foo -> inspect_evals.foo
-    # or eval_benchmarks/foo -> eval_benchmarks.foo
-    module_path = task_path.replace("/", ".")
-
-    # Try to import the task module
-    check_code = f"import {module_path}"
+    # Use inspect_ai's registry_lookup to verify the task is registered.
+    # This mirrors how `inspect eval <task_path>` resolves tasks at runtime.
+    dotted_path = task_path.replace("/", ".")
+    check_code = (
+        f"from inspect_ai._eval.registry import registry_lookup; "
+        f"registry_lookup('task', '{dotted_path}')"
+    )
     try:
         result = subprocess.run(
             [str(python_path), "-c", check_code],
@@ -52,12 +57,9 @@ def _check_task_discoverable(benchmark_name: str, task_path: str) -> tuple[bool,
         if result.returncode == 0:
             return True, None
         else:
-            # Extract meaningful error from stderr
             stderr = result.stderr.strip()
-            # Get last line of traceback (the actual error)
             lines = stderr.splitlines()
             error_msg = lines[-1] if lines else "Import failed"
-            # Truncate long errors
             if len(error_msg) > 200:
                 error_msg = error_msg[:200] + "..."
             return False, error_msg
