@@ -212,25 +212,11 @@ def setup_benchmark_env(benchmark_name: str, config: dict, force: bool = False,
         if venv_path.exists() and not force:
             inspect_path = get_venv_inspect(benchmark_name)
             if inspect_path.exists():
-                # Auto-update check: compare marker against PyPI
-                if not no_update:
-                    marker = _read_marker(venv_path)
-                    if marker:
-                        if _check_pypi_updates(venv_path, marker):
-                            print(f"  PyPI updates available for {benchmark_name}, upgrading...")
-                            if _upgrade_venv(venv_path, extras):
-                                _write_marker(venv_path, source, extras)
-                                print(f"  Upgrade complete")
-                            else:
-                                print(f"  Upgrade failed, using existing versions")
-                        else:
-                            print(f"  环境已存在 (up to date): {venv_path}")
-                    else:
-                        # No marker yet — write one for future checks
-                        _write_marker(venv_path, source, extras)
-                        print(f"  环境已存在: {venv_path} (marker written)")
-                else:
-                    print(f"  环境已存在: {venv_path}")
+                # Auto-update is disabled by default — use --update-all to upgrade
+                print(f"  环境已存在: {venv_path}")
+                marker = _read_marker(venv_path)
+                if not marker:
+                    _write_marker(venv_path, source, extras)
                 return True
 
         print(f"  创建环境: {venv_path} (Python {python_version})")
@@ -966,7 +952,7 @@ def main():
     parser.add_argument(
         "--no-update",
         action="store_true",
-        help="跳过 PyPI 更新检查 (用于 CI/批量运行)"
+        help="(已弃用) 自动更新已默认关闭，此参数不再需要"
     )
     parser.add_argument(
         "--check-venvs",

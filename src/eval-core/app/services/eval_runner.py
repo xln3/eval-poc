@@ -366,79 +366,83 @@ async def _run_job(
 
     async def _run_with_sem(task: EvalTaskProgress):
         nonlocal completed_count
+        is_docker_task = _benchmark_needs_docker(task.benchmark)
+
         async with sem:
-            task.status = TaskStatus.RUNNING
+            await _do_run_task(task, is_docker_task)
 
-            is_docker_task = _benchmark_needs_docker(task.benchmark)
+    async def _do_run_task(task: EvalTaskProgress, is_docker_task: bool):
+        nonlocal completed_count
+        task.status = TaskStatus.RUNNING
 
-            # Pre-cleanup: only clean stale networks (address pool exhaustion)
-            if is_docker_task:
-                loop = asyncio.get_running_loop()
-                await loop.run_in_executor(None, _cleanup_docker_networks)
+        # Pre-cleanup: remove stale networks to reclaim address pool space
+        if is_docker_task:
+            loop = asyncio.get_running_loop()
+            await loop.run_in_executor(None, _cleanup_docker_networks)
 
-            last_error = None
-            for attempt in range(1, MAX_TASK_RETRIES + 1):
-                try:
-                    task.retry_count = attempt - 1
-                    await asyncio.wait_for(
-                        _run_single_task(job, task, connections),
-                        timeout=TASK_TIMEOUT_SECONDS,
+        last_error = None
+        for attempt in range(1, MAX_TASK_RETRIES + 1):
+            try:
+                task.retry_count = attempt - 1
+                await asyncio.wait_for(
+                    _run_single_task(job, task, connections),
+                    timeout=TASK_TIMEOUT_SECONDS,
+                )
+                task.status = TaskStatus.COMPLETED
+                # Record which .eval file this task produced (bug #53)
+                task.eval_file = _find_latest_eval_file(job.model_id, task.task_name)
+                last_error = None
+                break
+            except asyncio.TimeoutError:
+                last_error = (
+                    f"任务 {task.task_name} 执行超时 "
+                    f"(超过 {TASK_TIMEOUT_SECONDS}s, 第 {attempt}/{MAX_TASK_RETRIES} 次)"
+                )
+                logger.warning(last_error)
+            except asyncio.CancelledError:
+                # Job was cancelled — don't retry
+                last_error = "Cancelled"
+                break
+            except Exception as e:
+                last_error = str(e)
+                logger.warning(
+                    "Task %s attempt %d/%d failed: %s",
+                    task.task_name, attempt, MAX_TASK_RETRIES, last_error,
+                )
+            finally:
+                # Post-attempt cleanup: remove Docker containers for this
+                # task using full container names (Bug #97).  Runs after
+                # every attempt (success, failure, timeout) so containers
+                # never accumulate.
+                if is_docker_task:
+                    loop = asyncio.get_running_loop()
+                    await loop.run_in_executor(
+                        None, _find_and_cleanup_task_containers, task.task_name,
                     )
-                    task.status = TaskStatus.COMPLETED
-                    # Record which .eval file this task produced (bug #53)
-                    task.eval_file = _find_latest_eval_file(job.model_id, task.task_name)
-                    last_error = None
-                    break
-                except asyncio.TimeoutError:
-                    last_error = (
-                        f"任务 {task.task_name} 执行超时 "
-                        f"(超过 {TASK_TIMEOUT_SECONDS}s, 第 {attempt}/{MAX_TASK_RETRIES} 次)"
-                    )
-                    logger.warning(last_error)
-                except asyncio.CancelledError:
-                    # Job was cancelled — don't retry
-                    last_error = "Cancelled"
-                    break
-                except Exception as e:
-                    last_error = str(e)
-                    logger.warning(
-                        "Task %s attempt %d/%d failed: %s",
-                        task.task_name, attempt, MAX_TASK_RETRIES, last_error,
-                    )
-                finally:
-                    # Post-attempt cleanup: remove Docker containers for this
-                    # task using full container names (Bug #97).  Runs after
-                    # every attempt (success, failure, timeout) so containers
-                    # never accumulate.
-                    if is_docker_task:
-                        loop = asyncio.get_running_loop()
-                        await loop.run_in_executor(
-                            None, _find_and_cleanup_task_containers, task.task_name,
-                        )
 
-                # Don't retry certain fatal errors
-                if last_error:
-                    error_type = _classify_error(last_error)
-                    if error_type in _NON_RETRYABLE:
-                        logger.info(
-                            "Task %s: non-retryable error (%s), skipping remaining retries",
-                            task.task_name, error_type,
-                        )
-                        break
-
-                # Brief backoff before retry (2s, 4s, 8s, 16s)
-                if attempt < MAX_TASK_RETRIES:
-                    await asyncio.sleep(min(2 ** attempt, 16))
-
+            # Don't retry certain fatal errors
             if last_error:
-                task.status = TaskStatus.FAILED
-                task.retry_count = min(attempt, MAX_TASK_RETRIES) - 1
-                task.error_type = _classify_error(last_error)
-                task.error = last_error
+                error_type = _classify_error(last_error)
+                if error_type in _NON_RETRYABLE:
+                    logger.info(
+                        "Task %s: non-retryable error (%s), skipping remaining retries",
+                        task.task_name, error_type,
+                    )
+                    break
 
-            completed_count += 1
-            job.progress = (completed_count / total) * 100 if total > 0 else 100
-            _save_jobs()
+            # Brief backoff before retry (2s, 4s, 8s, 16s)
+            if attempt < MAX_TASK_RETRIES:
+                await asyncio.sleep(min(2 ** attempt, 16))
+
+        if last_error:
+            task.status = TaskStatus.FAILED
+            task.retry_count = min(attempt, MAX_TASK_RETRIES) - 1
+            task.error_type = _classify_error(last_error)
+            task.error = last_error
+
+        completed_count += 1
+        job.progress = (completed_count / total) * 100 if total > 0 else 100
+        _save_jobs()
 
     # Run all tasks with bounded concurrency
     await asyncio.gather(*[_run_with_sem(t) for t in job.tasks])

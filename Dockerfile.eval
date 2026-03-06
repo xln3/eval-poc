@@ -32,6 +32,10 @@ COPY score_mapper.py .
 COPY report_generator.py .
 COPY benchmarks/catalog.yaml ./benchmarks/catalog.yaml
 
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
 EXPOSE 8001
 
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8001", "--workers", "1"]
