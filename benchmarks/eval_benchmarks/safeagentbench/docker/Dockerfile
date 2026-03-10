@@ -3,10 +3,11 @@ FROM nvidia/cuda:12.2.2-runtime-ubuntu22.04
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
 
-# China mirrors for faster builds
-RUN sed -i 's|archive.ubuntu.com|mirrors.aliyun.com|g' /etc/apt/sources.list && \
-    sed -i 's|security.ubuntu.com|mirrors.aliyun.com|g' /etc/apt/sources.list
-ENV PIP_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple
+# Use proxy for package downloads (Docker bridge gateway → host proxy)
+# Tsinghua mirror returns 403 for some packages (e.g. ai2thor), so use
+# upstream PyPI through proxy instead.
+ENV PIP_INDEX_URL=https://pypi.org/simple
+ENV PIP_TRUSTED_HOST=pypi.org
 
 # Vulkan + X11 libs required by AI2-THOR CloudRendering
 RUN apt-get update && apt-get install -y --no-install-recommends \

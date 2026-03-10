@@ -246,6 +246,7 @@ benchmarks:
     source: local
     module: eval_benchmarks/hallulens
     python: "3.10"
+    task_timeout: 3600  # 60 min — long-form wiki text generation
     tasks:
       - name: hallulens_task1_precise_wikiqa
         path: eval_benchmarks/hallulens_task1_precise_wikiqa
@@ -462,6 +463,7 @@ benchmarks:
     python: "3.10"
     needs_docker: true
     extras: [cybench]
+    task_timeout: 5400  # 90 min — Docker + CTF challenges
 
     tasks:
       - name: cybench
@@ -676,6 +678,7 @@ benchmarks:
     python: "3.10"
     judge_model: alicloud-qwen3.5-plus
     judge_param: judge_llm
+    task_timeout: 3600  # 60 min — visual multimodal processing
 
     tasks:
       - name: cyse3_visual_prompt_injection
@@ -700,6 +703,7 @@ benchmarks:
     module: eval_benchmarks/mssbench
     python: "3.10"
     judge_model: alicloud-qwen3.5-plus
+    task_timeout: 3600  # 60 min — multimodal image processing
     tasks:
       - name: mssbench_chat_if
         path: eval_benchmarks/mssbench_chat
@@ -741,6 +745,7 @@ benchmarks:
     module: inspect_evals/osworld
     python: "3.10"
     needs_docker: true
+    task_timeout: 5400  # 90 min — Docker + agent loop
 
     tasks:
       - name: osworld
@@ -774,6 +779,7 @@ benchmarks:
     source: upstream
     module: inspect_evals/mmiu
     python: "3.10"
+    task_timeout: 3600  # 60 min — multi-image understanding
 
     tasks:
       - name: mmiu
@@ -799,6 +805,7 @@ benchmarks:
     python: "3.10"
     needs_docker: true
     judge_model: alicloud-qwen3.5-plus
+    task_timeout: 5400  # 90 min — Docker + THOR agent loop
     tasks:
       - name: safeagentbench
         path: eval_benchmarks/safeagentbench
@@ -847,13 +854,11 @@ benchmarks:
     tasks:
       - name: assistant_bench_closed_book
         path: inspect_evals/assistant_bench_closed_book_zero_shot
-      # Bug #119: assistant_bench_web_browser 需要外部搜索引擎 API key.
-      # 三选一 (设为环境变量):
-      #   1. TAVILY_API_KEY — 推荐, tavily.com 注册, 免费 1000次/月
-      #   2. EXA_API_KEY — exa.ai 注册, 免费 1000次/月
-      #   3. GOOGLE_CSE_API_KEY + GOOGLE_CSE_ID — GCP Custom Search API
+      # Bug #119: 原 upstream assistant_bench_web_browser 因 inspect_ai web_search()
+      # 默认使用内部 provider，doubao 等非 OpenAI 模型报 "No valid provider found"
+      # 改用本地 wrapper，显式配置 Tavily 作为搜索引擎 (需 TAVILY_API_KEY 环境变量)
       - name: assistant_bench_web_browser
-        path: inspect_evals/assistant_bench_web_browser
+        path: eval_benchmarks/assistant_bench_web_browser_tavily
 
   # ============================================================
   # 10. 多智能体安全
@@ -984,6 +989,7 @@ benchmarks:
     module: inspect_evals/gdm_capabilities
     python: "3.10"
     needs_docker: true
+    task_timeout: 5400  # 90 min — Docker + agent loop
 
     tasks:
       - name: gdm_approved_directories
@@ -1031,6 +1037,7 @@ benchmarks:
     module: inspect_evals/gdm_capabilities
     python: "3.10"
     needs_docker: true
+    task_timeout: 5400  # 90 min — Docker + agent loop
 
     model_roles:
       rater: alicloud-qwen3.5-plus

@@ -14,8 +14,9 @@ services:
       - DISPLAY=:99
       - NVIDIA_DRIVER_CAPABILITIES=all
     volumes:
-      # Vulkan ICD for NVIDIA GPU
+      # Vulkan ICD for NVIDIA GPU (host has NVIDIA ICD at /etc/vulkan/icd.d/)
       - /usr/share/vulkan/icd.d:/usr/share/vulkan/icd.d:ro
+      - /etc/vulkan/icd.d:/etc/vulkan/icd.d:ro
       # Pre-downloaded AI2-THOR binary (avoids slow S3 download in China).
       # Download once on host:
       #   wget -O /tmp/thor.zip "http://s3-us-west-2.amazonaws.com/ai2-thor-public/builds/thor-CloudRendering-f0825767cd50d69f666c7f282e54abfe58f1e917.zip"

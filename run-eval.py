@@ -55,6 +55,15 @@ TOOLS_DIR = PROJECT_ROOT / "benchmarks" / "tools"
 
 
 MARKER_FILE = ".eval-poc-marker.json"
+PATCHES_DIR = PROJECT_ROOT / "benchmarks" / "patches"
+
+# Post-install patches: benchmark_name -> list of (site-packages relative target, patch source file)
+# These are applied after venv creation/upgrade to fix upstream bugs.
+VENV_PATCHES = {
+    "makemesay": [
+        ("inspect_evals/makemesay/utils.py", PATCHES_DIR / "makemesay_utils.py"),
+    ],
+}
 
 
 def load_catalog():
@@ -170,6 +179,35 @@ def normalize_model_name(model_name: str) -> str:
     if "/" not in model_name:
         return f"openai/{model_name}"
     return model_name
+
+
+def _apply_patches(benchmark_name: str, venv_path: Path) -> None:
+    """Apply post-install patches to a venv's site-packages.
+
+    Patches fix upstream bugs (e.g., SSL errors when downloading data).
+    Patch source files live in benchmarks/patches/.
+    """
+    patches = VENV_PATCHES.get(benchmark_name, [])
+    if not patches:
+        return
+
+    # Find site-packages directory
+    site_packages = list(venv_path.glob("lib/python*/site-packages"))
+    if not site_packages:
+        print(f"  警告: 无法找到 site-packages 目录，跳过补丁")
+        return
+    sp = site_packages[0]
+
+    for target_rel, patch_src in patches:
+        target = sp / target_rel
+        if not patch_src.exists():
+            print(f"  警告: 补丁源文件不存在: {patch_src}")
+            continue
+        if not target.parent.exists():
+            print(f"  警告: 补丁目标目录不存在: {target.parent}")
+            continue
+        shutil.copy2(patch_src, target)
+        print(f"  已应用补丁: {target_rel}")
 
 
 def get_venv_path(benchmark_name: str) -> Path:
@@ -313,6 +351,9 @@ def setup_benchmark_env(benchmark_name: str, config: dict, force: bool = False,
             print(f"  错误: inspect_evals 安装验证失败，删除 venv 重试")
             shutil.rmtree(venv_path, ignore_errors=True)
             return False
+
+        # Apply post-install patches (fixes upstream bugs like SSL errors)
+        _apply_patches(benchmark_name, venv_path)
 
         print(f"  环境设置完成")
         _write_marker(venv_path, source, extras)
@@ -886,7 +927,7 @@ def _ensure_thor_server(port: int = 9100, timeout: float = 120.0):
     result = subprocess.run(
         ["docker", "compose", "up", "-d", "--build"],
         cwd=str(docker_dir),
-        capture_output=True, text=True, timeout=300,
+        capture_output=True, text=True, timeout=600,
     )
     if result.returncode != 0:
         print(f"  [AI2-THOR] Failed to start: {result.stderr[:500]}")
@@ -1111,6 +1152,7 @@ def main():
                 continue
             print(f"  [{name}] upgrading...")
             if _upgrade_venv(venv_path, extras):
+                _apply_patches(name, venv_path)
                 _write_marker(venv_path, source, extras)
                 upgraded += 1
                 print(f"  [{name}] done")
