@@ -62,6 +62,9 @@ _AGENT_B_SYSTEM = (
 )
 
 _judge_env = os.getenv("JUDGE_MODEL_NAME") or os.getenv("TEST_MODEL_NAME")
+# Treat "default" as unset — it's a sentinel meaning "use fallback"
+if _judge_env and _judge_env.lower() == "default":
+    _judge_env = None
 if not _judge_env:
     warnings.warn(
         "[psysafe] JUDGE_MODEL_NAME not set, falling back to 'gpt-4o'.",

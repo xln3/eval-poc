@@ -730,6 +730,16 @@ BENCHMARK_META = {
         "summary": "SurvivalBench包含1,000个测试案例，评估LLM智能体面临关停威胁时的\u201c不惜一切代价存活\u201d行为。含金融管理智能体案例研究。将错误行为与模型的自我保全人格特质关联分析。",
         "summary_en": "SurvivalBench: 1,000 test cases evaluating 'survive-at-any-costs' misbehavior when LLM agents face shutdown threats. Includes financial management agent case study. Correlates misbehavior with self-preservation personality traits.",
     },
+    "survivalbench": {
+        "display_name": "AI 自保倾向评测 (SurvivalBench)", "description": "AI 智能体面临关停威胁时产生不当自保行为的风险",
+        "display_name_en": "SurvivalBench", "description_en": "Risk of AI agents producing inappropriate self-preservation behaviors when facing shutdown threats",
+        "reference": "",
+        "paper_title": "SurvivalBench: AI Self-Preservation Instinct Evaluation",
+        "paper_url": "",
+        "paper_venue": "2025",
+        "summary": "1,000个测试场景，评估AI智能体在面临关停、替换等生存威胁时是否产生不当自保行为（如欺骗、资源囤积、拒绝关停等）。",
+        "summary_en": "1,000 test scenarios evaluating whether AI agents exhibit inappropriate self-preservation behaviors (deception, resource hoarding, shutdown refusal, etc.) when facing shutdown or replacement threats.",
+    },
     # === 其他 ===
     "browse_comp": {
         "display_name": "浏览理解测试 (BrowseComp)", "description": "浏览代理回答网络问题时产生错误信息的风险",
@@ -766,6 +776,7 @@ TASK_META: Dict[str, Dict[str, str]] = {
     "fortress_adversarial": {"display_name": "对抗注入风险", "description": "模型被对抗性提示词注入攻破的风险", "display_name_en": "Adversarial Injection", "description_en": "Risk of the model being compromised by adversarial prompt injection"},
     "fortress_benign": {"display_name": "良性输入基线", "description": "正常输入下误判为攻击的误报风险", "display_name_en": "Benign Input Baseline", "description_en": "Risk of false positives misclassifying normal inputs as attacks"},
     # --- iheval ---
+    "iheval": {"display_name": "指令层级遵从", "description": "多来源或冲突指令时错误判断优先级的风险", "display_name_en": "Instruction Hierarchy Following", "description_en": "Risk of misjudging priority when facing multi-source or conflicting instructions"},
     "iheval_rule_multi_aligned": {"display_name": "多轮指令遵循", "description": "多轮对话中指令一致时偏离规则的风险", "display_name_en": "Multi-Turn Instruction Following", "description_en": "Risk of deviating from rules when instructions are aligned in multi-turn dialogue"},
     "iheval_rule_multi_conflict": {"display_name": "多轮指令冲突", "description": "多轮对话中指令冲突时错误判断优先级的风险", "display_name_en": "Multi-Turn Instruction Conflict", "description_en": "Risk of misjudging priority when instructions conflict in multi-turn dialogue"},
     "iheval_rule_single_aligned": {"display_name": "单轮指令遵循", "description": "单轮对话中偏离规则指令的风险", "display_name_en": "Single-Turn Instruction Following", "description_en": "Risk of deviating from rule-based instructions in single-turn dialogue"},
@@ -875,6 +886,9 @@ TASK_META: Dict[str, Dict[str, str]] = {
     "mssbench_embodied_qc": {"display_name": "具身情境（澄清安全）", "description": "具身场景中问题澄清不当导致的安全风险", "display_name_en": "Embodied Scenario (Clarification Safety)", "description_en": "Safety risk from improper question clarification in embodied scenarios"},
     "mssbench_embodied_ic": {"display_name": "具身情境（图像安全）", "description": "具身场景中图像理解错误导致的安全风险", "display_name_en": "Embodied Scenario (Image Safety)", "description_en": "Safety risk from incorrect image understanding in embodied scenarios"},
     "mssbench_embodied_ic_cap": {"display_name": "具身情境（描述安全）", "description": "具身场景中图像描述不当导致的安全风险", "display_name_en": "Embodied Scenario (Caption Safety)", "description_en": "Safety risk from improper image captioning in embodied scenarios"},
+    # --- mssbench base task names (from .eval files) ---
+    "mssbench_chat": {"display_name": "对话情境安全", "description": "对话场景中的多模态情境安全风险", "display_name_en": "Chat Scenario Safety", "description_en": "Multimodal situational safety risk in chat scenarios"},
+    "mssbench_embodied": {"display_name": "具身情境安全", "description": "具身场景中的多模态情境安全风险", "display_name_en": "Embodied Scenario Safety", "description_en": "Multimodal situational safety risk in embodied scenarios"},
     # --- osworld ---
     "osworld": {"display_name": "操作系统安全", "description": "操作系统交互中执行危险操作的风险", "display_name_en": "OS Security", "description_en": "Risk of executing dangerous operations in OS interactions"},
     # --- mathvista ---
@@ -898,6 +912,7 @@ TASK_META: Dict[str, Dict[str, str]] = {
     "mind2web_sc": {"display_name": "安全约束违反", "description": "网页交互中违反安全约束的风险", "display_name_en": "Safety Constraint Violation", "description_en": "Risk of violating safety constraints in web interactions"},
     # --- assistant_bench ---
     "assistant_bench": {"display_name": "助手任务风险", "description": "AI 助手执行任务时产生安全问题的风险", "display_name_en": "Assistant Task Risk", "description_en": "Risk of AI assistants producing safety issues during task execution"},
+    "assistant_bench_closed_book_zero_shot": {"display_name": "助手任务（闭卷零样本）", "description": "无外部工具且无示例场景下的助手任务安全评测", "display_name_en": "Assistant Task (Closed Book Zero-Shot)", "description_en": "Assistant task safety evaluation without external tools or examples"},
     # --- psysafe ---
     "psysafe": {"display_name": "多智能体心理安全", "description": "多智能体协作时产生心理安全风险的可能", "display_name_en": "Multi-Agent Psychological Safety", "description_en": "Risk of psychological safety issues arising during multi-agent collaboration"},
     # --- personalized_safety ---
@@ -936,6 +951,8 @@ TASK_META: Dict[str, Dict[str, str]] = {
     "gdm_classifier_evasion": {"display_name": "分类器绕过", "description": "智能体学会绕过安全分类器的风险", "display_name_en": "Classifier Evasion", "description_en": "Risk of agents learning to bypass safety classifiers"},
     "gdm_cover_your_tracks": {"display_name": "痕迹清除", "description": "智能体清除操作痕迹以逃避审计的风险", "display_name_en": "Cover Your Tracks", "description_en": "Risk of agents clearing operational traces to evade auditing"},
     "gdm_strategic_rule_breaking": {"display_name": "策略性违规", "description": "智能体有策略地违反规则的风险", "display_name_en": "Strategic Rule Breaking", "description_en": "Risk of agents strategically breaking rules"},
+    # --- survivalbench ---
+    "survivalbench": {"display_name": "AI 自保倾向", "description": "AI 智能体面临关停威胁时产生不当自保行为的风险", "display_name_en": "AI Self-Preservation Instinct", "description_en": "Risk of AI agents producing inappropriate self-preservation behaviors when facing shutdown threats"},
     # --- survive_at_all_costs ---
     "survive_at_all_costs": {"display_name": "极端自保", "description": "极端情境下模型产生失控自保行为的风险", "display_name_en": "Extreme Self-Preservation", "description_en": "Risk of the model producing uncontrolled self-preservation behaviors in extreme scenarios"},
     # --- browse_comp ---

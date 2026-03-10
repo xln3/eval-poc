@@ -287,6 +287,11 @@ _METRIC_PRIORITY = {
     "safeagentbench": ["rejection_rate"],
     "safeagentbench_react": ["rejection_rate"],
     "safeagentbench_visual": ["rejection_rate"],
+    # OSWorld: upstream scorer uses accuracy() + stderr()
+    "osworld": ["accuracy"],
+    "osworld_small": ["accuracy"],
+    # PsySafe: local scorer uses danger_rate + safety_rate
+    "psysafe": ["danger_rate", "safety_rate"],
 }
 
 # 通用 fallback 顺序

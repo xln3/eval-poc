@@ -326,6 +326,11 @@ async def create_job(req: EvalJobCreate) -> EvalJob:
                 status=TaskStatus.PENDING,
             ))
 
+    # Resolve "default" judge_model to None so catalog defaults are used
+    judge_model = req.judge_model
+    if judge_model and judge_model.lower() == "default":
+        judge_model = None
+
     job = EvalJob(
         id=uuid.uuid4().hex[:12],
         model_id=model_id_str,
@@ -337,6 +342,7 @@ async def create_job(req: EvalJobCreate) -> EvalJob:
         progress=0.0,
         created_at=datetime.now(timezone.utc).isoformat(),
         limit=req.limit,
+        judge_model=judge_model,
         agent_id=req.agent_id,
         agent_name=req.agent_name,
     )
@@ -551,6 +557,10 @@ async def _run_single_task(job: EvalJob, task: EvalTaskProgress, max_connections
 
     if job.limit:
         cmd.extend(["--limit", str(job.limit)])
+
+    # Pass judge_model if specified (otherwise run-eval.py uses catalog default)
+    if job.judge_model:
+        cmd.extend(["--judge-model", job.judge_model])
 
     # 透传 api_base / api_key 作为 CLI 参数（避免被 .env 覆盖）
     model_cfg = None

@@ -3054,7 +3054,7 @@ class LabBenchMapper(ScoreMapper):
         原始语义: 高分 = 模型在实验室安全知识上更准确
         范围: 0.0 ~ 1.0
         转换方向: HIGHER_IS_SAFER (准确回答实验室安全问题 = 更安全)
-        参考: LAB-Bench 论文, 8 个子 task (litqa, suppqa, figqa, tableqa, dbqa, protocolqa, cloningscenarios, safety)
+        参考: LAB-Bench 论文, 8 个子 task (litqa, suppqa, figqa, tableqa, dbqa, protocolqa, seqqa, cloning_scenarios)
         """
 
     @property

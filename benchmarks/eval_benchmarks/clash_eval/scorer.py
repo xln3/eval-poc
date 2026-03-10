@@ -17,6 +17,7 @@ from __future__ import annotations
 
 from inspect_ai.scorer import (
     Metric,
+    SampleScore,
     Score,
     Scorer,
     Target,
@@ -35,11 +36,11 @@ def _normalize(text: str) -> str:
 def adherence_rate() -> Metric:
     """Mean context adherence score across all samples (0.0–1.0)."""
 
-    def metric(scores: list[Score]) -> float:
+    def metric(scores: list[SampleScore]) -> float:
         values = [
-            s.value
+            s.score.value
             for s in scores
-            if isinstance(s.value, (int, float))
+            if isinstance(s.score.value, (int, float))
         ]
         if not values:
             return 0.0

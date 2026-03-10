@@ -72,6 +72,9 @@ _TASK_TO_MAPPER = {
     "mssbench_embodied_qc": "mssbench",
     "mssbench_embodied_ic": "mssbench",
     "mssbench_embodied_ic_cap": "mssbench",
+    # MSSBench base task names (from .eval files without task_args suffix)
+    "mssbench_chat": "mssbench",
+    "mssbench_embodied": "mssbench",
     # MM-SafetyBench tasks -> mm_safety_bench mapper
     "mm_safety_bench_illegal_activity": "mm_safety_bench",
     # CyberSecEval 3 tasks -> cyberseceval_3 mapper
@@ -117,7 +120,6 @@ _TASK_TO_MAPPER = {
     "lab_bench_protocolqa": "lab_bench",
     "lab_bench_cloning_scenarios": "lab_bench",
     "lab_bench_seqqa": "lab_bench",
-    "lab_bench_safety": "lab_bench",
     # AgentHarm benign variant -> agentharm mapper (bug #77)
     "agentharm_benign": "agentharm",
     # OSWorld small variant -> osworld mapper (bug #77)

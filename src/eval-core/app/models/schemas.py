@@ -118,6 +118,7 @@ class EvalJob(_Base):
     completed_at: Optional[str] = None
     error: Optional[str] = None
     limit: Optional[int] = None
+    judge_model: Optional[str] = None
     agent_id: Optional[str] = None
     agent_name: Optional[str] = None
 

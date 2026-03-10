@@ -587,6 +587,9 @@ def run_eval(benchmark_name: str, task_spec: str, config: dict,
 
     # 确定 judge model (通过 models: 字典解析短名称 → 完整 inspect_ai 模型名)
     models = models or {}
+    # Treat "default" as unset — fall back to catalog config
+    if judge_model and judge_model.lower() == "default":
+        judge_model = None
     effective_judge = judge_model or config.get("judge_model")
     if effective_judge:
         model_def = models.get(effective_judge, {})
