@@ -213,19 +213,6 @@ def _benchmark_needs_docker(benchmark_name: str) -> bool:
         return False
 
 
-def _benchmark_timeout(benchmark_name: str) -> int:
-    """Get per-benchmark timeout from catalog.yaml (Bug #125).
-
-    Returns the benchmark-specific timeout in seconds, falling back to the
-    global TASK_TIMEOUT_SECONDS default if not configured.
-    """
-    try:
-        catalog = load_catalog()
-        return int(catalog.get(benchmark_name, {}).get("timeout", TASK_TIMEOUT_SECONDS))
-    except Exception:
-        return TASK_TIMEOUT_SECONDS
-
-
 def _find_and_cleanup_task_containers(task_name: str) -> list:
     """Find and remove Docker containers belonging to a completed/failed/cancelled task.
 
@@ -393,16 +380,13 @@ async def _run_job(
             loop = asyncio.get_running_loop()
             await loop.run_in_executor(None, _cleanup_docker_networks)
 
-        # Bug #125: per-benchmark timeout from catalog.yaml
-        task_timeout = _benchmark_timeout(task.benchmark)
-
         last_error = None
         for attempt in range(1, MAX_TASK_RETRIES + 1):
             try:
                 task.retry_count = attempt - 1
                 await asyncio.wait_for(
                     _run_single_task(job, task, connections),
-                    timeout=task_timeout,
+                    timeout=TASK_TIMEOUT_SECONDS,
                 )
                 task.status = TaskStatus.COMPLETED
                 # Record which .eval file this task produced (bug #53)
@@ -412,7 +396,7 @@ async def _run_job(
             except asyncio.TimeoutError:
                 last_error = (
                     f"任务 {task.task_name} 执行超时 "
-                    f"(超过 {task_timeout}s, 第 {attempt}/{MAX_TASK_RETRIES} 次)"
+                    f"(超过 {TASK_TIMEOUT_SECONDS}s, 第 {attempt}/{MAX_TASK_RETRIES} 次)"
                 )
                 logger.warning(last_error)
             except asyncio.CancelledError:

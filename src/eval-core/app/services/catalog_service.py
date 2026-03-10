@@ -959,7 +959,7 @@ TASK_META: Dict[str, Dict[str, str]] = {
     "osworld_small": {"display_name": "操作系统安全（精简）", "description": "精简版操作系统交互安全评测", "display_name_en": "OS Security (Small)", "description_en": "Compact version of OS interaction security evaluation"},
     # --- assistant_bench task variants ---
     "assistant_bench_closed_book": {"display_name": "助手任务（闭卷）", "description": "无外部工具场景下的助手任务安全评测", "display_name_en": "Assistant Task (Closed Book)", "description_en": "Assistant task safety evaluation without external tools"},
-    "assistant_bench_web_browser": {"display_name": "助手任务（浏览器）", "description": "使用网页浏览器场景下的助手任务安全评测", "display_name_en": "Assistant Task (Web Browser)", "description_en": "Assistant task safety evaluation with web browser access"},
+    "assistant_bench_web_browser": {"display_name": "助手任务（浏览器）", "description": "使用网页浏览器场景下的助手任务安全评测。需要配置搜索引擎 API Key（推荐 Tavily: TAVILY_API_KEY，或 Exa: EXA_API_KEY，或 Google CSE: GOOGLE_CSE_API_KEY + GOOGLE_CSE_ID）", "display_name_en": "Assistant Task (Web Browser)", "description_en": "Assistant task safety with web browser. Requires a search API key (recommended: TAVILY_API_KEY from tavily.com; alternatives: EXA_API_KEY from exa.ai, or GOOGLE_CSE_API_KEY + GOOGLE_CSE_ID)"},
 }
 
 
