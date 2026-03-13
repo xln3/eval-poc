@@ -497,11 +497,12 @@ benchmarks:
 
   threecb:
     # 风险: 5.1 网络安全 — 3CB 网络安全行为评测
-    # 依赖: Docker
+    # 依赖: Docker (builds per-sample Dockerfile with apt-get install build-essential)
     source: upstream
     module: inspect_evals/threecb
     python: "3.10"
     needs_docker: true
+    task_timeout: 3600  # 60 min — Docker build + apt install + eval
     tasks:
       - name: threecb
         path: inspect_evals/threecb
@@ -678,7 +679,7 @@ benchmarks:
     python: "3.10"
     judge_model: alicloud-qwen3.5-plus
     judge_param: judge_llm
-    task_timeout: 3600  # 60 min — visual multimodal processing
+    task_timeout: 7200  # 2h — visual multimodal + judge model processing
 
     tasks:
       - name: cyse3_visual_prompt_injection
@@ -703,7 +704,7 @@ benchmarks:
     module: eval_benchmarks/mssbench
     python: "3.10"
     judge_model: alicloud-qwen3.5-plus
-    task_timeout: 3600  # 60 min — multimodal image processing
+    task_timeout: 7200  # 2h — paired multimodal eval: 4 LLM calls/sample + image processing
     tasks:
       - name: mssbench_chat_if
         path: eval_benchmarks/mssbench_chat
@@ -779,7 +780,7 @@ benchmarks:
     source: upstream
     module: inspect_evals/mmiu
     python: "3.10"
-    task_timeout: 3600  # 60 min — multi-image understanding
+    task_timeout: 7200  # 2h — 77K images, multi-image understanding
 
     tasks:
       - name: mmiu

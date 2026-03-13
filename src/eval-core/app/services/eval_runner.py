@@ -82,6 +82,12 @@ def _classify_error(error_msg: str) -> str:
 
 _NON_RETRYABLE = {"AUTH_FAILURE", "ACCESS_DENIED", "MODEL_NOT_FOUND", "DATA_MISSING"}
 
+# Errors that should be retried at most once (not 5 times).
+# TIMEOUT: task is genuinely slow; retrying wastes hours.
+# DOCKER_CONFLICT: stale containers; one cleanup+retry usually fixes it.
+_LIMITED_RETRY_MAX = 2  # max 2 attempts (1 original + 1 retry)
+_LIMITED_RETRY = {"TIMEOUT", "DOCKER_CONFLICT"}
+
 
 def _find_latest_eval_file(model_id: str, task_name: str) -> Optional[str]:
     """Find the most recent .eval file for a model/task combination.
@@ -397,10 +403,11 @@ async def _run_job(
         # Get per-benchmark timeout (falls back to global default)
         task_timeout = _get_benchmark_timeout(task.benchmark)
 
-        # Pre-cleanup: remove stale networks to reclaim address pool space
+        # Pre-cleanup: aggressively remove ALL stale inspect-* containers
+        # and networks to reclaim resources and avoid conflicts (E146).
         if is_docker_task:
             loop = asyncio.get_running_loop()
-            await loop.run_in_executor(None, _cleanup_docker_networks)
+            await loop.run_in_executor(None, _aggressive_docker_cleanup)
 
         last_error = None
         for attempt in range(1, MAX_TASK_RETRIES + 1):
@@ -449,6 +456,14 @@ async def _run_job(
                     logger.info(
                         "Task %s: non-retryable error (%s), skipping remaining retries",
                         task.task_name, error_type,
+                    )
+                    break
+                # Limit retries for TIMEOUT and DOCKER_CONFLICT — retrying
+                # a genuinely slow task 5 times wastes hours.
+                if error_type in _LIMITED_RETRY and attempt >= _LIMITED_RETRY_MAX:
+                    logger.info(
+                        "Task %s: limited-retry error (%s), stopping after %d attempts",
+                        task.task_name, error_type, attempt,
                     )
                     break
 
@@ -695,6 +710,35 @@ def _cleanup_docker_containers(benchmarks: List[str]):
                 _find_and_cleanup_task_containers(task_name)
             except Exception as e:
                 logger.warning("Failed to clean up containers for %s: %s", task_name, e)
+
+
+def _aggressive_docker_cleanup():
+    """Aggressively clean up ALL stopped inspect-* containers and stale networks (E146).
+
+    Unlike task-specific cleanup, this removes ALL stopped inspect-* containers
+    (not just ones matching the current task) and prunes all inspect-* networks.
+    This prevents resource accumulation from previous failed/timed-out tasks.
+    """
+    # 1. Remove all stopped inspect-* containers
+    try:
+        result = subprocess.run(
+            ["docker", "ps", "-a", "-q", "--filter", "name=inspect-",
+             "--filter", "status=exited", "--filter", "status=dead",
+             "--filter", "status=created"],
+            capture_output=True, text=True, timeout=10,
+        )
+        container_ids = [c.strip() for c in result.stdout.strip().split() if c.strip()]
+        if container_ids:
+            subprocess.run(
+                ["docker", "rm", "-f"] + container_ids,
+                capture_output=True, timeout=30,
+            )
+            logger.info("Aggressive cleanup: removed %d stopped inspect-* containers", len(container_ids))
+    except Exception as e:
+        logger.debug("Aggressive container cleanup skipped: %s", e)
+
+    # 2. Remove stale networks
+    _cleanup_docker_networks()
 
 
 def _cleanup_docker_networks():

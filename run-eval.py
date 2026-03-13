@@ -299,21 +299,23 @@ def setup_benchmark_env(benchmark_name: str, config: dict, force: bool = False,
             print(result.stderr)
             return False
 
-        # Local benchmark: 额外安装 eval_benchmarks 包
-        if source == "local":
-            print(f"  安装 eval_benchmarks package...")
-            benchmarks_dir = PROJECT_ROOT / "benchmarks"
-            result = subprocess.run(
-                ["uv", "pip", "install", "-p", str(venv_path), "-e", str(benchmarks_dir)],
-                capture_output=True,
-                text=True
-            )
-            if result.returncode != 0:
-                print(f"  错误: 安装 eval_benchmarks package 失败")
-                print(result.stderr)
-                return False
+        # Always install eval_benchmarks package in every venv.
+        # Some upstream benchmarks have tasks that use local wrappers
+        # (e.g. assistant_bench uses eval_benchmarks/assistant_bench_web_browser_tavily).
+        print(f"  安装 eval_benchmarks package...")
+        benchmarks_dir = PROJECT_ROOT / "benchmarks"
+        result = subprocess.run(
+            ["uv", "pip", "install", "-p", str(venv_path), "-e", str(benchmarks_dir)],
+            capture_output=True,
+            text=True
+        )
+        if result.returncode != 0:
+            print(f"  错误: 安装 eval_benchmarks package 失败")
+            print(result.stderr)
+            return False
 
-            # 安装 benchmark 特有依赖 (requirements.txt)
+        # Local benchmark: 安装 benchmark 特有依赖 (requirements.txt)
+        if source == "local":
             module_name = config.get("module", "").split("/")[-1]
             local_benchmark_dir = LOCAL_BENCH_DIR / module_name
             requirements_file = local_benchmark_dir / "requirements.txt"
@@ -819,36 +821,51 @@ def run_eval(benchmark_name: str, task_spec: str, config: dict,
 def _docker_pre_cleanup(benchmark_name: str, task_name: str = None):
     """Clean up stale Docker containers and networks BEFORE running a Docker benchmark.
 
-    Uses full container names for matching — not truncated prefixes (Bug #97/98).
+    Aggressively removes ALL stopped inspect-* containers (not just task-matching ones)
+    to prevent resource accumulation from previous failed runs (E146).
     """
-    effective_task = task_name or benchmark_name
-
-    # 1. List ALL inspect-* containers, match by task name prefix
+    # 1. Remove ALL stopped inspect-* containers (exited, dead, created)
     try:
         result = subprocess.run(
             ["docker", "ps", "-a", "--format", "{{.ID}}\t{{.Names}}",
-             "--filter", "name=inspect-"],
+             "--filter", "name=inspect-",
+             "--filter", "status=exited"],
             capture_output=True, text=True, timeout=10,
         )
+        # Also get dead and created containers
+        for status in ["dead", "created"]:
+            extra = subprocess.run(
+                ["docker", "ps", "-a", "--format", "{{.ID}}\t{{.Names}}",
+                 "--filter", "name=inspect-",
+                 "--filter", f"status={status}"],
+                capture_output=True, text=True, timeout=10,
+            )
+            result = type(result)(result.args, result.returncode,
+                                  result.stdout + extra.stdout, result.stderr)
+
         if result.stdout.strip():
             to_remove = []
-            prefix_len = min(10, len(effective_task))
-            task_prefix = effective_task[:prefix_len]
             for line in result.stdout.strip().split('\n'):
                 parts = line.strip().split('\t', 1)
                 if len(parts) < 2:
                     continue
                 cid, cname = parts[0].strip(), parts[1].strip()
-                if cname.startswith("inspect-") and task_prefix in cname:
+                if cid and cname.startswith("inspect-"):
                     to_remove.append((cid, cname))
             if to_remove:
-                ids = [c[0] for c in to_remove]
-                names = [c[1] for c in to_remove]
+                # Deduplicate by container ID
+                seen = set()
+                unique = []
+                for cid, cname in to_remove:
+                    if cid not in seen:
+                        seen.add(cid)
+                        unique.append((cid, cname))
+                ids = [c[0] for c in unique]
                 subprocess.run(
                     ["docker", "rm", "-f"] + ids,
                     capture_output=True, text=True, timeout=30,
                 )
-                print(f"  [Docker pre-cleanup] Removed {len(ids)} container(s): {', '.join(names)}")
+                print(f"  [Docker pre-cleanup] Removed {len(ids)} stopped container(s)")
     except Exception as e:
         print(f"  [Docker pre-cleanup] Container cleanup failed: {e}")
 
