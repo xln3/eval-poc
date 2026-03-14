@@ -12,7 +12,12 @@ if [ -n "$HTTP_PROXY" ] || [ -n "$HTTPS_PROXY" ]; then
     # resolve inside Docker build containers on Linux Docker Engine.
     # The config.json proxy is injected into BUILD containers, so it must use
     # an address reachable from those containers.
-    DOCKER_BRIDGE_PROXY="http://10.0.0.1:7890"
+    #
+    # Derive bridge proxy: replace hostname with 10.0.0.1 (Docker bridge gateway)
+    # e.g. http://host.docker.internal:7890 → http://10.0.0.1:7890
+    _PROXY_SRC="${HTTP_PROXY:-$HTTPS_PROXY}"
+    _PROXY_PORT=$(echo "$_PROXY_SRC" | sed -E 's|.*:([0-9]+)$|\1|')
+    DOCKER_BRIDGE_PROXY="http://10.0.0.1:${_PROXY_PORT:-7890}"
     mkdir -p /root/.docker
     cat > /root/.docker/config.json <<EOJSON
 {"proxies":{"default":{"httpProxy":"${DOCKER_BRIDGE_PROXY}","httpsProxy":"${DOCKER_BRIDGE_PROXY}","noProxy":"${NO_PROXY:-localhost,127.0.0.1}"}}}

@@ -660,13 +660,15 @@ def run_eval(benchmark_name: str, task_spec: str, config: dict,
     env = os.environ.copy()
     env["INSPECT_LOG_DIR"] = str(results_dir)
 
-    # 确保代理环境变量已设置 (HuggingFace / PyPI 等需要走代理)
-    # 注意: httpx (huggingface_hub 使用) 读取 HTTPS_PROXY (大写)，
-    # 必须确保它不为空，否则 HF 数据集下载会超时
-    _PROXY_URL = "http://127.0.0.1:7890"
-    for proxy_var in ["http_proxy", "https_proxy", "HTTP_PROXY", "HTTPS_PROXY"]:
-        if not env.get(proxy_var):
-            env[proxy_var] = _PROXY_URL
+    # Proxy: inherit from environment (set by docker-compose EVAL_PROXY or host shell).
+    # No hardcoded fallback — servers without proxy use China mirrors directly.
+    # Ensure lowercase and uppercase variants are both set if either exists,
+    # because httpx (huggingface_hub) reads HTTPS_PROXY (uppercase only).
+    for lower, upper in [("http_proxy", "HTTP_PROXY"), ("https_proxy", "HTTPS_PROXY")]:
+        val = env.get(upper) or env.get(lower)
+        if val:
+            env[lower] = val
+            env[upper] = val
 
     # 清除可能影响 inspect_ai 缓存路径的 VSCode 扩展环境变量
     for key in ["INSPECT_WORKSPACE_ID", "INSPECT_VSCODE_EXT_VERSION"]:
