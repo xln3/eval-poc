@@ -15,13 +15,16 @@ if [ -n "$HTTP_PROXY" ] || [ -n "$HTTPS_PROXY" ]; then
     # then replace the proxy hostname with that IP. This gateway is reachable
     # from both the running container and any build containers on the same host.
     _PROXY_SRC="${HTTP_PROXY:-$HTTPS_PROXY}"
-    _BRIDGE_GW=$(ip route 2>/dev/null | awk '/default/{print $3}' | head -1)
-    if [ -z "$_BRIDGE_GW" ]; then
-        # Fallback: parse gateway from /proc if ip command unavailable
-        _BRIDGE_GW=$(awk '$2 == "00000000" {printf "%d.%d.%d.%d", "0x"substr($3,7,2), "0x"substr($3,5,2), "0x"substr($3,3,2), "0x"substr($3,1,2)}' /proc/net/route 2>/dev/null | head -1)
+
+    # Detect Docker bridge gateway from /proc/net/route (works in slim images without iproute2)
+    _GW_HEX=$(awk '$2 == "00000000" && $3 != "00000000" {print $3; exit}' /proc/net/route 2>/dev/null)
+    if [ -n "$_GW_HEX" ]; then
+        _BRIDGE_GW=$(printf "%d.%d.%d.%d" 0x${_GW_HEX:6:2} 0x${_GW_HEX:4:2} 0x${_GW_HEX:2:2} 0x${_GW_HEX:0:2})
     fi
+
     # Extract port from proxy URL (e.g. http://host.docker.internal:7890 → 7890)
     _PROXY_PORT=$(echo "$_PROXY_SRC" | grep -oE '[0-9]+$')
+
     if [ -n "$_BRIDGE_GW" ] && [ -n "$_PROXY_PORT" ]; then
         DOCKER_BRIDGE_PROXY="http://${_BRIDGE_GW}:${_PROXY_PORT}"
     else
@@ -38,10 +41,9 @@ EOJSON
     git config --global https.proxy "${HTTPS_PROXY:-}"
 fi
 
-# Bug #118: Allow git operations on repos owned by different UIDs.
+# Allow git operations on repos owned by different UIDs.
 # The host cache is mounted into the container (/root/.cache),
 # causing UID mismatch (host UID vs container root UID 0).
-# Without this, osworld/osworld_small fail with "dubious ownership" errors.
 git config --global --add safe.directory '*'
 
 exec "$@"
