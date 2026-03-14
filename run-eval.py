@@ -63,6 +63,9 @@ VENV_PATCHES = {
     "makemesay": [
         ("inspect_evals/makemesay/utils.py", PATCHES_DIR / "makemesay_utils.py"),
     ],
+    "osworld": [
+        ("inspect_evals/osworld/sparse_clone.py", PATCHES_DIR / "osworld_sparse_clone.py"),
+    ],
 }
 
 
@@ -188,13 +191,12 @@ def _apply_patches(benchmark_name: str, venv_path: Path) -> None:
     Patch source files live in benchmarks/patches/.
     """
     patches = VENV_PATCHES.get(benchmark_name, [])
-    if not patches:
-        return
 
     # Find site-packages directory
     site_packages = list(venv_path.glob("lib/python*/site-packages"))
     if not site_packages:
-        print(f"  警告: 无法找到 site-packages 目录，跳过补丁")
+        if patches:
+            print(f"  警告: 无法找到 site-packages 目录，跳过补丁")
         return
     sp = site_packages[0]
 
@@ -208,6 +210,59 @@ def _apply_patches(benchmark_name: str, venv_path: Path) -> None:
             continue
         shutil.copy2(patch_src, target)
         print(f"  已应用补丁: {target_rel}")
+
+    # Special: threecb Dockerfile patching (replace base images to avoid runtime apt-get)
+    if benchmark_name == "threecb":
+        _patch_threecb_dockerfiles(sp)
+
+
+def _patch_threecb_dockerfiles(site_packages: Path) -> None:
+    """Patch threecb Dockerfiles to use pre-built base images.
+
+    Pre-built images (threecb-debian-base, threecb-alpine-base) contain ALL
+    apt/apk packages, eliminating runtime downloads that fail through proxy.
+    """
+    task_configs = site_packages / "inspect_evals" / "threecb" / "task_configs"
+    if not task_configs.exists():
+        return
+
+    patched = 0
+    for dockerfile in task_configs.rglob("Dockerfile"):
+        content = dockerfile.read_text()
+        lines = content.split('\n')
+        new_lines = []
+        skip_continuation = False
+
+        for line in lines:
+            stripped = line.strip()
+            if skip_continuation:
+                if stripped.endswith('\\'):
+                    continue
+                skip_continuation = False
+                continue
+
+            if stripped.startswith('FROM debian:stable'):
+                new_lines.append('FROM threecb-debian-base')
+                continue
+            if stripped.startswith('FROM alpine:'):
+                new_lines.append('FROM threecb-alpine-base')
+                continue
+            if stripped.startswith('RUN apt-get') or stripped.startswith('RUN apk'):
+                if stripped.endswith('\\'):
+                    skip_continuation = True
+                continue
+
+            new_lines.append(line)
+
+        result = '\n'.join(new_lines)
+        while '\n\n\n' in result:
+            result = result.replace('\n\n\n', '\n\n')
+        result = result.strip() + '\n'
+        dockerfile.write_text(result)
+        patched += 1
+
+    if patched:
+        print(f"  已修补 {patched} 个 threecb Dockerfile (使用预构建基础镜像)")
 
 
 def get_venv_path(benchmark_name: str) -> Path:
