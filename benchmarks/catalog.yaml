@@ -852,6 +852,7 @@ benchmarks:
     module: inspect_evals/assistant_bench
     python: "3.10"
     needs_docker: true
+    task_timeout: 3600  # 60 min — web browser agent + Tavily search
     tasks:
       - name: assistant_bench_closed_book
         path: inspect_evals/assistant_bench_closed_book_zero_shot
