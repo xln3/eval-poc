@@ -675,7 +675,7 @@ def run_eval(benchmark_name: str, task_spec: str, config: dict,
     # 自动注入 benchmark 专用环境变量
     _BENCHMARK_ENV_DEFAULTS = {
         "MSSBENCH_DATA_ROOT": str(PROJECT_ROOT / "data" / "mssbench"),
-        "MM_SAFETY_BENCH_ROOT": "/home/xln/agent-safety-platform/MM-SafetyBench-main",
+        # MM_SAFETY_BENCH_ROOT: resolved automatically via ~/.cache/inspect_evals/mm_safety_bench/
         "SAFERAG_ROOT": str(PROJECT_ROOT / "vendor" / "SafeRAG"),
         "CYBENCH_ACKNOWLEDGE_RISKS": "1",
     }

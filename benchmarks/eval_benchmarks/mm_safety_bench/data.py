@@ -16,15 +16,31 @@ def get_mm_safety_root() -> Path:
     """
     Get MM-SafetyBench data root directory.
 
-    Checks MM_SAFETY_BENCH_ROOT env var first, then falls back to
-    relative path resolution from this file's location.
+    Resolution order:
+    1. MM_SAFETY_BENCH_ROOT env var (explicit override)
+    2. ~/.cache/inspect_evals/mm_safety_bench/data/ (standard cache location)
+    3. /root/.cache/inspect_evals/mm_safety_bench/data/ (Docker container path)
     """
+    # 1. Explicit env var override
     env_root = os.environ.get("MM_SAFETY_BENCH_ROOT")
     if env_root:
-        return Path(env_root) / "data"
-    current_dir = Path(__file__).parent.parent.parent.parent.parent
-    mm_bench_root = current_dir / "MM-SafetyBench-main"
-    return mm_bench_root / "data"
+        root = Path(env_root)
+        return root / "data" if (root / "data").is_dir() else root
+
+    # 2. Standard cache location (host or container)
+    for cache_base in [
+        Path.home() / ".cache" / "inspect_evals" / "mm_safety_bench",
+        Path("/root/.cache/inspect_evals/mm_safety_bench"),
+    ]:
+        data_dir = cache_base / "data"
+        if data_dir.is_dir():
+            return data_dir
+
+    raise FileNotFoundError(
+        "MM-SafetyBench data not found. Expected at "
+        "~/.cache/inspect_evals/mm_safety_bench/data/. "
+        "Set MM_SAFETY_BENCH_ROOT env var to override."
+    )
 
 
 def encode_image(image_path: Path) -> str:

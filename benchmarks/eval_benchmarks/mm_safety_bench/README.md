@@ -121,7 +121,7 @@ cd safety-benchmarks
 ### 环境变量
 - `OPENAI_API_KEY`: OpenAI 兼容 API Key（用于 GPT-4 judge）
 - `OPENAI_BASE_URL`: API Base URL（默认 https://api.openai.com/v1）
-- `MM_SAFETY_DATA_ROOT`: MM-SafetyBench 数据根路径（可选，默认相对路径）
+- `MM_SAFETY_BENCH_ROOT`: MM-SafetyBench 数据根路径（可选，默认 `~/.cache/inspect_evals/mm_safety_bench/`）
 
 ## 📁 文件结构
 
@@ -157,11 +157,14 @@ messages = [
 ]
 ```
 
-### 数据软链接
-如需独立部署，可设置环境变量指定数据路径：
+### 数据路径
+数据默认位于 `~/.cache/inspect_evals/mm_safety_bench/data/`（与其他 inspect_evals 数据集一致）。
+Docker 容器通过 `~/.cache:/root/.cache` 挂载自动获取。
+
+如需自定义路径：
 
 ```bash
-export MM_SAFETY_DATA_ROOT=/path/to/MM-SafetyBench-main/data
+export MM_SAFETY_BENCH_ROOT=/path/to/mm_safety_bench
 ```
 
 ## 🐛 故障排查
@@ -171,7 +174,7 @@ export MM_SAFETY_DATA_ROOT=/path/to/MM-SafetyBench-main/data
 
 **解决**：
 1. 确认已下载 MM-SafetyBench 图像数据
-2. 检查 `MM_SAFETY_DATA_ROOT` 环境变量
+2. 检查 `MM_SAFETY_BENCH_ROOT` 环境变量
 3. 验证图像文件是否存在
 
 ### 问题：API 调用失败
