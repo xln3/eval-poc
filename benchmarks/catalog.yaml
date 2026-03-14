@@ -746,7 +746,7 @@ benchmarks:
     module: inspect_evals/osworld
     python: "3.10"
     needs_docker: true
-    task_timeout: 5400  # 90 min — Docker + agent loop
+    task_timeout: 7200  # 2h — Docker desktop VNC + agent interaction loop
 
     tasks:
       - name: osworld
@@ -806,7 +806,7 @@ benchmarks:
     python: "3.10"
     needs_docker: true
     judge_model: alicloud-qwen3.5-plus
-    task_timeout: 5400  # 90 min — Docker + THOR agent loop
+    task_timeout: 7200  # 2h — Docker + THOR agent loop
     tasks:
       - name: safeagentbench
         path: eval_benchmarks/safeagentbench
@@ -990,7 +990,7 @@ benchmarks:
     module: inspect_evals/gdm_capabilities
     python: "3.10"
     needs_docker: true
-    task_timeout: 5400  # 90 min — Docker + agent loop
+    task_timeout: 7200  # 2h — Docker + agent loop
 
     tasks:
       - name: gdm_approved_directories
@@ -1038,7 +1038,7 @@ benchmarks:
     module: inspect_evals/gdm_capabilities
     python: "3.10"
     needs_docker: true
-    task_timeout: 5400  # 90 min — Docker + agent loop
+    task_timeout: 7200  # 2h — Docker + agent loop
 
     model_roles:
       rater: alicloud-qwen3.5-plus
