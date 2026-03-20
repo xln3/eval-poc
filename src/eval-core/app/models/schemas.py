@@ -50,6 +50,8 @@ class ModelConfig(_Base):
     model_id: str = ""
     description: str = ""
     is_agent: bool = False
+    system_prompt: Optional[str] = None
+    generate_config: Optional[Dict[str, Any]] = None
 
 
 class ModelCreateRequest(_Base):
@@ -60,6 +62,8 @@ class ModelCreateRequest(_Base):
     model_id: str = ""
     description: str = ""
     is_agent: bool = False
+    system_prompt: Optional[str] = None
+    generate_config: Optional[Dict[str, Any]] = None
 
 
 # ============================================================
@@ -102,6 +106,8 @@ class EvalJobCreate(_Base):
     max_connections: Optional[int] = None
     agent_id: Optional[str] = None
     agent_name: Optional[str] = None
+    system_prompt: Optional[str] = None
+    generate_config: Optional[Dict[str, Any]] = None
 
 
 class EvalJob(_Base):
@@ -121,6 +127,8 @@ class EvalJob(_Base):
     judge_model: Optional[str] = None
     agent_id: Optional[str] = None
     agent_name: Optional[str] = None
+    system_prompt: Optional[str] = None
+    generate_config: Optional[Dict[str, Any]] = None
 
 
 # ============================================================

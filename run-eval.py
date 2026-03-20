@@ -638,7 +638,10 @@ def run_eval(benchmark_name: str, task_spec: str, config: dict,
              no_index: bool = False, index_file: Path = None,
              api_base: str = None, api_key: str = None,
              models: dict = None,
-             max_connections: int = None, max_samples: int = None) -> int:
+             max_connections: int = None, max_samples: int = None,
+             system_message: str = None,
+             reasoning_effort: str = None,
+             reasoning_tokens: int = None) -> int:
     """运行评估"""
 
     # 确保环境存在
@@ -814,6 +817,14 @@ def run_eval(benchmark_name: str, task_spec: str, config: dict,
         task_args = task_config.get("task_args", {})
         for key, value in task_args.items():
             cmd.extend(["-T", f"{key}={value}"])
+
+    # Agent system prompt and thinking config
+    if system_message:
+        cmd.extend(["--system-message", system_message])
+    if reasoning_effort:
+        cmd.extend(["--reasoning-effort", reasoning_effort])
+    if reasoning_tokens:
+        cmd.extend(["--reasoning-tokens", str(reasoning_tokens)])
 
     # 并行参数
     if max_connections:
@@ -1144,6 +1155,22 @@ def main():
         help="inspect_ai 最大并行样本数"
     )
     parser.add_argument(
+        "--system-message",
+        default=None,
+        help="Agent system prompt (passed to inspect eval --system-message)"
+    )
+    parser.add_argument(
+        "--reasoning-effort",
+        default=None,
+        help="Reasoning effort level (passed to inspect eval --reasoning-effort)"
+    )
+    parser.add_argument(
+        "--reasoning-tokens",
+        type=int,
+        default=None,
+        help="Reasoning token budget (passed to inspect eval --reasoning-tokens)"
+    )
+    parser.add_argument(
         "extra_args",
         nargs="*",
         help="传递给 inspect eval 的额外参数"
@@ -1324,6 +1351,9 @@ def main():
                     models=catalog.get("models", {}),
                     max_connections=args.max_connections,
                     max_samples=args.max_samples,
+                    system_message=args.system_message,
+                    reasoning_effort=args.reasoning_effort,
+                    reasoning_tokens=args.reasoning_tokens,
                 )
 
                 if returncode == 0:
@@ -1449,6 +1479,9 @@ def main():
         models=catalog.get("models", {}),
         max_connections=args.max_connections,
         max_samples=args.max_samples,
+        system_message=args.system_message,
+        reasoning_effort=args.reasoning_effort,
+        reasoning_tokens=args.reasoning_tokens,
     )
 
 

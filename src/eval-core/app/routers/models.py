@@ -1,9 +1,9 @@
 """模型管理 API"""
 
 from fastapi import APIRouter, HTTPException
-from typing import List
+from typing import Dict, Any, List
 from ..models.schemas import ModelConfig, ModelCreateRequest
-from ..services.model_store import get_all_models, add_custom_model, delete_custom_model
+from ..services.model_store import get_all_models, add_custom_model, delete_custom_model, update_custom_model
 
 router = APIRouter(prefix="/api/models", tags=["models"])
 
@@ -18,6 +18,15 @@ def list_models():
 def create_model(req: ModelCreateRequest):
     """添加自定义模型"""
     return add_custom_model(req)
+
+
+@router.put("/{model_id}", response_model=ModelConfig)
+def update_model(model_id: str, updates: Dict[str, Any]):
+    """Update a custom model."""
+    result = update_custom_model(model_id, updates)
+    if not result:
+        raise HTTPException(status_code=404, detail="模型不存在或为预置模型")
+    return result
 
 
 @router.delete("/{model_id}")

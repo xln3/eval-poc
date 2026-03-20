@@ -155,11 +155,26 @@ def add_custom_model(req: ModelCreateRequest) -> ModelConfig:
         model_id=req.model_id,
         description=req.description,
         is_agent=req.is_agent,
+        system_prompt=req.system_prompt,
+        generate_config=req.generate_config,
     )
     custom = _load_custom_models()
     custom.append(model)
     _save_custom_models(custom)
     return model
+
+
+def update_custom_model(model_id: str, updates: dict) -> Optional[ModelConfig]:
+    """Update an existing custom model. Returns updated model or None if not found."""
+    custom = _load_custom_models()
+    for i, m in enumerate(custom):
+        if m.id == model_id:
+            data = m.model_dump()
+            data.update(updates)
+            custom[i] = ModelConfig(**data)
+            _save_custom_models(custom)
+            return custom[i]
+    return None
 
 
 def delete_custom_model(model_id: str) -> bool:

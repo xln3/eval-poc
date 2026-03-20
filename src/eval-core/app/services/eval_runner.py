@@ -151,11 +151,12 @@ def _load_jobs() -> Dict[str, EvalJob]:
                 job.error = "Service restarted while job was running"
                 if not job.completed_at:
                     job.completed_at = datetime.now(timezone.utc).isoformat()
-                # Also mark stale tasks within the job (bug #47)
-                for t in job.tasks:
-                    if t.status in (TaskStatus.PENDING, TaskStatus.RUNNING):
-                        t.status = TaskStatus.FAILED
-                        t.error = "Service restarted while task was running"
+            # Fix zombie tasks in ANY job (not just running ones — a job
+            # can be marked FAILED while tasks are still mid-flight)
+            for t in job.tasks:
+                if t.status in (TaskStatus.PENDING, TaskStatus.RUNNING):
+                    t.status = TaskStatus.FAILED
+                    t.error = t.error or "Service restarted while task was running"
             jobs[job.id] = job
         logger.info("Loaded %d persisted jobs from %s", len(jobs), JOBS_JSON)
         return jobs
@@ -206,6 +207,9 @@ def _cleanup_orphaned_containers_on_startup():
 
 
 _jobs: Dict[str, EvalJob] = _load_jobs()
+# Persist recovery fixes (zombie task resets) so they survive further restarts
+if _jobs:
+    _save_jobs()
 
 # Clean up orphaned Docker containers from previous runs on startup
 _cleanup_orphaned_containers_on_startup()
@@ -364,6 +368,8 @@ async def create_job(req: EvalJobCreate) -> EvalJob:
         judge_model=judge_model,
         agent_id=req.agent_id,
         agent_name=req.agent_name,
+        system_prompt=req.system_prompt,
+        generate_config=req.generate_config,
     )
     _jobs[job.id] = job
     _save_jobs()
@@ -604,6 +610,24 @@ async def _run_single_task(job: EvalJob, task: EvalTaskProgress, max_connections
             cmd.extend(["--api-base", model_cfg.api_base])
         if model_cfg.api_key:
             cmd.extend(["--api-key", model_cfg.api_key])
+
+    # Pass system_prompt + generate_config (job-level is authoritative, model_cfg fallback)
+    sys_prompt = job.system_prompt
+    if not sys_prompt and model_cfg:
+        sys_prompt = model_cfg.system_prompt
+    if sys_prompt:
+        cmd.extend(["--system-message", sys_prompt])
+
+    _VALID_EFFORTS = {"none", "minimal", "low", "medium", "high", "xhigh"}
+    gen_config = job.generate_config
+    if not gen_config and model_cfg:
+        gen_config = model_cfg.generate_config
+    if gen_config:
+        effort = gen_config.get("reasoning_effort")
+        if effort and str(effort) in _VALID_EFFORTS:
+            cmd.extend(["--reasoning-effort", str(effort)])
+        if gen_config.get("reasoning_tokens"):
+            cmd.extend(["--reasoning-tokens", str(gen_config["reasoning_tokens"])])
 
     # 传递 inspect_ai 并发参数作为 extra args
     cmd.extend(["--max-connections", str(max_connections)])
