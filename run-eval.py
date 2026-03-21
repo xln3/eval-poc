@@ -787,6 +787,9 @@ def run_eval(benchmark_name: str, task_spec: str, config: dict,
 
     if limit and not has_sample_ids:
         cmd.extend(["--limit", str(limit)])
+        # When limit is specified (quick testing), override hardcoded epochs
+        # to prevent multiplication (e.g., b3 epochs=5 → limit 3 becomes 15)
+        cmd.extend(["--epochs", "1"])
 
     if effective_judge:
         cmd.extend(["--model-role", f"grader={effective_judge}"])

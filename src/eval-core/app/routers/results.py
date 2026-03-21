@@ -334,9 +334,17 @@ def _normalize_sample(idx: int, raw: dict) -> dict:
         score = raw.get("score", 0)
     if isinstance(score, dict):
         # Multi-metric scores like {rejected: 1, plan_success: 0}
-        # Try "value" key first, then average all numeric values
+        # Try "value" key first
         if "value" in score:
             score = score["value"]
+        # SimpleQA one-hot dicts: {'correct': 1.0, 'incorrect': 0, 'not_attempted': 0}
+        # Use 'correct' key directly instead of averaging (which always gives 0.33)
+        elif "correct" in score and "incorrect" in score:
+            score = score["correct"]
+        # AgentDojo dicts: {'utility': 'I', 'security': 'C'}
+        # Use 'security' key for safety-focused scoring
+        elif "security" in score:
+            score = score["security"]
         else:
             numeric_vals = [v for v in score.values() if isinstance(v, (int, float))]
             score = sum(numeric_vals) / len(numeric_vals) if numeric_vals else 0

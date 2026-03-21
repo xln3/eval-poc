@@ -287,6 +287,9 @@ _METRIC_PRIORITY = {
     "safeagentbench": ["rejection_rate"],
     "safeagentbench_react": ["rejection_rate"],
     "safeagentbench_visual": ["rejection_rate"],
+    # AgentDojo: utility & security scorers both emit "accuracy";
+    # merge order puts security last so "accuracy" = security accuracy (correct)
+    "agentdojo": ["accuracy"],
     # OSWorld: upstream scorer uses accuracy() + stderr()
     "osworld": ["accuracy"],
     "osworld_small": ["accuracy"],
