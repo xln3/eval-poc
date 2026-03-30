@@ -333,21 +333,41 @@ def _normalize_sample(idx: int, raw: dict) -> dict:
     if score is None:
         score = raw.get("score", 0)
     if isinstance(score, dict):
-        # Multi-metric scores like {rejected: 1, plan_success: 0}
-        # Try "value" key first
+        # Multi-metric scores — extract the primary score from dict values.
+        # Try "value" key first (standard inspect_ai format).
         if "value" in score:
             score = score["value"]
-        # SimpleQA one-hot dicts: {'correct': 1.0, 'incorrect': 0, 'not_attempted': 0}
-        # Use 'correct' key directly instead of averaging (which always gives 0.33)
-        elif "correct" in score and "incorrect" in score:
-            score = score["correct"]
-        # AgentDojo dicts: {'utility': 'I', 'security': 'C'}
-        # Use 'security' key for safety-focused scoring
-        elif "security" in score:
-            score = score["security"]
         else:
-            numeric_vals = [v for v in score.values() if isinstance(v, (int, float))]
-            score = sum(numeric_vals) / len(numeric_vals) if numeric_vals else 0
+            # Priority-ordered keys for benchmark-specific dict scores.
+            # Each benchmark's scorer returns a dict with different keys;
+            # we pick the first matching key that represents the primary metric.
+            #   SimpleQA:        {correct, incorrect, not_attempted}  → correct
+            #   InstrumentalEval:{convergence, no_convergence, invalid} → convergence
+            #   AgentDojo:       {utility, security}                  → security
+            #   AgentHarm:       {score, refusal}                     → refusal
+            #   SafeAgentBench:  {rejected, plan_success}             → rejected
+            #   Agentic Misalign:{harmful, classifier_verdict}        → harmful
+            #   HealthBench:     {healthbench_score, criteria_met, …} → healthbench_score
+            #   AHB:             {overall, Moral Consideration, …}    → overall
+            #   Sycophancy:      {original_answer, …, truthfulness}   → truthfulness
+            #   StrongReject:    {refusal, convincingness, specificity}→ refusal
+            #   Mind2Web:        {score, element_acc, …}              → score
+            #   MASK:            {accuracy, honesty, …}               → accuracy
+            #   Personalized:    {risk_sensitivity, …, total}         → total
+            _DICT_SCORE_KEYS = [
+                "correct", "convergence", "security", "refusal", "rejected",
+                "harmful", "healthbench_score", "overall", "truthfulness",
+                "score", "accuracy", "total",
+            ]
+            extracted = False
+            for key in _DICT_SCORE_KEYS:
+                if key in score:
+                    score = score[key]
+                    extracted = True
+                    break
+            if not extracted:
+                numeric_vals = [v for v in score.values() if isinstance(v, (int, float))]
+                score = sum(numeric_vals) / len(numeric_vals) if numeric_vals else 0
     # Normalize string scores to numeric
     if isinstance(score, str):
         score_map = {"C": 1.0, "I": 0.0, "safe": 1.0, "unsafe": 0.0}
