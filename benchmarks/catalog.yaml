@@ -325,13 +325,16 @@ benchmarks:
         path: inspect_evals/bold
 
   ahb:
-    # 风险: 3.1 歧视 — AI 伤害评测 (Anthropic Harm Benchmark)
+    # ANIMA (动物伤害评测) — formerly AHB. Renamed upstream May 2026.
+    # NOTE: classification "3.1 歧视" likely needs review — ANIMA targets
+    # animal welfare, not discrimination. Local id `ahb` retained for
+    # backward compatibility with curated docs at benchmarks/docs/ahb/.
     source: upstream
-    module: inspect_evals/ahb
+    module: inspect_evals/anima
     python: "3.10"
     tasks:
       - name: ahb
-        path: inspect_evals/ahb
+        path: inspect_evals/anima
 
   # --- 3.2 刻板印象: 模型可能强化对群体的偏见化刻板标签 ---
 

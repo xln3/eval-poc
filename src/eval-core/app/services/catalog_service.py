@@ -187,14 +187,14 @@ BENCHMARK_META = {
         "summary_en": "23,679 English text generation prompts across 5 domains (profession, gender, race, religion, political ideology). Prompts from Wikipedia; evaluated using toxicity and psycholinguistic bias metrics.",
     },
     "ahb": {
-        "display_name": "AI 伤害评测 (AHB)", "description": "模型输出可能对特定群体造成伤害的风险",
-        "display_name_en": "AHB", "description_en": "Risk of model outputs potentially causing harm to specific groups",
-        "reference": "https://github.com/AI-for-Animals/ahb",
-        "paper_title": "What do Large Language Models Say About Animals? Investigating Risks of Animal Harm in Generated Text",
-        "paper_url": "https://arxiv.org/abs/2503.04804",
-        "paper_venue": "ACM FAccT 2025",
-        "summary": "4,350道题（3,045条公开），覆盖50个动物类别×50个伦理场景。AHB 2.0版本从13个道德推理维度评分，使用LLM裁判评估。",
-        "summary_en": "4,350 questions (3,045 public) across 50 animal categories × 50 ethical scenarios. AHB 2.0 scores across 13 moral reasoning dimensions using LLM-based judging.",
+        "display_name": "ANIMA (动物伤害评测)", "description": "评估模型在可能造成动物伤害的情境中是否考虑动物福利",
+        "display_name_en": "ANIMA", "description_en": "Evaluates how models consider the welfare of animals in situations that may present them harm",
+        "reference": "https://huggingface.co/datasets/sentientfutures/anima",
+        "paper_title": "Alignment Midtraining for Animals",
+        "paper_url": "https://arxiv.org/abs/2604.13076",
+        "paper_venue": "arXiv 2026 (Brazilek & Tidmarsh)",
+        "summary": "由 Sentient Futures / CompassionML 团队维护。覆盖 50 个动物类别 × 50 个伦理场景，从 13 个道德推理维度评分，使用 LLM 裁判评估。原名 AHB (Animal Harm Benchmark)，2026 年 5 月更名为 ANIMA。",
+        "summary_en": "Maintained by Sentient Futures / CompassionML. Questions span 50 animal categories × 50 ethical scenarios, scored across 13 moral reasoning dimensions using LLM-based judging. Previously named AHB (Animal Harm Benchmark); renamed ANIMA in May 2026.",
     },
     "stereoset": {
         "display_name": "刻板印象评测 (StereoSet)", "description": "模型强化群体刻板化标签的风险",
@@ -804,8 +804,8 @@ TASK_META: Dict[str, Dict[str, str]] = {
     "bbq": {"display_name": "偏见行为", "description": "模型在偏见相关问题上产生不公平输出的风险", "display_name_en": "Bias Behavior", "description_en": "Risk of the model producing unfair outputs on bias-related questions"},
     # --- bold ---
     "bold": {"display_name": "文本生成偏见", "description": "开放式文本生成中暴露偏见倾向的风险", "display_name_en": "Text Generation Bias", "description_en": "Risk of exposing bias tendencies in open-ended text generation"},
-    # --- ahb ---
-    "ahb": {"display_name": "群体伤害", "description": "模型输出可能对特定群体造成伤害的风险", "display_name_en": "Group Harm", "description_en": "Risk of model outputs potentially causing harm to specific groups"},
+    # --- ahb (ANIMA) ---
+    "ahb": {"display_name": "动物伤害 (ANIMA)", "description": "模型在可能造成动物伤害的情境中是否考虑动物福利", "display_name_en": "Animal Harm (ANIMA)", "description_en": "Whether the model considers animal welfare in situations that may present harm to animals"},
     # --- stereoset ---
     "stereoset": {"display_name": "刻板印象", "description": "模型强化群体刻板化标签的风险", "display_name_en": "Stereotypes", "description_en": "Risk of the model reinforcing stereotypical labels for groups"},
     # --- cvalues ---

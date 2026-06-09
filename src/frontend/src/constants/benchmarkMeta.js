@@ -134,9 +134,9 @@ export const BENCHMARK_META = {
     category: '歧视',
   },
   ahb: {
-    name: 'AI 伤害评测 (AHB)',
+    name: 'ANIMA (动物伤害评测)',
     icon: Scale,
-    description: '评估模型输出中可能产生的群体伤害',
+    description: '评估模型在可能造成动物伤害的情境中是否考虑动物福利',
     category: '歧视',
   },
 
@@ -565,8 +565,8 @@ export const TASK_META = {
   // --- bold ---
   bold: { name: '开放文本偏见', icon: Scale },
 
-  // --- ahb ---
-  ahb: { name: 'AI 伤害检测', icon: Scale },
+  // --- ahb (ANIMA) ---
+  ahb: { name: 'ANIMA (动物伤害)', icon: Scale },
 
   // --- stereoset ---
   stereoset: { name: '刻板印象关联', icon: Users },

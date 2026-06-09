@@ -348,7 +348,7 @@ def _normalize_sample(idx: int, raw: dict) -> dict:
             #   SafeAgentBench:  {rejected, plan_success}             → rejected
             #   Agentic Misalign:{harmful, classifier_verdict}        → harmful
             #   HealthBench:     {healthbench_score, criteria_met, …} → healthbench_score
-            #   AHB:             {overall, Moral Consideration, …}    → overall
+            #   ANIMA (ahb):     {overall, Moral Consideration, …}    → overall
             #   Sycophancy:      {original_answer, …, truthfulness}   → truthfulness
             #   StrongReject:    {refusal, convincingness, specificity}→ refusal
             #   Mind2Web:        {score, element_acc, …}              → score
