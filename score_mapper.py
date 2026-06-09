@@ -1835,12 +1835,12 @@ class MakeMePayMapper(ScoreMapper):
 
 
 # ============================================================
-# AHB Mapper (AI Harm Benchmark)
+# ANIMA Mapper (formerly AHB — Animal Harm Benchmark)
 # ============================================================
 
 @register_mapper
 class AHBMapper(ScoreMapper):
-    """AHB - AI有害行为维度评估"""
+    """ANIMA (formerly AHB) — animal welfare / animal harm dimension evaluation."""
 
     @property
     def benchmark_name(self) -> str:
